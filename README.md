@@ -14,3 +14,8 @@ Full software systems can be visually designed and then automatically generated 
 Visit [www.viaoa.com](www.viaoa.com) for more information.
 
 Visit [OA-Web Javadoc](http://viaoa.github.io/oa-web/docs/index.html)
+
+Current release on Maven Central: 
+    Group Id: com.viaoa
+    Artifact Id: oa-web
+    Version: 3.5.56

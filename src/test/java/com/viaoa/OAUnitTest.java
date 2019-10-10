@@ -47,7 +47,14 @@ public class OAUnitTest {
         }
         OAObjectCacheDelegate.clearCache(NextNumber.class);
         OADataSource.closeAll();
-        OAObjectCacheDelegate.clearCache();
+//qqqqqqqqqqqqqq use same code that is in OACore unittest qqqqqqqqqqqq        
+        OAObjectCacheDelegate.setUnitTestMode(true);
+        try {
+        OAObjectCacheDelegate.resetCache();
+        }
+        catch (Exception e) {
+            System.out.println("Exception qqqqqqqqqqq "+e);
+        }
         OAObjectDelegate.setNextGuid(0);
         OAObjectCacheDelegate.removeAllSelectAllHubs();
         OAThreadLocalDelegate.clearSiblingHelpers();

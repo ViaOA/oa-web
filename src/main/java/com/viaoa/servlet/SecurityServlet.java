@@ -37,15 +37,6 @@ import com.viaoa.util.OADateTime;
 import com.viaoa.util.OAString;
 
 /**
- * Get an image from an Object Property
- * 
- * similar to protocol handler:
- * com.viaoa.jfc.editor.html.protocol.classpath.Handler
- * 
- * Note: images were stored in byte[] property using
- * OAImageUtil.convertToBytes(), which uses *.jpg format
- * 
- * get params: c|class, i|id, p|prop|property, mw|maxw (max width), mh|maxh (max height)
  * 
  * 
  * @author vincevia

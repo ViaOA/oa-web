@@ -3,6 +3,7 @@ package test.xice.tsam.util;
  
 import com.viaoa.object.*;
 import com.viaoa.object.*;
+import com.viaoa.datasource.*;
 import com.viaoa.hub.*;
 
 import java.awt.Color;
@@ -15,7 +16,6 @@ import java.lang.reflect.Field;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
-import com.viaoa.ds.*;
 import com.viaoa.util.*;
  
 import test.xice.tsam.model.oa.*;

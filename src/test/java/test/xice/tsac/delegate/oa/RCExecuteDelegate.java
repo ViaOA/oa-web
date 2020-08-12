@@ -11,6 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import com.viaoa.json.OAJsonReader;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectPropertyDelegate;
 import com.viaoa.sync.OASyncDelegate;

@@ -3,7 +3,7 @@ package test.xice.tsam.remote;
 
 import java.util.ArrayList;
 
-import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.annotation.OARemoteInterface;
 import com.viaoa.util.OAProperties;
 
 import test.xice.tsam.model.oa.AdminUser;

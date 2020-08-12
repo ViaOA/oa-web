@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.viaoa.hub.*;
 import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.remote.multiplexer.info.RequestInfo;
+import com.viaoa.remote.info.RequestInfo;
 import com.viaoa.util.*;
 
 import test.xice.tsam.delegate.ModelDelegate;

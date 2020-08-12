@@ -6,11 +6,11 @@ import java.util.logging.*;
 import test.xice.tsam.model.oa.MRADServerCommand;
 import test.xice.tsam.model.oa.search.MRADServerCommandSearch;
 import com.viaoa.annotation.*;
+import com.viaoa.datasource.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
-import com.viaoa.ds.*;
-import com.viaoa.util.filter.OAQueryFilter;
+import com.viaoa.filter.OAQueryFilter;
 
 import test.xice.tsam.model.oa.*;
 import test.xice.tsam.model.oa.propertypath.*;

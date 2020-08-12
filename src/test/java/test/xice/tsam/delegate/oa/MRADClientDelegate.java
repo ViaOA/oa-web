@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.viaoa.filter.OAEqualFilter;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObject;
@@ -15,9 +16,8 @@ import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.util.OADateTime;
 import com.viaoa.util.OAString;
-import com.viaoa.util.OAXMLReader;
-import com.viaoa.util.OAXMLWriter;
-import com.viaoa.util.filter.OAEqualFilter;
+import com.viaoa.xml.OAXMLReader;
+import com.viaoa.xml.OAXMLWriter;
 
 import test.xice.tsam.delegate.ModelDelegate;
 import test.xice.tsam.delegate.oa.ApplicationDelegate;

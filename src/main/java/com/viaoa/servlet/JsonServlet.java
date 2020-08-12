@@ -25,8 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.ds.OASelect;
+import com.viaoa.datasource.OASelect;
 import com.viaoa.hub.Hub;
+import com.viaoa.json.OAJsonWriter;
 import com.viaoa.object.OACalcInfo;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
@@ -34,7 +35,6 @@ import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAPropertyInfo;
-import com.viaoa.util.OAJsonWriter;
 import com.viaoa.util.OAString;
 
 /*

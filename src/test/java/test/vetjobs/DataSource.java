@@ -1,9 +1,10 @@
 package test.vetjobs;
 
 import java.sql.*;
-import com.viaoa.ds.autonumber.NextNumber;
-import com.viaoa.ds.jdbc.*;
-import com.viaoa.ds.jdbc.db.*;
+
+import com.viaoa.datasource.autonumber.NextNumber;
+import com.viaoa.datasource.jdbc.*;
+import com.viaoa.datasource.jdbc.db.*;
 
 public class DataSource {
     protected OADataSourceJDBC datasource;

@@ -3,9 +3,10 @@ package test.xice.tsam.delegate.oa;
 import test.xice.tsam.model.oa.Environment;
 import test.xice.tsam.model.oa.Server;
 import test.xice.tsam.model.oa.Silo;
+
+import com.viaoa.filter.OAEqualFilter;
 import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAString;
-import com.viaoa.util.filter.OAEqualFilter;
 
 import test.xice.tsam.model.oa.*;
 import test.xice.tsam.model.oa.propertypath.ServerPP;

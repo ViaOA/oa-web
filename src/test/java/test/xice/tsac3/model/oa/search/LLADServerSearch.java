@@ -2,15 +2,15 @@
 package test.xice.tsac3.model.oa.search;
 
 import com.viaoa.annotation.*;
+import com.viaoa.datasource.*;
 import com.viaoa.object.*;
+import com.viaoa.remote.OARemoteThreadDelegate;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
-import com.viaoa.util.filter.OAQueryFilter;
 
 import test.xice.tsac3.model.oa.*;
 
-import com.viaoa.ds.*;
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.filter.OAQueryFilter;
 
 @OAClass(useDataSource=false, localOnly=true)
 public class LLADServerSearch extends OAObject {

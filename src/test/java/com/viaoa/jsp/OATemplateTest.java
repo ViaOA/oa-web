@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import com.viaoa.OAUnitTest;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OATemplate;
+import com.viaoa.template.OATemplate;
 
 import test.hifive.model.oa.Employee;
 

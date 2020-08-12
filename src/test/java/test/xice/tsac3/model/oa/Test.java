@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import com.viaoa.ds.OADataSourceIterator;
-import com.viaoa.ds.autonumber.OADataSourceAuto;
+import com.viaoa.datasource.OADataSourceIterator;
+import com.viaoa.datasource.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDelegate;
 import com.viaoa.object.OAObject;

@@ -1,6 +1,6 @@
 package test.xice.tsac;
 
-import com.viaoa.ds.autonumber.OADataSourceAuto;
+import com.viaoa.datasource.autonumber.OADataSourceAuto;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAThreadLocalDelegate;

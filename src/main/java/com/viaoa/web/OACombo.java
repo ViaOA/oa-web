@@ -18,6 +18,7 @@ import com.viaoa.hub.Hub;
 import com.viaoa.hub.HubDetailDelegate;
 import com.viaoa.hub.HubLinkDelegate;
 import com.viaoa.object.*;
+import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 
 // <select id="cbo"></select>

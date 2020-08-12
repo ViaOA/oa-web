@@ -4,21 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -30,23 +24,23 @@ import javax.xml.bind.JAXBContext;
 import com.viaoa.annotation.OAClassFilter;
 import com.viaoa.context.OAContext;
 import com.viaoa.context.OAUserAccess;
-import com.viaoa.ds.OASelect;
+import com.viaoa.datasource.OASelect;
+import com.viaoa.filter.OAAndFilter;
+import com.viaoa.filter.OAUserAccessFilter;
 import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.Hub;
+import com.viaoa.jaxb.OAJaxb;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectEditQueryDelegate;
 import com.viaoa.object.OAObjectInfo;
 import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.util.Base64;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAFilter;
-import com.viaoa.util.OAJaxb;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAReflect;
 import com.viaoa.util.OAString;
-import com.viaoa.util.filter.OAAndFilter;
 
 /*
 ?query=
@@ -106,17 +100,9 @@ public class OARestServlet extends HttpServlet {
 	private HashMap<String, Class> hmClassName = new HashMap<String, Class>();
 	private HashMap<String, Class> hmClassPluralName = new HashMap<String, Class>();
 	private String httpCORS; // "*" for all
-	private String jwtHeaderName; // name of http header if using json web token for user auth.
-	private String jwtKeyName; // name of http header if using json web token for user auth.
 
-	/** default setting for JAXB marshelling to use refIds */
+	/** default setting for JAXB marshalling to use refIds */
 	private boolean bJaxbUseReferences;
-
-	private AuthType authType = AuthType.None;
-
-	public static enum AuthType {
-		None, HttpBasic, JWT;
-	}
 
 	public OARestServlet(String packageName) {
 		LOG.fine("Started packageName=" + packageName);
@@ -976,68 +962,6 @@ public class OARestServlet extends HttpServlet {
 		return qname;
 	}
 
-	// find the WSO2 set UserId from the header
-	private String lastJwt;
-	private String lastJwtUserId;
-	private final ReadWriteLock rwLockJwt = new ReentrantReadWriteLock();
-
-	protected String getUserId(HttpServletRequest servletRequest) {
-		if (servletRequest == null) {
-			return null;
-		}
-		final String jwt = servletRequest.getHeader("HTTP_X_JWT_ASSERTION");
-		if (jwt == null) {
-			return null;
-		}
-
-		try {
-			rwLockJwt.readLock().lock();
-			if (jwt.equals(lastJwt)) {
-				return lastJwtUserId;
-			}
-		} finally {
-			rwLockJwt.readLock().unlock();
-		}
-
-		String s = OAString.field(jwt, ".", 2);
-		String sz = Base64.decode(s);
-		/*
-		byte[] bs = Base64.decode(s);
-		String sz = new String(bs);
-		*/
-
-		/* ex:
-		    http://wso2.org/claims/enduser
-		    admin@carbon.user
-		*/
-
-		final JsonParser parser = Json.createParser(new StringReader(sz));
-		String key = null;
-		String value = null;
-		while (parser.hasNext()) {
-			final Event event = parser.next();
-			if (event == Event.KEY_NAME) {
-				key = parser.getString();
-			} else if (event == Event.VALUE_STRING) {
-				if ("http://wso2.org/claims/enduser".equalsIgnoreCase(key)) {
-					value = parser.getString();
-					break;
-				}
-			}
-		}
-		parser.close();
-
-		try {
-			rwLockJwt.writeLock().lock();
-			lastJwt = jwt;
-			lastJwtUserId = value;
-		} finally {
-			rwLockJwt.writeLock().unlock();
-		}
-
-		return value;
-	}
-
 	private String allXMLPackages;
 
 	/**
@@ -1049,9 +973,6 @@ public class OARestServlet extends HttpServlet {
 		this.allXMLPackages = allXMLPackages;
 	}
 
-	private static final String KEY_OARestUser = "OARestUser";
-	private static final String KEY_OARestUserAccess = "OARestUserAccess";
-
 	/**
 	 * This is always called first.
 	 */
@@ -1059,132 +980,20 @@ public class OARestServlet extends HttpServlet {
 	public void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		final HttpSession session = request.getSession(true);
 
-		OAObject user = (OAObject) session.getAttribute(KEY_OARestUser);
-		OAUserAccess userAccess = (OAUserAccess) session.getAttribute(KEY_OARestUserAccess);
+		// verify that user has been set
+		OAObject user = (OAObject) session.getAttribute(OAUserAccessFilter.KEY_OAWebUser);
 
-		if (userAccess == null || user == null) {
-			String userId = null;
-			String pw = null;
-
-			if (getAuthType() == AuthType.JWT) {
-				String auth = getJWTHeaderName();
-				if (OAString.isEmpty(auth)) {
-					String jwt = request.getHeader(auth);
-					if (jwt != null) {
-						String s = OAString.field(jwt, ".", 2); // json data that includes user
-						String sz = Base64.decode(s);
-
-						final JsonParser parser = Json.createParser(new StringReader(sz));
-						String key = null;
-						String value = null;
-						while (parser.hasNext()) {
-							final Event event = parser.next();
-							if (event == Event.KEY_NAME) {
-								key = parser.getString();
-							} else if (event == Event.VALUE_STRING) {
-								if (key != null && key.equalsIgnoreCase(getJWTKeyName())) {
-									value = parser.getString();
-									break;
-								}
-							}
-						}
-						parser.close();
-						if (OAString.isNotEmpty(userId)) {
-							user = getJwtUser(userId);
-						}
-					}
-				}
-			} else if (getAuthType() == AuthType.HttpBasic) {
-				String auth = request.getHeader("Authorization");
-				if (auth != null && auth.toUpperCase().startsWith("BASIC ")) {
-					String userpassEncoded = auth.substring(6);
-					String s = Base64.decode(userpassEncoded);
-					int pos = s.indexOf(':');
-					userId = s.substring(0, pos);
-					pw = s.substring(pos + 1);
-
-					user = getUser(userId, pw);
-				}
-			} else if (getAuthType() == AuthType.None) {
-				user = getUser(userId, pw);
-			}
-
-			if (user == null) {
-				if (getAuthType() == AuthType.HttpBasic) {
-					response.setHeader("WWW-Authenticate", "BASIC realm=\"OARest\"");
-				}
-				response.sendError(response.SC_UNAUTHORIZED);
-				return;
-			} else {
-				session.setAttribute(KEY_OARestUser, user);
-				userAccess = getUserAccess(user);
-				session.setAttribute(KEY_OARestUserAccess, userAccess);
-			}
+		if (user == null) {
+			throw new RuntimeException(
+					"Session web user (" + OAUserAccessFilter.KEY_OAWebUser + ") is not defined");
 		}
 
-		try {
-			OAThreadLocalDelegate.setContext(session);
-			OAContext.setContext(session, user);
-			OAContext.setContextUserAccess(session, userAccess);
-
-			super.service(request, response);
-		} finally {
-			OAThreadLocalDelegate.setContext(null);
-			OAContext.setContext(session, null);
-			OAContext.setContextUserAccess(session, null);
+		OAObject user2 = OAContext.getContextObject();
+		if (user != user2) {
+			throw new RuntimeException("Session context user (" + OAUserAccessFilter.KEY_OAContextUser + ") is not defined");
 		}
+
+		super.service(request, response);
 	}
 
-	public void setAuthType(AuthType authType) {
-		this.authType = authType;
-	}
-
-	public AuthType getAuthType() {
-		return authType;
-	}
-
-	/**
-	 * Called to get the UserAccess for OAContext.setUserContext
-	 */
-	protected OAUserAccess getUserAccess(Object user) {
-		return null;
-	}
-
-	public String getJWTHeaderName() {
-		return jwtHeaderName;
-	}
-
-	public void setJWTHeaderName(String name) {
-		//ex:  "HTTP_X_JWT_ASSERTION"
-		this.jwtHeaderName = name;
-	}
-
-	public String getJWTKeyName() {
-		return jwtKeyName;
-	}
-
-	public void setJWTKeyName(String key) {
-		this.jwtKeyName = key;
-	}
-
-	/**
-	 * Should be overwritten to supply the valid user.
-	 *
-	 * @param userId   could be null if AuthType.None
-	 * @param password could be null if AuthType.None
-	 * @return User to use for setting OAContext.user
-	 */
-	protected OAObject getUser(String userId, String password) {
-		return null;
-	}
-
-	/**
-	 * Called using AuthType.JWT
-	 * 
-	 * @param userId from the JWT
-	 * @return User to use for setting OAContext.user
-	 */
-	protected OAObject getJwtUser(String userId) {
-		return null;
-	}
 }

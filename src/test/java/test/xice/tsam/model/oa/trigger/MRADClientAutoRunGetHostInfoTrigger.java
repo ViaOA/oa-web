@@ -4,6 +4,7 @@ package test.xice.tsam.model.oa.trigger;
 import java.util.logging.*;
 
 import com.viaoa.object.*;
+import com.viaoa.datasource.OASelect;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 
@@ -12,7 +13,6 @@ import test.xice.tsam.model.oa.propertypath.*;
 
 import test.xice.tsam.model.oa.MRADClient;
 import test.xice.tsam.model.oa.propertypath.MRADClientPP;
-import com.viaoa.ds.OASelect;
 
 public class MRADClientAutoRunGetHostInfoTrigger {
     private static Logger LOG = Logger.getLogger(MRADClientAutoRunGetHostInfoTrigger.class.getName());

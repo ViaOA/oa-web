@@ -8,8 +8,8 @@ import java.sql.*;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
-import com.viaoa.ds.*;
-import com.viaoa.ds.jdbc.*;
+import com.viaoa.datasource.*;
+import com.viaoa.datasource.jdbc.*;
 
 
 public class JobLoader implements Runnable {

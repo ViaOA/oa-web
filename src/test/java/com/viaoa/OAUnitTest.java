@@ -1,10 +1,10 @@
 package com.viaoa;
 
 
-import com.viaoa.ds.OADataSource;
-import com.viaoa.ds.autonumber.NextNumber;
-import com.viaoa.ds.autonumber.OADataSourceAuto;
-import com.viaoa.ds.objectcache.OADataSourceObjectCache;
+import com.viaoa.datasource.OADataSource;
+import com.viaoa.datasource.autonumber.NextNumber;
+import com.viaoa.datasource.autonumber.OADataSourceAuto;
+import com.viaoa.datasource.objectcache.OADataSourceObjectCache;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.object.OAObjectDelegate;
 import com.viaoa.object.OAThreadLocalDelegate;

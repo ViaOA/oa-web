@@ -3,6 +3,7 @@ package test.xice.tsac2.model.oa;
  
 import java.sql.*;
 import com.viaoa.object.*;
+import com.viaoa.remote.OARemoteThreadDelegate;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.annotation.*;
@@ -11,8 +12,6 @@ import com.viaoa.util.OADateTime;
 import test.xice.tsac2.delegate.*;
 import test.xice.tsac2.model.oa.filter.*;
 import test.xice.tsac2.model.oa.propertypath.*;
-
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
  
 @OAClass(
     shortName = "llads",

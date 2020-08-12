@@ -1,7 +1,7 @@
 // Copied from OATemplate project by OABuilder 09/21/15 03:11 PM
 package test.xice.tsam.remote;
 
-import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
+import com.viaoa.remote.annotation.OARemoteInterface;
 
 @OARemoteInterface
 public interface RemoteSpellCheckInterface {

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectReflectDelegate;
+import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 
 
@@ -61,7 +62,7 @@ public class OAButton<T extends OAObject> implements OAJspComponent, OAJspRequir
     protected boolean bSubmit;
     protected boolean bSpinner;
     protected String toolTip;
-    protected com.viaoa.util.OATemplate templateToolTip;
+    protected com.viaoa.template.OATemplate templateToolTip;
     private boolean bHadToolTip;
     protected String confirmMessage;
     protected OATemplate templateConfirmMessage;

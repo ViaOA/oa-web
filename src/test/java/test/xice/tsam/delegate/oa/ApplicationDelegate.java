@@ -1,8 +1,8 @@
 package test.xice.tsam.delegate.oa;
 
+import com.viaoa.filter.OAEqualFilter;
 import com.viaoa.object.OAFinder;
 import com.viaoa.util.OAString;
-import com.viaoa.util.filter.OAEqualFilter;
 
 import test.xice.tsam.model.oa.*;
 import test.xice.tsam.model.oa.propertypath.*;

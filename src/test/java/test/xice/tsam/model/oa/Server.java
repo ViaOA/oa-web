@@ -7,7 +7,7 @@ import java.util.logging.*;
 import java.sql.*;
 
 import com.viaoa.object.*;
-import com.viaoa.remote.multiplexer.OARemoteThread;
+import com.viaoa.remote.OARemoteThread;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 

@@ -1,6 +1,6 @@
 package test.xice.tsac.delegate.oa;
 
-import com.viaoa.remote.multiplexer.OARemoteThreadDelegate;
+import com.viaoa.remote.OARemoteThreadDelegate;
 import com.viaoa.sync.OASyncDelegate;
 import com.viaoa.util.OAString;
 

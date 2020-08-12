@@ -8,12 +8,12 @@ import test.xice.tsam.model.oa.Developer;
 import test.xice.tsam.model.oa.propertypath.DeveloperPP;
 import test.xice.tsam.model.oa.search.DeveloperSearch;
 import com.viaoa.annotation.*;
+import com.viaoa.datasource.*;
 import com.viaoa.object.*;
 import com.viaoa.hub.*;
 import com.viaoa.util.*;
 import com.viaoa.util.OADate;
-import com.viaoa.ds.*;
-import com.viaoa.util.filter.OAQueryFilter;
+import com.viaoa.filter.OAQueryFilter;
 
 import test.xice.tsam.model.oa.*;
 import test.xice.tsam.model.oa.propertypath.*;

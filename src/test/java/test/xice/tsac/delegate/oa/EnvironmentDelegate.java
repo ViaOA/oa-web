@@ -9,8 +9,8 @@ import com.viaoa.undo.OAUndoManager;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAThreadLocalDelegate;
 import com.viaoa.util.OAString;
-import com.viaoa.util.OAXMLReader;
-import com.viaoa.util.OAXMLWriter;
+import com.viaoa.xml.OAXMLReader;
+import com.viaoa.xml.OAXMLWriter;
 
 import test.xice.tsac.delegate.ModelDelegate;
 import test.xice.tsac.model.oa.*;

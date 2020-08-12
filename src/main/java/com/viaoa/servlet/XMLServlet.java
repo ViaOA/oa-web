@@ -25,12 +25,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.ds.OASelect;
+import com.viaoa.datasource.OASelect;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.util.OAString;
-import com.viaoa.util.OAXMLWriter;
+import com.viaoa.xml.OAXMLWriter;
 
 /**
  * Get XML data from OA.

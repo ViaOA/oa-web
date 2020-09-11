@@ -12,7 +12,7 @@ public class OARemoteServlet {
 	// allow remote calls from java (OAHttpXxxClient), http client (curl, postman, browser, etc)
 
 	//qqqqqqqqqqqqqqqqqqqqqqqqqq
-	// use OAEditQuery.allowSubmit to check request object
+	// use OAObjectCallback.allowSubmit to check request object
 
 	/*
 		headers

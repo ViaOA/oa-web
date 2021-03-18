@@ -3,7 +3,7 @@ package test.xice.tsam.remote;
 
 import java.io.File;
 
-import com.viaoa.remote.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 @OARemoteInterface
 public interface RemoteFileInterface {

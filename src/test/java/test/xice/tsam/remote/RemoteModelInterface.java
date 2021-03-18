@@ -3,7 +3,7 @@ package test.xice.tsam.remote;
 
 import test.xice.tsam.model.oa.MRADServerCommand;
 
-import com.viaoa.remote.annotation.OARemoteInterface;
+import com.viaoa.remote.multiplexer.annotation.OARemoteInterface;
 
 import test.xice.tsam.delegate.*;
 import test.xice.tsam.delegate.oa.*;

@@ -32,7 +32,7 @@ import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.Hub;
 import com.viaoa.jaxb.OAJaxb;
 import com.viaoa.json.OAJson;
-import com.viaoa.json.OAJsonUtil;
+import com.viaoa.json.OAJsonMapper;
 import com.viaoa.json.node.OAJsonArrayNode;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObject;
@@ -75,6 +75,8 @@ import com.viaoa.util.OAString;
  * 3) query objects using where clause<br>
  * http://localhost/oarest/{pluralClassName}?query={whereClause}&pp1={x}&ppN={x}<br>
  * http://localhost/oarest/clients?query=company.name like 'AAA*'&pp=products<br>
+ * http://localhost/oarest/clients?query=company.name like 'AAA*'&orderBy=id&pp=products<br>
+ * http://localhost/oarest/clients?query=company.id>?'&queryParam=1&orderBy=id&pp=products<br>
  * <p>
  * 4) filter support<br>
  * http://localhost/oarest/campaigns?filter=unassigned<br>
@@ -333,11 +335,11 @@ public class OARestServlet extends HttpServlet {
 			int status = _process(req, resp);
 			resp.setStatus(status);
 		} catch (OAServletException ex) {
-			LOG.log(Level.FINE, "oaServletException REST", ex);
+			LOG.log(Level.FINE, "OAServletException OAREST", ex);
 			resp.setStatus(ex.getHttpStatusCode());
 			onException(resp, ex);
 		} catch (Exception ex) {
-			LOG.log(Level.WARNING, "error processing REST", ex);
+			LOG.log(Level.WARNING, "error processing OAREST", ex);
 			resp.setStatus(resp.SC_INTERNAL_SERVER_ERROR);
 			onException(resp, ex);
 		} finally {
@@ -362,7 +364,7 @@ public class OARestServlet extends HttpServlet {
 		resp.setContentType("application/json");
 		pw.print("{");
 		pw.print("  \"Exception\": {");
-		pw.print("    \"message\": \"" + OAString.convert(exception.toString(), "\"", "") + "\",");
+		pw.print("    \"message\": \"" + OAString.convert(exception.toString(), "\"", "") + "\"");
 		pw.print("  }");
 		pw.print("}");
 		pw.flush(); // but dont close
@@ -509,13 +511,12 @@ public class OARestServlet extends HttpServlet {
 		String className = OAString.field(pathInfo, "/", 2);
 
 		//qqqqqqqqqqqqqqqqqqqqqqq
-		boolean bOARemote = false;
-		if ("oaremote".equalsIgnoreCase(className)) {
-			bOARemote = true;
+		final boolean bOARemote = "oaremote".equalsIgnoreCase(className);
+		if (bOARemote) {
 			className = null;
 		}
 
-		final String originalRequest = requestUrl + (OAString.isEmpty(httpQueryString) ? "" : httpQueryString); //  "http://localhost:8088/pi/api/ui/campaigns/123filter=open&max=3&flag"
+		final String originalRequest = requestUrl + (OAString.isEmpty(httpQueryString) ? "" : ("?" + httpQueryString)); //  "http://localhost:8088/pi/api/ui/campaigns/123?filter=open&max=3&flag"
 
 		LOG.fine(String.format("Method=%s, url=%s, query=%s", methodType, requestUrl, httpQueryString));
 
@@ -573,6 +574,7 @@ public class OARestServlet extends HttpServlet {
 		OAFilter filterQuery = null;
 		String description = originalRequest;
 		String query = hmParam.get("query");
+		String orderBy = hmParam.get("orderBy");
 
 		final String[] queryParams = req.getParameterValues("queryParam");
 
@@ -626,41 +628,82 @@ public class OARestServlet extends HttpServlet {
 			}
 		}
 
-		if (clazz == null) {
+		if (clazz == null && !bOARemote) {
 			onException(resp, new Exception("Class not found, name=" + className));
 			httpStatus = HttpServletResponse.SC_BAD_REQUEST;
 			return httpStatus;
 		}
 
-		LOG.fine("clazz=" + clazz.getName());
+		OAJaxb jaxb = null;
+		if (!bOARemote) {
+			LOG.fine("clazz=" + clazz.getName());
+			jaxb = new OAJaxb<>(clazz);
+			jaxb.setUseReferences(bUseRefId);
+			jaxb.setIncludeGuids(false);
+			jaxb.setIncludeOwned(bUseOwned);
+			jaxb.setIncludeNewChangedDeletedFlags(true);
 
-		final OAJaxb jaxb = new OAJaxb<>(clazz);
-		jaxb.setUseReferences(bUseRefId);
-		jaxb.setIncludeGuids(false);
-		jaxb.setIncludeOwned(bUseOwned);
-
-		for (String s : alPropertyPath) {
-			jaxb.addPropertyPath(s);
-		}
-
-		StringBuilder sb = new StringBuilder();
-		BufferedReader reader = req.getReader();
-		try {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line).append('\n');
+			for (String s : alPropertyPath) {
+				jaxb.addPropertyPath(s);
 			}
-		} finally {
-			reader.close();
 		}
-		String jsonInput = sb.toString();
+
+		String jsonInput = null;
+		byte[] bsInput = null;
+		if ("application/octet-stream".equalsIgnoreCase(req.getContentType())) {
+			int length = req.getContentLength();
+			bsInput = new byte[length];
+			req.getInputStream().read(bsInput);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			BufferedReader reader = req.getReader();
+			try {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line).append('\n');
+				}
+			} finally {
+				reader.close();
+			}
+			jsonInput = sb.toString();
+		}
 
 		String jsonOutput = null;
 
 		// name in method to call
 		final String objectMethodName = hmParam.get("objectMethodName".toLowerCase());
 
-		if ("put".equalsIgnoreCase(methodType) && !bIsMany) {
+		if (bOARemote) {
+			// ../oaremote?remoteClass=asdfa&remoteMethod=asdfs&pp=asd.ewr.wers
+			String remoteClassName = hmParam.get("remoteClassName".toLowerCase());
+			String remoteMethodName = hmParam.get("remoteMethodName".toLowerCase());
+
+			Object objResult = callRemoteMethod(remoteClassName, remoteMethodName, jsonInput, bsInput);
+
+			jaxb = null;
+			if (objResult instanceof OAObject) {
+				jaxb = new OAJaxb<>(objResult.getClass());
+			} else if (objResult instanceof Hub) {
+				jaxb = new OAJaxb<>(((Hub) objResult).getObjectClass());
+			}
+			if (jaxb != null) {
+				jaxb.setIncludeNewChangedDeletedFlags(true);
+				jaxb.setUseReferences(bUseRefId);
+				jaxb.setIncludeGuids(false);
+				jaxb.setIncludeOwned(bUseOwned);
+				for (String s : alPropertyPath) {
+					jaxb.addPropertyPath(s);
+				}
+
+				if (objResult instanceof OAObject) {
+					jsonOutput = jaxb.convertToJSON((OAObject) objResult);
+				} else {
+					jsonOutput = jaxb.convertToJSON((Hub) objResult);
+				}
+			} else {
+				jsonOutput = OAJsonMapper.convertObjectToJson(objResult);
+			}
+		} else if ("put".equalsIgnoreCase(methodType) && !bIsMany) {
 			// ========== PUT ===========
 			jaxb.setLoadingMode(OAJaxb.LoadingMode.UpdateRootOnly);
 
@@ -672,17 +715,9 @@ public class OARestServlet extends HttpServlet {
 			} else {
 				httpStatus = HttpServletResponse.SC_NOT_FOUND;
 			}
-		} else if (bOARemote) {
-			// ../oaremote?remoteClass=asdfa&remoteMethod=asdfs&pp=asd.ewr.wers
-			String remoteClassName = hmParam.get("remoteClassName".toLowerCase());
-			String remoteMethodName = hmParam.get("remoteMethodName".toLowerCase());
-
-			Object objResult = callRemoteMethod(remoteClassName, remoteMethodName, jsonInput);
-			jsonOutput = OAJsonUtil.convertObjectToJson(objResult);
-
 		} else if (objectMethodName != null) {
 			Object objResult = callObjectMethod(clazz, pathInfo, objectMethodName, jsonInput);
-			jsonOutput = OAJsonUtil.convertObjectToJson(objResult);
+			jsonOutput = OAJsonMapper.convertObjectToJson(objResult);
 
 		} else if ("post".equalsIgnoreCase(methodType) && !bIsMany) {
 			// ========== POST ===========
@@ -829,6 +864,7 @@ public class OARestServlet extends HttpServlet {
 					select.setWhere(query);
 					select.setParams(queryParams);
 					select.setFilter(filterQuery);
+					select.setOrder(orderBy);
 					h.select(select);
 				} else if (OAString.isEmpty(fromClass)) {
 					select = new OASelect(clazz);
@@ -878,7 +914,7 @@ public class OARestServlet extends HttpServlet {
 
 		if (jsonOutput == null) {
 			if (httpStatus == HttpServletResponse.SC_OK) {
-				httpStatus = HttpServletResponse.SC_NO_CONTENT;
+				httpStatus = HttpServletResponse.SC_NOT_FOUND;
 			}
 		} else {
 			pw.write(jsonOutput);
@@ -1140,13 +1176,13 @@ public class OARestServlet extends HttpServlet {
 			throw new RuntimeException("method " + methodName + " not found in class " + clazz.getSimpleName());
 		}
 
-		Object[] args = OAJsonUtil.convertJsonToMethodArguments(jsonBody, method);
+		Object[] args = OAJsonMapper.convertJsonToMethodArguments(jsonBody, method);
 
 		Object objResult = method.invoke(obj, args);
 		return objResult;
 	}
 
-	protected Object callRemoteMethod(final String className, final String methodName, final String jsonBody)
+	protected Object callRemoteMethod(final String className, final String methodName, final String jsonBody, final byte[] bsBody)
 			throws Exception {
 
 		Object obj = hmRemoteObject.get(className.toUpperCase());
@@ -1157,9 +1193,47 @@ public class OARestServlet extends HttpServlet {
 
 		Method method = OAReflect.getMethod(obj.getClass(), methodName);
 
-		OAJson oajson = new OAJson();
-		OAJsonArrayNode nodeArray = oajson.loadArray(jsonBody);
-		Object[] objs = OAJsonUtil.convertJsonToMethodArguments(nodeArray, method);
+		int[] iSkip = null;
+		//qqqqqqqqqqqqqqqqqqqq
+		/* todo:  find out which method params to skip qqqqqqqqqqq
+				Parameter[] ps = method.getParameters();
+				if (ps != null) {
+					for (Parameter p : ps) {
+						if (s.equals(p.getType()))
+					}
+				}
+				*/
+
+		OAJson oajson;
+		OAJsonArrayNode nodeArray;
+		if (OAString.isNotEmpty(jsonBody)) {
+			oajson = new OAJson();
+			nodeArray = oajson.loadArray(jsonBody);
+		} else {
+			oajson = null;
+			nodeArray = null;
+		}
+
+		Object[] objs;
+		if (bsBody != null) {
+			Parameter[] mps = method.getParameters();
+			if (mps == null) {
+				return null;
+			}
+			objs = new Object[mps.length];
+			int i = -1;
+			for (Parameter param : mps) {
+				i++;
+				Class paramClass = param.getType();
+				if (!paramClass.isArray() || !paramClass.getComponentType().equals(byte.class)) {
+					continue;
+				}
+				objs[i] = bsBody;
+				break;
+			}
+		} else {
+			objs = OAJsonMapper.convertJsonToMethodArguments(nodeArray, method, iSkip);
+		}
 
 		Object result = method.invoke(obj, objs);
 
@@ -1167,6 +1241,7 @@ public class OARestServlet extends HttpServlet {
 	}
 
 	public void registerRemoteObject(Object obj) throws Exception {
+		//qqqqqqqqqq need to load meta data ... *Info classes ... to get which method params are used qqqqqqqqqqqqq
 		if (obj == null) {
 			throw new NullPointerException("remote is required");
 		}

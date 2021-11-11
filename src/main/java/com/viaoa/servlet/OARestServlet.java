@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.bind.JAXBContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.viaoa.annotation.OAClassFilter;
 import com.viaoa.context.OAContext;
 import com.viaoa.context.OAUserAccess;
@@ -30,10 +32,7 @@ import com.viaoa.filter.OAAndFilter;
 import com.viaoa.filter.OAUserAccessFilter;
 import com.viaoa.hub.CustomHubFilter;
 import com.viaoa.hub.Hub;
-import com.viaoa.jaxb.OAJaxb;
 import com.viaoa.json.OAJson;
-import com.viaoa.json.OAJsonMapper;
-import com.viaoa.json.node.OAJsonArrayNode;
 import com.viaoa.object.OAFinder;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectCallbackDelegate;
@@ -211,21 +210,21 @@ public class OARestServlet extends HttpServlet {
 		}
 
 		/*qqqqqqqqqqqqqqqqq finish CORS, let it be configured  ... create model object "RESTServlet"
-		
+
 		https://dev.to/effingkay/cors-preflighted-requests--options-method-3024
 		header('Access-Control-Allow-Origin: *');
 		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 		header('Access-Control-Allow-Methods: GET, POST, PUT');
-		
-		
+
+
 		https://developer.mozilla.org/en-US/docs/Glossary/preflight_request
 		ex: request
 		OPTIONS /resource/foo
 		Access-Control-Request-Method: DELETE
 		Access-Control-Request-Headers: origin, x-requested-with
 		Origin: https://foo.bar.org
-		
-		
+
+
 		HTTP/1.1 204 No Content
 		Connection: keep-alive
 		Access-Control-Allow-Origin: https://foo.bar.org
@@ -281,7 +280,7 @@ public class OARestServlet extends HttpServlet {
 		userAccess = new OAUserAccess(false, true);
 		userAccess.setValidPackage(Campaign.class.getPackage());  // only for PI project
 		OAContext.setContextUserAccess(this, userAccess);
-		
+
 		Class[] classes = new Class[] {
 		    AppUser.class,
 		    AppUserLogin.class,
@@ -293,20 +292,20 @@ public class OARestServlet extends HttpServlet {
 		    userAccess.addNotVisible(c);
 		    userAccess.addNotEnabled(c);
 		}
-		
+
 		//qqqqqqqqqq this needs to use users Company ... and store in concurrentHM by company
 		Company company = ModelDelegate.getCompanies().find(CompanyPP.name(), "*dent*");
-		
+
 		OAUserAccess userAccess2 = new OAUserAccess();
 		userAccess.addUserAccess(userAccess2);
-		
+
 		// userAccess2.addVisible(company, CompanyPP.clients().products().campaigns().campaignLinks().platformCampaign().platformVendor().pp);
 		userAccess2.addEnabled(company, CompanyPP.clients().products().campaigns().pp, null, true);
 		userAccess2.addEnabled(company, CompanyPP.clients().products().campaigns().campaignLinks().pp, null, true);
 		userAccess2.addEnabled(company, CompanyPP.clients().products().campaigns().campaignLinks().platformCampaign().pp, null, true);
-		
+
 		//qqqqqqqqq :  check for servlet session, add HTTP basic auth
-		
+
 		*/
 		return userAccess;
 	}
@@ -425,7 +424,7 @@ public class OARestServlet extends HttpServlet {
 		    }
 		};
 		addMapping(mapx);
-		
+
 		mapx = new Mapping();
 		mapx.description = "array of assigned campaigns";
 		mapx.methodType = "get";
@@ -448,7 +447,7 @@ public class OARestServlet extends HttpServlet {
 		    }
 		};
 		addMapping(mapx);
-		
+
 		mapx = new Mapping();
 		mapx.description = "campaign and detail";
 		mapx.methodType = "get";
@@ -468,7 +467,7 @@ public class OARestServlet extends HttpServlet {
 		    }
 		};
 		addMapping(mapx);
-		
+
 		//
 		mapx = new Mapping();
 		mapx.description = "unassigned platform campaigns";
@@ -634,6 +633,15 @@ public class OARestServlet extends HttpServlet {
 			return httpStatus;
 		}
 
+		OAJson oaj = null;
+		if (!bOARemote) {
+			oaj = new OAJson();
+			oaj.addPropertyPaths(alPropertyPath);
+			oaj.setIncludeOwned(bUseOwned);
+			LOG.fine("clazz=" + clazz.getName());
+		}
+
+		/*was
 		OAJaxb jaxb = null;
 		if (!bOARemote) {
 			LOG.fine("clazz=" + clazz.getName());
@@ -647,6 +655,7 @@ public class OARestServlet extends HttpServlet {
 				jaxb.addPropertyPath(s);
 			}
 		}
+		*/
 
 		String jsonInput = null;
 		byte[] bsInput = null;
@@ -680,12 +689,26 @@ public class OARestServlet extends HttpServlet {
 
 			Object objResult = callRemoteMethod(remoteClassName, remoteMethodName, jsonInput, bsInput);
 
+			/*was
 			jaxb = null;
 			if (objResult instanceof OAObject) {
 				jaxb = new OAJaxb<>(objResult.getClass());
 			} else if (objResult instanceof Hub) {
 				jaxb = new OAJaxb<>(((Hub) objResult).getObjectClass());
 			}
+			*/
+
+			if (oaj != null) {
+				if (objResult instanceof OAObject) {
+					jsonOutput = oaj.write((OAObject) objResult);
+				} else if (objResult instanceof Hub) {
+					jsonOutput = oaj.write(objResult);
+				} else {
+					jsonOutput = oaj.write((Hub) objResult);
+				}
+			}
+
+			/*was:
 			if (jaxb != null) {
 				jaxb.setIncludeNewChangedDeletedFlags(true);
 				jaxb.setUseReferences(bUseRefId);
@@ -694,7 +717,7 @@ public class OARestServlet extends HttpServlet {
 				for (String s : alPropertyPath) {
 					jaxb.addPropertyPath(s);
 				}
-
+			
 				if (objResult instanceof OAObject) {
 					jsonOutput = jaxb.convertToJSON((OAObject) objResult);
 				} else {
@@ -703,33 +726,43 @@ public class OARestServlet extends HttpServlet {
 			} else {
 				jsonOutput = OAJsonMapper.convertObjectToJson(objResult);
 			}
+			*/
 		} else if ("put".equalsIgnoreCase(methodType) && !bIsMany) {
 			// ========== PUT ===========
-			jaxb.setLoadingMode(OAJaxb.LoadingMode.UpdateRootOnly);
 
+			/*was: qqqq need to do this
+			jaxb.setLoadingMode(OAJaxb.LoadingMode.UpdateRootOnly);
+			
 			OAObject obj = (OAObject) jaxb.convertFromJSON(jsonInput);
+			*/
+
+			OAObject obj = (OAObject) oaj.readObject(jsonInput, clazz, true);
 
 			if (obj != null) {
 				obj.save();
-				jsonOutput = jaxb.convertToJSON((OAObject) obj);
+				jsonOutput = oaj.write((OAObject) obj);
+				// /was: jsonOutput = jaxb.convertToJSON((OAObject) obj);
 			} else {
 				httpStatus = HttpServletResponse.SC_NOT_FOUND;
 			}
 		} else if (objectMethodName != null) {
 			Object objResult = callObjectMethod(clazz, pathInfo, objectMethodName, jsonInput);
-			jsonOutput = OAJsonMapper.convertObjectToJson(objResult);
+			jsonOutput = oaj.write(objResult);
+			//was: jsonOutput = OAJsonMapper.convertObjectToJson(objResult);
 
 		} else if ("post".equalsIgnoreCase(methodType) && !bIsMany) {
 			// ========== POST ===========
-			jaxb.setLoadingMode(OAJaxb.LoadingMode.CreateNewRootOnly);
+			//was: qqqqq ??need to do this: jaxb.setLoadingMode(OAJaxb.LoadingMode.CreateNewRootOnly);
 
-			OAObject obj = (OAObject) jaxb.convertFromJSON(jsonInput);
+			OAObject obj = (OAObject) oaj.readObject(jsonInput, clazz, true);
+			//was: OAObject obj = (OAObject) jaxb.convertFromJSON(jsonInput);
 
 			if (obj != null) {
 				obj.save();
 			}
 
-			jsonOutput = jaxb.convertToJSON((OAObject) obj);
+			jsonOutput = oaj.write((OAObject) obj);
+			//was: jsonOutput = jaxb.convertToJSON((OAObject) obj);
 		} else if ("delete".equalsIgnoreCase(methodType) && !bIsMany) {
 			// ========== DELETE =========== qqqqqqqqqqq todo qqqqqqqqqq
 			// call objectCallback to validate qqqqqqqqq
@@ -774,7 +807,8 @@ public class OARestServlet extends HttpServlet {
 					if (!OAObjectCallbackDelegate.getAllowVisible(null, (OAObject) obj, null)) {
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 					} else {
-						jsonOutput = jaxb.convertToJSON((OAObject) obj);
+						jsonOutput = oaj.write((OAObject) obj);
+						//was: jsonOutput = jaxb.convertToJSON((OAObject) obj);
 					}
 				}
 			} else {
@@ -907,7 +941,8 @@ public class OARestServlet extends HttpServlet {
 
 				}
 				if (b) {
-					jsonOutput = jaxb.convertToJSON(h);
+					jsonOutput = oaj.write(h);
+					//was: jsonOutput = jaxb.convertToJSON(h);
 				}
 			}
 		}
@@ -1047,25 +1082,25 @@ public class OARestServlet extends HttpServlet {
 		//                if (allXMLPackages == null) jaxbContext = JAXBContext.newInstance(objResult.getClass());
 		        jaxbContext = JAXBContext.newInstance(allXMLPackages);
 		    }
-		
+
 		    Marshaller marshaller = jaxbContext.createMarshaller();
-		
+
 		    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		
+
 		    // https://timjansen.github.io/jarfiller/guide/jaxb/xmlfragments.xhtml
 		    // marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-		
+
 		    StringWriter sw = new StringWriter();
 		*/
 		/*
 		    String qname = objResult.getClass().getSimpleName();
 		    qname = convertXMLQName(qname);
-		
+
 		    JAXBElement jele = new JAXBElement(new QName(qname), objResult.getClass(), objResult);
-		
+
 		    marshaller.marshal(jele, sw);
 		    objResult = sw.toString();
-		
+
 		    if (allXMLPackages == null) jaxbContext = null;  // dont reuse
 		*/
 
@@ -1176,7 +1211,7 @@ public class OARestServlet extends HttpServlet {
 			throw new RuntimeException("method " + methodName + " not found in class " + clazz.getSimpleName());
 		}
 
-		Object[] args = OAJsonMapper.convertJsonToMethodArguments(jsonBody, method);
+		Object[] args = OAJson.convertJsonToMethodArguments(jsonBody, method);
 
 		Object objResult = method.invoke(obj, args);
 		return objResult;
@@ -1204,13 +1239,21 @@ public class OARestServlet extends HttpServlet {
 				}
 				*/
 
-		OAJson oajson;
-		OAJsonArrayNode nodeArray;
+		// OAJson oajson;
+		// OAJsonArrayNode nodeArray;
+		OAJson oaj;
+		ArrayNode nodeArray;
+
 		if (OAString.isNotEmpty(jsonBody)) {
+			oaj = new OAJson();
+			ObjectMapper om = oaj.createObjectMapper();
+			nodeArray = om.createArrayNode();
+			/*
 			oajson = new OAJson();
 			nodeArray = oajson.loadArray(jsonBody);
+			*/
 		} else {
-			oajson = null;
+			oaj = null;
 			nodeArray = null;
 		}
 
@@ -1232,7 +1275,7 @@ public class OARestServlet extends HttpServlet {
 				break;
 			}
 		} else {
-			objs = OAJsonMapper.convertJsonToMethodArguments(nodeArray, method, iSkip);
+			objs = OAJson.convertJsonToMethodArguments(nodeArray, method, iSkip);
 		}
 
 		Object result = method.invoke(obj, objs);

@@ -27,7 +27,7 @@ import javax.servlet.http.HttpSession;
 import com.viaoa.annotation.OACalculatedProperty;
 import com.viaoa.datasource.OASelect;
 import com.viaoa.hub.Hub;
-import com.viaoa.json.OAJsonWriter;
+import com.viaoa.json.OAJson;
 import com.viaoa.object.OACalcInfo;
 import com.viaoa.object.OALinkInfo;
 import com.viaoa.object.OAObject;
@@ -239,6 +239,15 @@ public class JsonServlet extends HttpServlet {
 		final boolean bOnlySendId = !bSendAllData && !(newObject instanceof OAObject);
 
 		if (newObject != null) {
+
+			OAJson oaj = new OAJson();
+			if (newObject instanceof Hub) {
+				result = oaj.write((Hub) newObject);
+			} else {
+				result = oaj.write((OAObject) newObject);
+			}
+
+			/*was
 			OAJsonWriter json = new OAJsonWriter() {
 				@Override
 				public boolean shouldIncludeProperty(Object obj, String propertyName, Object value, OAPropertyInfo pi, OALinkInfo li) {
@@ -249,7 +258,7 @@ public class JsonServlet extends HttpServlet {
 					if (!bOnlySendId && (sx == null || sx.length() == 0)) {
 						return true; // send all for root object
 					}
-
+			
 					if (bOnlySendId || li == null) { // only send "Id"
 						return pi != null && pi.getId(); //was: ("id".equalsIgnoreCase(propertyName));
 					}
@@ -261,6 +270,7 @@ public class JsonServlet extends HttpServlet {
 			} else {
 				result = json.write((OAObject) newObject);
 			}
+			*/
 		}
 
 		if (bDescribe) {

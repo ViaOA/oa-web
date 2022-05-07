@@ -37,6 +37,8 @@ import com.viaoa.object.OAObjectInfoDelegate;
 import com.viaoa.object.OAPropertyInfo;
 import com.viaoa.util.OAString;
 
+// NOTE: this is replaced by OARestServlet, which includes user context for security/access
+
 /*
  * Get JSON data.
  *
@@ -258,7 +260,7 @@ public class JsonServlet extends HttpServlet {
 					if (!bOnlySendId && (sx == null || sx.length() == 0)) {
 						return true; // send all for root object
 					}
-			
+
 					if (bOnlySendId || li == null) { // only send "Id"
 						return pi != null && pi.getId(); //was: ("id".equalsIgnoreCase(propertyName));
 					}

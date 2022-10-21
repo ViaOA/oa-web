@@ -74,7 +74,7 @@ import com.viaoa.util.OAString;
  * 3) query objects using where clause<br>
  * http://localhost/oarest/{pluralClassName}?query={whereClause}&pp1={x}&ppN={x}<br>
  * http://localhost/oarest/clients?query=company.name like 'AAA*'&pp=products<br>
- * http://localhost/oarest/clients?query=company.name like 'AAA*'&orderBy=id&pp=products<br>
+ * http://localhost/oarest/clients?query=company.name like 'AAA*'&orderBy=id&max=5&pp=products<br>
  * http://localhost/oarest/clients?query=company.id>?'&queryParam=1&orderBy=id&pp=products<br>
  * <p>
  * 4) filter support<br>
@@ -210,21 +210,21 @@ public class OARestServlet extends HttpServlet {
 		}
 
 		/*qqqqqqqqqqqqqqqqq finish CORS, let it be configured  ... create model object "RESTServlet"
-
+		
 		https://dev.to/effingkay/cors-preflighted-requests--options-method-3024
 		header('Access-Control-Allow-Origin: *');
 		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
 		header('Access-Control-Allow-Methods: GET, POST, PUT');
-
-
+		
+		
 		https://developer.mozilla.org/en-US/docs/Glossary/preflight_request
 		ex: request
 		OPTIONS /resource/foo
 		Access-Control-Request-Method: DELETE
 		Access-Control-Request-Headers: origin, x-requested-with
 		Origin: https://foo.bar.org
-
-
+		
+		
 		HTTP/1.1 204 No Content
 		Connection: keep-alive
 		Access-Control-Allow-Origin: https://foo.bar.org
@@ -280,7 +280,7 @@ public class OARestServlet extends HttpServlet {
 		userAccess = new OAUserAccess(false, true);
 		userAccess.setValidPackage(Campaign.class.getPackage());  // only for PI project
 		OAContext.setContextUserAccess(this, userAccess);
-
+		
 		Class[] classes = new Class[] {
 		    AppUser.class,
 		    AppUserLogin.class,
@@ -292,20 +292,20 @@ public class OARestServlet extends HttpServlet {
 		    userAccess.addNotVisible(c);
 		    userAccess.addNotEnabled(c);
 		}
-
+		
 		//qqqqqqqqqq this needs to use users Company ... and store in concurrentHM by company
 		Company company = ModelDelegate.getCompanies().find(CompanyPP.name(), "*dent*");
-
+		
 		OAUserAccess userAccess2 = new OAUserAccess();
 		userAccess.addUserAccess(userAccess2);
-
+		
 		// userAccess2.addVisible(company, CompanyPP.clients().products().campaigns().campaignLinks().platformCampaign().platformVendor().pp);
 		userAccess2.addEnabled(company, CompanyPP.clients().products().campaigns().pp, null, true);
 		userAccess2.addEnabled(company, CompanyPP.clients().products().campaigns().campaignLinks().pp, null, true);
 		userAccess2.addEnabled(company, CompanyPP.clients().products().campaigns().campaignLinks().platformCampaign().pp, null, true);
-
+		
 		//qqqqqqqqq :  check for servlet session, add HTTP basic auth
-
+		
 		*/
 		return userAccess;
 	}
@@ -350,6 +350,7 @@ public class OARestServlet extends HttpServlet {
 		if (resp == null) {
 			return;
 		}
+
 		OutputStream out;
 		try {
 			out = resp.getOutputStream();
@@ -424,7 +425,7 @@ public class OARestServlet extends HttpServlet {
 		    }
 		};
 		addMapping(mapx);
-
+		
 		mapx = new Mapping();
 		mapx.description = "array of assigned campaigns";
 		mapx.methodType = "get";
@@ -447,7 +448,7 @@ public class OARestServlet extends HttpServlet {
 		    }
 		};
 		addMapping(mapx);
-
+		
 		mapx = new Mapping();
 		mapx.description = "campaign and detail";
 		mapx.methodType = "get";
@@ -467,7 +468,7 @@ public class OARestServlet extends HttpServlet {
 		    }
 		};
 		addMapping(mapx);
-
+		
 		//
 		mapx = new Mapping();
 		mapx.description = "unassigned platform campaigns";
@@ -574,6 +575,7 @@ public class OARestServlet extends HttpServlet {
 		String description = originalRequest;
 		String query = hmParam.get("query");
 		String orderBy = hmParam.get("orderBy");
+		String max = hmParam.get("max");
 
 		final String[] queryParams = req.getParameterValues("queryParam");
 
@@ -650,7 +652,7 @@ public class OARestServlet extends HttpServlet {
 			jaxb.setIncludeGuids(false);
 			jaxb.setIncludeOwned(bUseOwned);
 			jaxb.setIncludeNewChangedDeletedFlags(true);
-
+		
 			for (String s : alPropertyPath) {
 				jaxb.addPropertyPath(s);
 			}
@@ -717,7 +719,7 @@ public class OARestServlet extends HttpServlet {
 				for (String s : alPropertyPath) {
 					jaxb.addPropertyPath(s);
 				}
-			
+
 				if (objResult instanceof OAObject) {
 					jsonOutput = jaxb.convertToJSON((OAObject) objResult);
 				} else {
@@ -732,7 +734,7 @@ public class OARestServlet extends HttpServlet {
 
 			/*was: qqqq need to do this
 			jaxb.setLoadingMode(OAJaxb.LoadingMode.UpdateRootOnly);
-			
+
 			OAObject obj = (OAObject) jaxb.convertFromJSON(jsonInput);
 			*/
 
@@ -899,10 +901,16 @@ public class OARestServlet extends HttpServlet {
 					select.setParams(queryParams);
 					select.setFilter(filterQuery);
 					select.setOrder(orderBy);
+					if (OAString.isNotEmpty(max)) {
+						select.setMax(OAConv.toInt(max));
+					}
 					h.select(select);
 				} else if (OAString.isEmpty(fromClass)) {
 					select = new OASelect(clazz);
 					select.setFilter(filterQuery);
+					if (OAString.isNotEmpty(max)) {
+						select.setMax(OAConv.toInt(max));
+					}
 					h.select(select);
 				} else {
 					clazz = hmClassName.get(fromClass.toLowerCase());
@@ -1082,25 +1090,25 @@ public class OARestServlet extends HttpServlet {
 		//                if (allXMLPackages == null) jaxbContext = JAXBContext.newInstance(objResult.getClass());
 		        jaxbContext = JAXBContext.newInstance(allXMLPackages);
 		    }
-
+		
 		    Marshaller marshaller = jaxbContext.createMarshaller();
-
+		
 		    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
+		
 		    // https://timjansen.github.io/jarfiller/guide/jaxb/xmlfragments.xhtml
 		    // marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-
+		
 		    StringWriter sw = new StringWriter();
 		*/
 		/*
 		    String qname = objResult.getClass().getSimpleName();
 		    qname = convertXMLQName(qname);
-
+		
 		    JAXBElement jele = new JAXBElement(new QName(qname), objResult.getClass(), objResult);
-
+		
 		    marshaller.marshal(jele, sw);
 		    objResult = sw.toString();
-
+		
 		    if (allXMLPackages == null) jaxbContext = null;  // dont reuse
 		*/
 

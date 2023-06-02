@@ -22,8 +22,15 @@ import com.viaoa.object.OAObject;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 
+
+/* HTML
+ 
+<ol id="list"></ol>
+
+ */
+
 /*
- * Used with an HTML <UL/OL> or <OL/OL> to replace the <LI> with hub objects.
+ * Used with an HTML <UL/UL> or <OL/OL> to replace the <LI> with hub objects.
  * 
  * @author vvia
  */
@@ -347,6 +354,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
 
         
         sb.append("function oaList"+id+"Click() {\n");
+        
         sb.append("    var v = $(this).attr('oarow');\n");
         
         sb.append("    if (v == null) return;\n");
@@ -379,7 +387,13 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         
         if (isRequired()) {
             sb.append("$('#" + id + "').addClass('oaRequired');\n");
-            sb.append("$('#" + id + "').attr('required', true);\n");
+            sb.append("$('#" + id + "').prop('required', true);\n");
+            sb.append("$('#" + id + "').attr('required', 'required');\n");
+        }
+        else {
+            sb.append("$('#" + id + "').removeClass('oaRequired');\n");
+            sb.append("$('#" + id + "').prop('required', false);\n");
+            sb.append("$('#" + id + "').removeAttr('required');\n");
         }
         sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
 

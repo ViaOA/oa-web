@@ -6,10 +6,8 @@ import com.viaoa.hub.Hub;
 
 import com.viaoa.web.OAButton.ButtonCommand;
 import com.viaoa.web.OAButton.ButtonEnabledMode;
-import com.viaoa.web.swing.ComponentInterface;
-import com.viaoa.web.swing.JMenuItem;
 
-public class OAMenuItem extends JMenuItem {
+public class OAMenuItem {
 
     public static ButtonCommand OTHER = ButtonCommand.Other;
     public static ButtonCommand UP = ButtonCommand.Up;

@@ -24,26 +24,24 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.datasource.OADataSource;
 import com.viaoa.hub.Hub;
-import com.viaoa.object.OALinkInfo;
-import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectKey;
-import com.viaoa.object.OAObjectKeyDelegate;
-import com.viaoa.object.OAPropertyInfo;
+import com.viaoa.object.*;
 import com.viaoa.object.OATypeAhead;
 import com.viaoa.template.OATemplate;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OADate;
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OAReflect;
-import com.viaoa.util.OAString;
-import com.viaoa.util.OATime;
+import com.viaoa.util.*;
+
+
+/* HTML
+
+<input id="txtLoginId" type="text" placeholder="Login Id">
+
+*/
+
 
 /**
- * Controls an html input type=text, bind to OA hub, using property path set size, maxwidth show/hide, that can be bound to property
- * enabled, that can be bound to property ajax submit on change handle required validation input mask support for calendar popup For
- * datetime, date, time formats - use OADateTime formats.
+ * Controls an html input type=text<br> 
+ * Binds to Hub, using property path to set display size, max input, visibility, enabled, 
+ * ajax submit on change, 
+ * required, validation, input mask support, calendar popup datetime, date, time formats
  *
  * @author vvia
  */
@@ -58,7 +56,15 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 	protected boolean bPropertyPathIsOneLink;
 	protected String visiblePropertyPath;
 	protected String enablePropertyPath;
+	
+	/**
+	 * @deprecated replaced with displayInputLength and maxInputLength
+	 */
 	protected int width, minLength, maxLength;
+	
+	protected int displayInputLength, minInputLength, maxInputLength;
+	
+	
 	protected OAForm form;
 	protected boolean bEnabled = true;
 	protected boolean bVisible = true;
@@ -84,6 +90,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 	protected String placeholder;
 	protected String floatLabel;
 
+	
 	/** javascript regex */
 
 	// http://daringfireball.net/2010/07/improved_regex_for_matching_urls
@@ -320,7 +327,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
 		value = convertInputText(value);
 
-		int max = getMaxWidth();
+		int max = getCalcMaxInputLength();
 		if (max > 0 && value != null && value.length() > max) {
 			value = value.substring(0, max);
 		}
@@ -536,7 +543,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
 		// sb.append("$(\"<span class='error'></span>\").insertAfter('#"+id+"');\n");
 
-		final int max = getMaxWidth();
+		final int max = getCalcMaxInputLength();
 
 		if (getClearButton()) {
 			sb.append("$('#" + getId() + "').addClass('oaTextFieldWithClear');\n");
@@ -605,7 +612,13 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
 		if (isRequired()) {
 			sb.append("$('#" + id + "').addClass('oaRequired');\n");
-			sb.append("$('#" + id + "').attr('required', true);\n");
+			sb.append("$('#" + id + "').prop('required', true);\n");
+            sb.append("$('#" + id + "').attr('required', 'required');\n");
+		}
+		else {
+            sb.append("$('#" + id + "').removeClass('oaRequired');\n");
+            sb.append("$('#" + id + "').prop('required', false);\n");
+            sb.append("$('#" + id + "').removeAttr('required');\n");
 		}
 		sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
 
@@ -781,7 +794,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		String js = sb.toString();
 		return js;
 	}
-
+	
 	@Override
 	public String getVerifyScript() {
 		StringBuilder sb = new StringBuilder(1024);
@@ -800,7 +813,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 					+ "').addClass('oaError');}\n");
 		}
 
-		int max = getMaxWidth();
+		int max = getMaxInputLength();
 		if (max > 0) {
 			sb.append("if ($('#" + id + "').val().length > " + max + ") { errors.push('length greater then " + max + " characters for "
 					+ (name != null ? name : id) + "'); $('#" + id + "').addClass('oaError');}\n");
@@ -853,7 +866,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		s = getPlaceholder();
 		if (bIsInitializing && s != null) {
 			s = OAJspUtil.createJsString(s, '\'');
-			sb.append("$('#" + id + "').attr('placeholder', '" + s + "');\n");
+            sb.append("$('#" + id + "').attr('placeholder', '" + s + "');\n");
 		}
 
 		if (bIsInitializing) {
@@ -1076,11 +1089,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 			}
 		}
 
-		if (getMaxLength() > 0) {
-			sb.append("$('#" + id + "').attr('maxlength', '" + getMaxLength() + "');\n");
+		if (getCalcMaxInputLength() > 0) {
+            sb.append("$('#" + id + "').attr('maxlength', '" + getCalcMaxInputLength() + "');\n");
 		}
-		if (width > 0) {
-			sb.append("$('#" + id + "').attr('size', '" + width + "');\n");
+		if (getCalcDisplayInputLength() > 0) {
+			sb.append("$('#" + id + "').attr('size', '" + getCalcDisplayInputLength() + "');\n");
 		}
 
 		String s = getEnabledScript(getEnabled());
@@ -1543,8 +1556,13 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		setDate(bDate);
 	}
 
+	
+	
+	
 	private int dataSourceMax = -2;
-
+	/**
+	 * @deprecated replaced with getMaxIputLength()
+	 */
 	public int getDataSourceMaxWidth() {
 		if (dataSourceMax == -2) {
 			if (hub != null) {
@@ -1568,6 +1586,66 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		return dataSourceMax;
 	}
 
+    public void setDisplayInputLength(int x) {
+        this.displayInputLength = x;
+    }
+    public int getDisplayInputLength() {
+        return displayInputLength;
+    }
+    public int getCalcDisplayInputLength() {
+        int x = getDisplayInputLength();
+        if (x > 0) return x;
+        
+        if (hub == null) return 0;
+        String pp = getPropertyPath();
+        if (OAString.isEmpty(pp)) return 0;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
+        OAPropertyInfo pi = oi.getPropertyInfo(pp);
+        return pi.getDisplayLength();
+    }
+    
+    public void setMinInputLength(int x) {
+        this.minInputLength = x;
+    }
+    public int getMinInputLength() {
+        return minInputLength;
+    }
+    public int getCalcMinInputLength() {
+        int x = getMinInputLength();
+        if (x > 0) return x;
+        
+        if (hub == null) return 0;
+        String pp = getPropertyPath();
+        if (OAString.isEmpty(pp)) return 0;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
+        OAPropertyInfo pi = oi.getPropertyInfo(pp);
+        return pi.getMinLength();
+    }
+	
+    public void setMaxInputLength(int x) {
+        this.maxInputLength = x;
+    }
+    public int getMaxInputLength() {
+        return maxInputLength;
+    }
+    public int getCalcMaxInputLength() {
+        int x = getMaxInputLength();
+        if (x > 0) return x;
+        
+        if (hub == null) return 0;
+        String pp = getPropertyPath();
+        if (OAString.isEmpty(pp)) return 0;
+        
+        OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
+        OAPropertyInfo pi = oi.getPropertyInfo(pp);
+        return pi.getMaxLength();
+    }
+    
+    /**
+     * @deprecated replaced with getCalcMaxInputLength()
+     */
 	public int getMaxWidth() {
 		getDataSourceMaxWidth();
 		if (maxLength <= 0) {
@@ -1583,25 +1661,37 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
 	/**
 	 * max length of text. If -1 (default) then unlimited.
+	 * @deprecated replaced with setMaxInputLength
 	 */
 	public void setMaxWidth(int x) {
 		maxLength = x;
 		maxLength = getMaxWidth(); // verify with Datasource
 	}
-
+	/**
+	 * @deprecated getMaxInputLength
+	 */
 	public int getMaxLength() {
 		return getMaxWidth();
 	}
 
+    /**
+     * @deprecated replaced with setMaxInputLength
+     */
 	public void setMaxLength(int x) {
 		maxLength = x;
 		maxLength = getMaxWidth(); // verify with Datasource
 	}
 
+    /**
+     * @deprecated replaced with getMinInputLength
+     */
 	public int getMinLength() {
 		return minLength;
 	}
 
+    /**
+     * @deprecated replaced with setMinInputLength
+     */
 	public void setMinLength(int x) {
 		minLength = x;
 	}
@@ -1945,9 +2035,11 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 
 	protected String getEnabledScript(boolean b) {
 		if (b) {
-			return ("$('#" + id + "').removeAttr('disabled');\n");
+            return ("$('#" + id + "').prop('disabled', false);\n");
+			//was: return ("$('#" + id + "').removeAttr('disabled');\n");
 		}
-		return ("$('#" + id + "').attr('disabled', 'disabled');\n");
+        return ("$('#" + id + "').prop('disabled', true);\n");
+		//was: return ("$('#" + id + "').attr('disabled', 'disabled');\n");
 	}
 
 	protected String getVisibleScript(boolean b) {

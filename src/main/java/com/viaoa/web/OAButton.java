@@ -33,7 +33,7 @@ import com.viaoa.web.swing.JButton;
  * @author vvia
  *
  */
-public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
+public class OAButton extends OAWebComponent {
     private static final long serialVersionUID = 1L;
 
     public static ButtonCommand OTHER = ButtonCommand.Other;
@@ -92,32 +92,18 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
 //qqqqqqq get command types/logic from OAButton
     
-    protected Hub hub;
-    protected String id;
-    protected OAForm form;
-    protected boolean bEnabled = true;
-    protected boolean bVisible = true;
-    protected boolean bAjaxSubmit;
     protected String forwardUrl;
     protected boolean bSubmit;
     protected boolean bSpinner;
-    protected String toolTip;
-    protected OATemplate templateToolTip;
-    private boolean bHadToolTip;
-    protected String confirmMessage;
-    protected OATemplate templateConfirmMessage;
-    protected String enablePropertyPath;
-    protected String visiblePropertyPath;
 
     
     public OAButton(String id, Hub hub) {
-        this.id = id;
-        this.hub = hub;
+        super(id, hub);
         setSubmit(true);
     }
 
     public OAButton(String id) {
-        this.id = id;
+        super(id);
         setSubmit(true);
     }
     
@@ -128,45 +114,6 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return this.forwardUrl;
     }
     
-    @Override
-    public boolean isChanged() {
-        return false;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    public void setAjaxSubmit(boolean b) {
-        bAjaxSubmit = b;
-        if (b) setSubmit(false);
-    }
-    public boolean getAjaxSubmit() {
-        return bAjaxSubmit;
-    }
-
-    /** if the html is not a submit, then use this to have form submitted. */
-    public void setSubmit(boolean b) {
-        bSubmit = b;
-        if (b) setAjaxSubmit(false);
-    }
-    public boolean getSubmit() {
-        return bSubmit;
-    }
-    
-    @Override
-    public void reset() {
-    }
-
-    @Override
-    public void setForm(OAForm form) {
-        this.form = form;
-    }
-    public OAForm getForm() {
-        return form;
-    }
-
     @Override
     public boolean _beforeFormSubmitted() {
         return true;
@@ -194,36 +141,11 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return bWasSubmitted; // true if this caused the form submit
     }
 
-    @Override
-    public String _afterFormSubmitted(String forwardUrl) {
-        return afterFormSubmitted(forwardUrl);
-    }
-    @Override
-    public String afterFormSubmitted(String forwardUrl) {
-        return forwardUrl;
-    }
-
-    
-    @Override
-    public void _beforeOnSubmit() {
-    }
-    
-    @Override
-    public String _onSubmit(String forwardUrl) {
-        return onSubmit(forwardUrl);
-    }
-    
-    @Override
-    public String onSubmit(String forwardUrl) {
-        return forwardUrl;
-    }
-    
     private String lastAjaxSent;
     
     @Override
     public String getScript() {
         lastAjaxSent = null;
-        bHadToolTip = false;
         StringBuilder sb = new StringBuilder(1024);
         sb.append("$('#"+id+"').attr('name', '"+id+"');\n");
         
@@ -240,7 +162,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = OAJspUtil.createJsString(confirm, '\"');
+            confirm = OAWebUtil.createJsString(confirm, '\"');
             confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
         }
         else confirm = "";
@@ -288,98 +210,16 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         if (getVisible()) sb.append("$('#"+id+"').show();\n");
         else sb.append("$('#"+id+"').hide();\n");
         
-        // tooltip
-        String prefix = null;
-        String tt = getProcessedToolTip();
-        if (OAString.isNotEmpty(tt)) {
-            if (!bHadToolTip) {
-                bHadToolTip = true;
-                prefix = "$('#"+id+"').tooltip();\n";
-            }
-
-            tt = OAJspUtil.createJsString(tt, '\'');
-            sb.append("$('#"+id+"').data('bs.tooltip').options.title = '"+tt+"';\n");
-            sb.append("$('#"+id+"').data('bs.tooltip').options.placement = 'top';\n");
-        }
-        else {
-            if (bHadToolTip) {
-                sb.append("$('#"+id+"').tooltip('destroy');\n");
-                bHadToolTip = false;
-            }
-        }
+        String s = super.getAjaxScript();
+        if (OAString.isNotEmpty(s)) sb.append(s);
         
         String js = sb.toString();
         if (lastAjaxSent != null && lastAjaxSent.equals(js)) js = null;
         else lastAjaxSent = js;
         
-        if (prefix != null) {
-            js = prefix + OAString.notNull(js);
-        }
         return js;
     }
 
-
-    @Override
-    public void setEnabled(boolean b) {
-        this.bEnabled = b;
-    }
-    @Override
-    public boolean getEnabled() {
-        if (!bEnabled) return false;
-        if (hub == null) return true;
-
-        if (!hub.isValid()) return false;
-        
-        if (OAString.isEmpty(enablePropertyPath)) return true;
-
-        OAObject obj = (OAObject) hub.getAO();
-        if (obj == null) return false;
-        
-        Object value = obj.getProperty(enablePropertyPath);
-        boolean b;
-        if (value instanceof Hub) {
-            b = ((Hub) value).size() > 0;
-        }
-        else b = OAConv.toBoolean(value);
-        return b;
-    }
-    public String getEnablePropertyPath() {
-        return enablePropertyPath;
-    }
-    public void setEnablePropertyPath(String enablePropertyPath) {
-        this.enablePropertyPath = enablePropertyPath;
-    }
-
-    
-    @Override
-    public void setVisible(boolean b) {
-        this.bVisible = b;
-    }
-    @Override
-    public boolean getVisible() {
-        if (!bVisible) return false;
-        if (hub == null) return true;
-
-        if (OAString.isEmpty(visiblePropertyPath)) return true;
-        
-        OAObject obj = (OAObject) hub.getAO();
-        if (obj == null) return false;
-        
-        Object value = obj.getProperty(visiblePropertyPath);
-        boolean b;
-        if (value instanceof Hub) {
-            b = ((Hub) value).size() > 0;
-        }
-        else b = OAConv.toBoolean(value);
-        return b;
-    }
-    public String getVisiblePropertyPath() {
-        return visiblePropertyPath;
-    }
-    public void setVisiblePropertyPath(String visiblePropertyPath) {
-        this.visiblePropertyPath = visiblePropertyPath;
-    }
-    
     
     /**
      * see: https://github.com/msurguy/ladda-bootstrap
@@ -426,27 +266,6 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return hub;
     }
     
-    public void setToolTip(String tooltip) {
-        this.toolTip = tooltip;
-        templateToolTip = null;
-    }
-    public String getToolTip() {
-        return this.toolTip;
-    }
-    public String getProcessedToolTip() {
-        if (OAString.isEmpty(toolTip)) return toolTip;
-        if (templateToolTip == null) {
-            templateToolTip = new OATemplate();
-            templateToolTip.setTemplate(getToolTip());
-        }
-        OAObject obj = null;
-        if (hub != null) {
-            Object objx = hub.getAO();
-            if (objx instanceof OAObject) obj = (OAObject) objx;
-        }
-        String s = templateToolTip.process(obj, hub, null);
-        return s;
-    }
     
     @Override
     public String getRenderHtml(OAObject obj) {
@@ -479,7 +298,7 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         String js = "";
         String s = getProcessedConfirmMessage(obj);
         if (OAString.isNotEmpty(s)) {
-            s = OAJspUtil.createEmbeddedJsString(s, '\"');
+            s = OAWebUtil.createEmbeddedJsString(s, '\"');
             js += "if (!window.confirm(\""+s+"\")) return false;";  
         }
         js += "$(\"#oacommand\").val(\""+id+"\");"; 
@@ -494,12 +313,6 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return getRenderHtml(obj);
     }
 
-    public void setConfirmMessage(String msg) {
-        this.confirmMessage = msg;
-    }
-    public String getConfirmMessage() {
-        return confirmMessage;
-    }
     public String getProcessedConfirmMessage(OAObject obj) {
         if (OAString.isEmpty(confirmMessage)) return confirmMessage;
         if (templateConfirmMessage == null) {
@@ -510,8 +323,4 @@ public class OAButton implements OAJspComponent, OAJspRequirementsInterface {
         return s;
     }
 
-    public static void setup(JButton cmd) {
-        // TODO Auto-generated method stub
-        
-    }
 }

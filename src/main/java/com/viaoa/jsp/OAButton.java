@@ -23,6 +23,11 @@ import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 
+/* HTML
+
+
+
+ */
 
 /**
  * Used to control an html button
@@ -302,7 +307,9 @@ public class OAButton<T extends OAObject> implements OAJspComponent, OAJspRequir
 
         if (getSpinner()) {
             sb.append("$('#"+id+"').addClass('ladda-button');\n");
+
             sb.append("$('#"+id+"').attr('data-style', 'slide-right');\n");
+            
             sb.append("$('#"+id+"').html(\"<span class='ladda-label'>\"+$('#"+id+"').html()+\"</span>\");\n");
             //see:  file:///C:/Projects/metronic_v4.7.5_copy/theme/admin_1/ui_buttons_spinner.html
         }
@@ -352,8 +359,16 @@ public class OAButton<T extends OAObject> implements OAJspComponent, OAJspRequir
             sb.append("Ladda.create($('#"+id+"')[0]).stop();\n");
         }
         
-        if (getEnabled()) sb.append("$('#"+id+"').removeAttr('disabled');\n");
-        else sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
+        if (getEnabled()) {
+            sb.append("$('#"+id+"').prop('disabled', false);\n");
+            //was: sb.append("$('#"+id+"').removeAttr('disabled');\n");
+        }
+        else {
+            sb.append("$('#"+id+"').prop('disabled', true);\n");
+            //was: sb.append("$('#"+id+"').attr('disabled', 'disabled');\n");
+        }
+        
+        
         if (getVisible()) sb.append("$('#"+id+"').show();\n");
         else sb.append("$('#"+id+"').hide();\n");
         

@@ -10,6 +10,7 @@
 */
 package com.viaoa.web;
 
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.border.LineBorder;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
@@ -32,7 +34,7 @@ import com.viaoa.web.swing.JTable;
  * @author vvia
  *
  */
-public class OATable implements OAJspComponent, ComponentInterface {
+public class OATable extends OAWebComponent {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -161,8 +163,8 @@ public class OATable implements OAJspComponent, ComponentInterface {
     public boolean _beforeFormSubmitted() {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
-            if (te instanceof OAJspComponent) {
-                ((OAJspComponent)te)._beforeFormSubmitted();
+            if (te instanceof OAWebComponent) {
+                ((OAWebComponent)te)._beforeFormSubmitted();
             }
         }
         return true;
@@ -175,8 +177,8 @@ public class OATable implements OAJspComponent, ComponentInterface {
     public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
-            if (te instanceof OAJspComponent) {
-                ((OAJspComponent)te)._onFormSubmitted(req, resp, hmNameValue);
+            if (te instanceof OAWebComponent) {
+                ((OAWebComponent)te)._onFormSubmitted(req, resp, hmNameValue);
             }
         }
         boolean bWasSubmitted = _myOnSubmit(req, resp, hmNameValue);
@@ -283,8 +285,8 @@ public class OATable implements OAJspComponent, ComponentInterface {
     public String _afterFormSubmitted(String forwardUrl) {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
-            if (te instanceof OAJspComponent) {
-                String s = ((OAJspComponent)te)._afterFormSubmitted(forwardUrl);
+            if (te instanceof OAWebComponent) {
+                String s = ((OAWebComponent)te)._afterFormSubmitted(forwardUrl);
                 if (!OAString.isEmpty(s)) forwardUrl = s;
             }
         }
@@ -295,8 +297,8 @@ public class OATable implements OAJspComponent, ComponentInterface {
     public String afterFormSubmitted(String forwardUrl) {
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
-            if (te instanceof OAJspComponent) {
-                String s = ((OAJspComponent)te).afterFormSubmitted(forwardUrl);
+            if (te instanceof OAWebComponent) {
+                String s = ((OAWebComponent)te).afterFormSubmitted(forwardUrl);
                 if (!OAString.isEmpty(s)) forwardUrl = s;
             }
         }
@@ -336,10 +338,10 @@ public class OATable implements OAJspComponent, ComponentInterface {
         
         for (OATableColumn tc : alColumns) {
             OATableEditor te = tc.getEditor();
-            if (te instanceof OAJspComponent) {
-                OAForm f = ((OAJspComponent)te).getForm();
+            if (te instanceof OAWebComponent) {
+                OAForm f = ((OAWebComponent)te).getForm();
                 if (f != this.form) {
-                    ((OAJspComponent)te).setForm(getForm());
+                    ((OAWebComponent)te).setForm(getForm());
                 }
             }
         }
@@ -619,8 +621,8 @@ public class OATable implements OAJspComponent, ComponentInterface {
                 if (obj == hub.getAO()) {
                     OATableEditor ed = col.getEditor();
                     if (ed != null) {
-                        if (ed instanceof OAJspComponent) {
-                            ((OAJspComponent)ed).reset();
+                        if (ed instanceof OAWebComponent) {
+                            ((OAWebComponent)ed).reset();
                         }
                         s = ed.getTableEditorHtml();
                         bComponent = true;
@@ -684,7 +686,7 @@ public class OATable implements OAJspComponent, ComponentInterface {
 */        
         sb = new StringBuilder(strTable.length() + 2048);
         
-        strTable = OAJspUtil.createJsString(strTable, '\"');
+        strTable = OAWebUtil.createJsString(strTable, '\"');
         
         sb.append("$('#"+id+"').html(\""+strTable+"\");\n");
 
@@ -730,8 +732,8 @@ public class OATable implements OAJspComponent, ComponentInterface {
         if ((max == -1 && pos >= 0) || (pos >= min && pos <= max)) {
             for (OATableColumn tc : alColumns) {
                 OATableEditor te = tc.getEditor();
-                if (te instanceof OAJspComponent) {
-                    String s = ((OAJspComponent)te).getAjaxScript();
+                if (te instanceof OAWebComponent) {
+                    String s = ((OAWebComponent)te).getAjaxScript();
                     sb.append(s);
                 }
             }
@@ -857,7 +859,7 @@ public class OATable implements OAJspComponent, ComponentInterface {
             sbx.append(strTable.substring(i, i+amt) + "\'+\n\'");
         }
         strTable = sbx.toString();
-        strTable = OAJspUtil.createJsString(strTable, '\"');
+        strTable = OAWebUtil.createJsString(strTable, '\"');
         
         String s = ("$('#id').html(\""+strTable+"\");");
         System.out.println("==>"+s);
@@ -954,8 +956,57 @@ public class OATable implements OAJspComponent, ComponentInterface {
     }
 
 
-    public void addColumn(String title, int cols, ComponentInterface comp) {
+    public OATableColumn addColumn(String title, int cols, ComponentInterface comp) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public void removeHierarchyListener(HierarchyListener hierarchyListener) {
         // TODO Auto-generated method stub
         
+    }
+
+
+    @Override
+    public void setBorder(LineBorder lineBorder) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void setToolTipText(String string) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public String getToolTipText() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public boolean isEnabled() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+
+    @Override
+    public boolean isVisible() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+
+    @Override
+    public OAWebComponent getParent() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -29,5 +29,17 @@ public class OATableComboBox {
         // TODO Auto-generated method stub
         
     }
+
+
+    public void allowClearButton(boolean b) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void setColumns(int i) {
+        // TODO Auto-generated method stub
+        
+    }
     
 }

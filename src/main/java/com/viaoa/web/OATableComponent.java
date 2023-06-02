@@ -13,7 +13,7 @@ package com.viaoa.web;
 import java.awt.Component;
 
 import com.viaoa.hub.Hub;
-import com.viaoa.jsp.OATable;
+import com.viaoa.web.OATable;
 
 /** 
     Interface that defines the behavior for  OATableComponents to work with an OATable.

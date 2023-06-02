@@ -9,7 +9,7 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.util.*;
 
-public class OATabbedPane implements OAJspComponent, OAJspRequirementsInterface {
+public class OATabbedPane extends OAWebComponent {
 
     private static final long serialVersionUID = 1L;
 
@@ -255,5 +255,9 @@ public class OATabbedPane implements OAJspComponent, OAJspRequirementsInterface 
 
     @Override
     public void _beforeOnSubmit() {
+    }
+    public OAWebComponent getSelectedComponent() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

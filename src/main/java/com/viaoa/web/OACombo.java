@@ -39,7 +39,7 @@ import com.viaoa.util.OAString;
  *
  * @author vvia
  */
-public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirementsInterface {
+public class OACombo extends OAWebComponent {
 	private static final long serialVersionUID = 1L;
 
 	private Hub hub;

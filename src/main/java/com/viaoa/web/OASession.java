@@ -108,6 +108,8 @@ public class OASession extends OABase {
         addForm(f);
         return f;
     }
+
+    
     /**
      * 
      * @param id ex: "employee"
@@ -120,11 +122,23 @@ public class OASession extends OABase {
         addForm(f);
         return f;
     }
+    
     public void addForm(OAForm form) {
         if (form == null) return;
         String id = form.getId();
         if (id == null) return;
 
+        HttpServletRequest req = getRequest();
+        if (req != null) {
+            if (OAString.isEmpty(form.getUrl())) {
+                String s = req.getServletPath();
+                if (s.length() > 1) {
+                    if (s.charAt(0) == '/') s = s.substring(1);
+                    form.setUrl(s);
+                }
+            }
+        }
+        
         synchronized (alForm) {
             for (int i=0; i<alForm.size(); i++) {
                 OAForm f = alForm.get(i);

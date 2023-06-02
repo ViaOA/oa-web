@@ -31,11 +31,14 @@ import com.viaoa.util.OAProperties;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
 
-// <select id="cbo"></select>
+/* HTML 
+    <select id="cbo"></select>
+*/
 
 /**
  * Controls html select+options bind to hub, property show/hide, that can be bound to property enabled, that can be bound to property ajax
  * submit on change handle required validation recursive, displayed using indentation option to set the null description
+ *
  *
  * @author vvia
  */
@@ -488,9 +491,11 @@ public class OACombo implements OAJspComponent, OATableEditor, OAJspRequirements
 		sb.append("$('#" + id + "').append(\"" + options + "\");\n");
 
 		if (getEnabled()) {
-			sb.append("$('#" + id + "').removeAttr('disabled');\n");
+            sb.append("$('#" + id + "').prop('disabled', false);\n");
+			//was: sb.append("$('#" + id + "').removeAttr('disabled');\n");
 		} else {
-			sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
+            sb.append("$('#" + id + "').prop('disabled', true);\n");
+			//was: sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
 		}
 		if (getVisible()) {
 			sb.append("$('#" + id + "').show();\n");

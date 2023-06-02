@@ -76,8 +76,8 @@ public class OAForm extends OABase implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    protected final ArrayList<OAJspComponent> alComponent = new ArrayList<OAJspComponent>();
-    protected final ArrayList<OAJspComponent> alNewAddComponent = new ArrayList<OAJspComponent>();
+    protected final List<OAWebComponent> alComponent = new ArrayList<>();
+    protected final List<OAWebComponent> alNewAddComponent = new ArrayList<>();
 
     protected OASession session;
     protected String id;
@@ -139,6 +139,9 @@ public class OAForm extends OABase implements Serializable {
 
     public OAForm() {
     }
+    public OAForm(String id) {
+        setId(id);
+    }
     public OAForm(String id, String url) {
         setId(id);
         setUrl(url);
@@ -174,9 +177,7 @@ public class OAForm extends OABase implements Serializable {
 
     /** resets the form, takes off any edits not saved */
     public void reset() {
-        for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+        for (OAWebComponent comp : alComponent) {
             comp.reset();
         }
     }
@@ -234,6 +235,39 @@ public class OAForm extends OABase implements Serializable {
         }
     }
   
+    protected void p(StringBuilder sb, String line, int indent) {
+        p(sb, line, indent, false);
+    }
+    protected void p(StringBuilder sb, String line, int indent, boolean bEmbeddedHtml) {
+        p(sb, line, indent, bEmbeddedHtml, false);
+    }
+    
+    protected void p(StringBuilder sb, String line, int indent, boolean bEmbeddedHtml, boolean bLastLineEmbeddedHtml) {
+        if (sb == null) return;
+        for (int i=0; i<indent; i++) {
+            sb.append("  ");
+        }
+
+        if (bEmbeddedHtml) {
+            sb.append('\"');
+        }
+        
+        int i = 0;
+        int x = line.length();
+        for ( ; i<x && line.charAt(i) == ' ';  i++);
+        if (i > 0) sb.append(line.substring(i));
+        else sb.append(line);
+        
+        if (bEmbeddedHtml) {
+            
+        }
+        if (bEmbeddedHtml) {
+            if (bLastLineEmbeddedHtml) sb.append("\"");
+            else sb.append("\" +");;
+        }
+        sb.append('\n');
+    }
+    
     
     /** javascript to include during the first initialization, (then cleared) */
     public void addScript(String js) {
@@ -243,7 +277,7 @@ public class OAForm extends OABase implements Serializable {
     public void addScript(String js, boolean bOnce) {
         if (OAString.isEmpty(js)) return;
 
-        // nees to end in ';'
+        // needs to end in ';'
         if (!js.endsWith(";")) {
             int x = js.length() - 1;
             for ( ; ; x--) {
@@ -273,23 +307,23 @@ public class OAForm extends OABase implements Serializable {
     public boolean isChanged() {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             if (comp.isChanged()) return true;
         }
         return false;
     }
 
     /** finds out the name of components that have changed */
-    public OAJspComponent[] getChangedComponents() {
-        ArrayList<OAJspComponent> al = new ArrayList<OAJspComponent>();
+    public OAWebComponent[] getChangedComponents() {
+        ArrayList<OAWebComponent> al = new ArrayList<OAWebComponent>();
 
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             if (comp.isChanged()) al.add(comp);
         }
 
-        OAJspComponent[] ss = new OAJspComponent[al.size()];
+        OAWebComponent[] ss = new OAWebComponent[al.size()];
         al.toArray(ss);
         return ss;
     }
@@ -298,7 +332,7 @@ public class OAForm extends OABase implements Serializable {
     protected boolean beforeSubmit() {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             if (!comp._beforeFormSubmitted()) return false;
         }
         return true;
@@ -308,11 +342,11 @@ public class OAForm extends OABase implements Serializable {
      * @param req
      * @param resp
      */
-    protected OAJspComponent onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
-        OAJspComponent compSubmit = null;
+    protected OAWebComponent onSubmit(HttpServletRequest req, HttpServletResponse resp, HashMap<String,String[]> hmNameValue) {
+        OAWebComponent compSubmit = null;
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             if (comp._onFormSubmitted(req, resp, hmNameValue)) compSubmit = comp;
         }
         return compSubmit;
@@ -320,7 +354,7 @@ public class OAForm extends OABase implements Serializable {
     protected String afterSubmit(String forwardUrl) {
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             forwardUrl = comp._afterFormSubmitted(forwardUrl);
         }
         return forwardUrl;
@@ -329,7 +363,7 @@ public class OAForm extends OABase implements Serializable {
     /** called after beforeSubmit/onSubmit/afterSubmit
         This is used inside JSP to process a submit;
      */
-    protected String onJspSubmit(OAJspComponent submitComponent, String forwardUrl) {
+    protected String onJspSubmit(OAWebComponent submitComponent, String forwardUrl) {
         return forwardUrl;
     }
 
@@ -350,237 +384,220 @@ public class OAForm extends OABase implements Serializable {
     
     
     // javascript code to initialize client/browser
-    /**
-     * @deprecated use {@link #getScript()} instead, to include support for ajax callback
-     * @return
-     */
-    public String getInitScript() {
+    protected String getInitScript() {
         getSession().put("oaformLast", this);  // used by oadebug.jsp, oaenable.jsp to know the last page that was viewed
 
         alNewAddComponent.clear();
         
         if (!getEnabled()) return "";
-        StringBuilder sb = new StringBuilder(2048);
+        final StringBuilder sb = new StringBuilder(2048);
 
-        sb.append("<script>\n");
-
-       
-        // outside JS methods
-
-        
-        sb.append("var oaShowMessage;");
-        sb.append("if ($().modal) {");
+        int indent = 0;
+        p(sb, "", indent);
+        p(sb, "<script>", indent++);
+        p(sb, "var oaShowMessage;", indent);
+        p(sb, "if ($().modal) {", indent);
         // bootstrap
-        sb.append("oaShowMessage = function(title, msg) {\n");
-        sb.append("  $('#oaformDialog .modal-title').html(title);\n");
-        sb.append("  $('#oaformDialog .modal-body').html(msg);\n");
-        sb.append("  $('#oaformDialog').modal({keyboard: true});\n");
-        sb.append("}\n");
+        p(sb, "oaShowMessage = function(title, msg) {", ++indent);
+        p(sb, "  $('#oaformDialog .modal-title').html(title);", ++indent);
+        p(sb, "  $('#oaformDialog .modal-body').html(msg);", indent);
+        p(sb, "  $('#oaformDialog').modal({keyboard: true});", indent);
+        p(sb, "}", --indent);
 
-        sb.append("}");
-        sb.append("else {");
+        p(sb, "}", --indent);
+        p(sb, "else {", indent);
         // jquery version
-        sb.append("oaShowMessage = function(title, msg) {\n");
-        sb.append("    $('#oaformDialog').dialog('option', 'title', title);\n");
-        sb.append("    $('#oaformDialog').html(msg);\n");
-        sb.append("    $('#oaformDialog').dialog('open');\n");
-        sb.append("}\n");
-        sb.append("}");
+        p(sb, "oaShowMessage = function(title, msg) {", ++indent);
+        p(sb, "    $('#oaformDialog').dialog('option', 'title', title);", ++indent);
+        p(sb, "    $('#oaformDialog').html(msg);", indent);
+        p(sb, "    $('#oaformDialog').dialog('open');", indent);
+        p(sb, "}", --indent);
+        p(sb, "}", --indent);
         
         
         // bootstrap
-        sb.append("function oaShowSnackbarMessage(msg) {\n");
-        sb.append("    $('#oaFormSnackbarMessage').html(msg);\n");
-        sb.append("    $('#oaFormSnackbarMessage').css({visibility:'visible', opacity: 0.0}).animate({opacity: 1.0},300);\n");
-        sb.append("    setTimeout(function() {\n");
-        sb.append("      $('#oaFormSnackbarMessage').animate({opacity: 0.0}, 2000,\n"); 
-        sb.append("        function(){\n");
-        sb.append("          $('#oaFormSnackbarMessage').css('visibility','hidden');\n");
-        sb.append("        }\n");
-        sb.append("      );\n");
-        sb.append("    }, 2000);\n");
-        sb.append("  }\n");
+        p(sb, "function oaShowSnackbarMessage(msg) {", indent);
+        p(sb, "    $('#oaFormSnackbarMessage').html(msg);", ++indent);
+        p(sb, "    $('#oaFormSnackbarMessage').css({visibility:'visible', opacity: 0.0}).animate({opacity: 1.0},300);", indent);
+        p(sb, "    setTimeout(function() {", indent++);
+        p(sb, "      $('#oaFormSnackbarMessage').animate({opacity: 0.0}, 2000,", indent); 
+        p(sb, "        function() {", ++indent);
+        p(sb, "          $('#oaFormSnackbarMessage').css('visibility','hidden');", ++indent);
+        p(sb, "        }", --indent);
+        p(sb, "      );", --indent);
+        p(sb, "    }, 2000);", --indent);
+        p(sb, "  }", --indent);
 
         
-        sb.append("$(document).ready(function() {\n");
-
+        p(sb, "$(document).ready(function() {", indent);
+        indent++;
         
         // form dialog
-        sb.append("if ($().modal) {");
+        p(sb, "if ($().modal) {", indent);
         // bootstrap version
-        sb.append("$('#"+id+"').prepend(\"");
-        sb.append("<div id='oaformDialog' class='modal fade' tabindex='-1'>");
-        sb.append("  <div class='modal-dialog'>");
-        sb.append("    <div class='modal-content'>");
-        sb.append("      <div class='modal-header'>");
-        sb.append("        <button type='button' class='close' data-dismiss='modal'><span>&times;</span></button>");
-        sb.append("        <h4 class='modal-title'>");
-        sb.append("        </h4>");
-        sb.append("      </div>");
-        sb.append("      <div class='modal-body'>");
-        sb.append("      </div>");
-        sb.append("      <div class='modal-footer'>");
-        sb.append("        <button type='button' class='btn btn-primary' data-dismiss='modal'>Ok</button>");
-        sb.append("      </div>");
-        sb.append("    </div>");
-        sb.append("  </div>");
-        sb.append("</div>");
-        sb.append("\");\n");
-        sb.append("}");
-        sb.append("else {");
+        p(sb, "$('#"+id+"').prepend(", ++indent);
+        p(sb, "<div id='oaformDialog' class='modal fade' tabindex='-1'>", indent, true);
+        p(sb, "  <div class='modal-dialog'>", ++indent, true);
+        p(sb, "    <div class='modal-content'>", ++indent, true);
+        p(sb, "      <div class='modal-header'>", ++indent, true);
+        p(sb, "        <button type='button' class='close' data-dismiss='modal'><span>&times;</span></button>", ++indent, true);
+        p(sb, "        <h4 class='modal-title'>", indent, true);
+        p(sb, "        </h4>", indent, true);
+        p(sb, "      </div>", --indent, true);
+        p(sb, "      <div class='modal-body'>", indent, true);
+        p(sb, "      </div>", indent, true);
+        p(sb, "      <div class='modal-footer'>", indent, true);
+        p(sb, "        <button type='button' class='btn btn-primary' data-dismiss='modal'>Ok</button>", ++indent, true);
+        p(sb, "      </div>", --indent, true);
+        p(sb, "    </div>", --indent, true);
+        p(sb, "  </div>", --indent, true);
+        p(sb, "</div>", --indent, true, true);
+        p(sb, ");", --indent);
+        p(sb, "}", --indent);
+        p(sb, "else {", indent++);
         // jquery version
-        sb.append("    $('#"+id+"').prepend(\"<div id='oaformDialog'></div>\");\n");
-        sb.append("    $('#oaformDialog').dialog({");
-        sb.append("        autoOpen : false,");
-        sb.append("        title : 'Message',");
-        sb.append("        modal : true,");
-        sb.append("        width : 420,");
-        sb.append("        zIndex: 19999,");
-        sb.append("        buttons: [\n");
-        sb.append("          { text: 'Ok', click: function() { $(this).dialog('close'); } }\n");
-        sb.append("         ]\n");
-        sb.append("    });");
-        sb.append("}");
+        p(sb, "    $('#"+id+"').prepend(\"<div id='oaformDialog'></div>\");", indent);
+        p(sb, "    $('#oaformDialog').dialog({", indent++);
+        p(sb, "        autoOpen : false,", indent);
+        p(sb, "        title : 'Message',", indent);
+        p(sb, "        modal : true,", indent);
+        p(sb, "        width : 420,", indent);
+        p(sb, "        zIndex: 19999,", indent);
+        p(sb, "        buttons: [", indent++);
+        p(sb, "          { text: 'Ok', click: function() { $(this).dialog('close'); } }", indent);
+        p(sb, "         ]", --indent);
+        p(sb, "    });", --indent);
+        p(sb, "}", --indent);
         
         // bootstrap progress modal
-        sb.append("$('#"+id+"').prepend(\"");
-        sb.append("<div id='oaFormProcess' class='modal fade' tabindex='-1'>");
-        sb.append("<div class='modal-dialog'>");
-        sb.append("  <div class='modal-content'>");
-        sb.append("    <div class='modal-header'>");
-        sb.append("      <button id='oaFormProcessClose' type='button' class='close' data-dismiss='modal'>&times;</button>");
-        sb.append("      <h4 class='modal-title' id='myModalLabel'><span id='oaFormProcessTitle'></span></h4>");
-        sb.append("    </div>");
-        sb.append("    <div class='modal-body center-block'>");
-        sb.append("      <div class='progress'>");
-        sb.append("        <div id='oaFormProcessProgress' class='progress-bar bar' role='progressbar' style='min-width: 2em; width: 5%;'>");
-        sb.append(""); // ex: '25%'          
-        sb.append("        </div>");
-        sb.append("      </div>");
-        sb.append("      <div>");
-        sb.append("      <span id='oaFormProcessStep'></span> ... <span id='oaFormProcessMessage'></span>");
-        sb.append("      </div>");
-        sb.append("    </div>");
-        sb.append("    <div id='oaFormProcessFooter' class='modal-footer'>");
-        sb.append("      <button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>");
-        sb.append("    </div>");
-        sb.append("  </div>");
-        sb.append("</div>");
-        sb.append("</div>");
-        sb.append("\");\n");
+        p(sb, "$('#"+id+"').prepend(", indent++);
+        p(sb, "<div id='oaFormProcess' class='modal fade' tabindex='-1'>", indent++, true);
+        p(sb, "<div class='modal-dialog'>", indent++, true);
+        p(sb, "  <div class='modal-content'>", indent++, true);
+        p(sb, "    <div class='modal-header'>", indent++, true);
+        p(sb, "      <button id='oaFormProcessClose' type='button' class='close' data-dismiss='modal'>&times;</button>", indent, true);
+        p(sb, "      <h4 class='modal-title' id='myModalLabel'><span id='oaFormProcessTitle'></span></h4>", indent, true);
+        p(sb, "    </div>", --indent, true);
+        p(sb, "    <div class='modal-body center-block'>", indent++, true);
+        p(sb, "      <div class='progress'>", indent++, true);
+        p(sb, "        <div id='oaFormProcessProgress' class='progress-bar bar' role='progressbar' style='min-width: 2em; width: 5%;'>", indent++, true);
+        p(sb, "", indent, true); // ex: '25%'          
+        p(sb, "        </div>", --indent, true);
+        p(sb, "      </div>", --indent, true);
+        p(sb, "      <div>", indent, true);
+        p(sb, "      <span id='oaFormProcessStep'></span> ... <span id='oaFormProcessMessage'></span>", indent, true);
+        p(sb, "      </div>", indent, true);
+        p(sb, "    </div>", --indent, true);
+        p(sb, "    <div id='oaFormProcessFooter' class='modal-footer'>", indent, true);
+        p(sb, "      <button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>", ++indent, true);
+        p(sb, "    </div>", --indent, true);
+        p(sb, "  </div>", --indent, true);
+        p(sb, "</div>", --indent, true);
+        p(sb, "</div>", --indent, true, true);
+        p(sb, ");", --indent);
 
         // update hidden oaFormProcessClosed if progress dlg is closed
-        sb.append("$('#oaFormProcess button').click(function() { $('#oaFormProcessClosed').val('true'); } );");
+        p(sb, "$('#oaFormProcess button').click(function() { $('#oaFormProcessClosed').val('true'); } );", indent);
         
         
-        String js = getProcessingScript();
-        if (js != null) sb.append(js); 
+        getProcessingScript(sb, indent);
         
-        sb.append("$('body').append(\"");
-        sb.append("<div id='oaFormSnackbarMessage'></div>");
-        sb.append("\");\n");
+        p(sb, "$('body').append(", indent++);
+        p(sb, "<div id='oaFormSnackbarMessage'></div>", indent, true, true);
+        p(sb, ");", --indent);
         
-        sb.append("$('body').append(\"<div id='oaWait'><img src='image/oawait.gif'></div>\");");
+        p(sb, "$('body').append(\"<div id='oaWait'><img src='image/oawait.gif'></div>\");", indent);
 
-        sb.append("    $('#"+id+"').attr('method', 'post');\n");
-        sb.append("    $('#"+id+"').attr('action', 'oaform.jsp');\n");
-        sb.append("    $('#"+id+"').prepend(\"<input type='hidden' name='oaform' value='"+getId()+"'>\");\n");
+        p(sb, "$('#"+id+"').attr('method', 'post');", indent);
+        p(sb, "$('#"+id+"').attr('action', 'oaform.jsp');", indent);
+        p(sb, "$('#"+id+"').prepend(\"<input type='hidden' name='oaform' value='"+getId()+"'>\");", indent);
 
-        sb.append("    $('#"+id+"').prepend(\"<input id='oaajaxid' type='hidden' name='oaajaxid' value='"+aiAjaxIdLastUsed.get()+"'>\");\n");
+        p(sb, "$('#"+id+"').prepend(\"<input id='oaajaxid' type='hidden' name='oaajaxid' value='"+aiAjaxIdLastUsed.get()+"'>\");", indent);
 
-        sb.append("    $('#"+id+"').prepend(\"<input id='oaFormProcessClosed' type='hidden' name='oaFormProcessClosed' value=''>\");\n");
+        p(sb, "$('#"+id+"').prepend(\"<input id='oaFormProcessClosed' type='hidden' name='oaFormProcessClosed' value=''>\");", indent);
         
         // hidden command used by label,button when it is submitted
-        sb.append("    $('#"+id+"').prepend(\"<input id='oacommand' type='hidden' name='oacommand' value=''>\");\n");
+        p(sb, "$('#"+id+"').prepend(\"<input id='oacommand' type='hidden' name='oacommand' value=''>\");", indent);
 
         // hidden param used for a component 
-        sb.append("    $('#"+id+"').prepend(\"<input id='oaparam' type='hidden' name='oaparam' value=''>\");\n");
-        
+        p(sb, "$('#"+id+"').prepend(\"<input id='oaparam' type='hidden' name='oaparam' value=''>\");", indent);
         
         // hidden command that can be used to know if any data on page has been changed
-        sb.append("    $('#"+id+"').prepend(\"<input id='oachanged' type='hidden' name='oachanged' value=''>\");\n");
+        p(sb, "$('#"+id+"').prepend(\"<input id='oachanged' type='hidden' name='oachanged' value=''>\");", indent);
 
         // hidden input for browser javascript date.timezoneOffset  (its sign [+/-] is opposite of java timezone offset)
 
         
         // 20170925 reworked browser time/tz
-        sb.append("    (function() {\n");
-        sb.append("      var dtNow = new Date();\n");
-        sb.append("      var tzOffsetJan = (new Date(dtNow.getFullYear(),0,1)).getTimezoneOffset();\n");
-        sb.append("      var tzOffsetJul = (new Date(dtNow.getFullYear(),6,1)).getTimezoneOffset();\n");
-        sb.append("      $('#"+id+"').prepend(\"<input id='jsDate' type='hidden' name='jsDate' value='\"+(dtNow.toString())+\"'>\");\n");
-        sb.append("      $('#"+id+"').prepend(\"<input id='jsTzRawOffset' type='hidden' name='jsTzRawOffset' value='\"+Math.max(tzOffsetJan,tzOffsetJul)+\"'>\");\n");
-        sb.append("      $('#"+id+"').prepend(\"<input id='jsDateSupportsDST' type='hidden' name='jsDateSupportsDST' value='\"+(tzOffsetJan != tzOffsetJul)+\"'>\");\n");
-        sb.append("    })();\n");
-        //was:  sb.append("    $('#"+id+"').prepend(\"<input id='jsDateTzOffset' type='hidden' name='jsDateTzOffset' value='\"+((new Date()).getTimezoneOffset())+\"'>\");\n");
-
+        p(sb, "(function() {", indent++);
+        p(sb, "  var dtNow = new Date();", indent);
+        p(sb, "  var tzOffsetJan = (new Date(dtNow.getFullYear(),0,1)).getTimezoneOffset();", indent);
+        p(sb, "  var tzOffsetJul = (new Date(dtNow.getFullYear(),6,1)).getTimezoneOffset();", indent);
+        p(sb, "  $('#"+id+"').prepend(\"<input id='jsDate' type='hidden' name='jsDate' value='\"+(dtNow.toString())+\"'>\");", indent);
+        p(sb, "  $('#"+id+"').prepend(\"<input id='jsTzRawOffset' type='hidden' name='jsTzRawOffset' value='\"+Math.max(tzOffsetJan,tzOffsetJul)+\"'>\");", indent);
+        p(sb, "  $('#"+id+"').prepend(\"<input id='jsDateSupportsDST' type='hidden' name='jsDateSupportsDST' value='\"+(tzOffsetJan != tzOffsetJul)+\"'>\");", indent);
+        p(sb, "})();", --indent);
 
         if (getDebug()) {
-            sb.append("    $('#"+id+"').addClass('oaDebug');\n");
-            sb.append("    $('.oaBindable').addClass('oaDebug');\n");
+            p(sb, "$('#"+id+"').addClass('oaDebug');", indent);
+            p(sb, "$('.oaBindable').addClass('oaDebug');", indent);
         }
         else {
-            sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
-            sb.append("    $('.oaBindable').removeClass('oaDebug');\n");
+            p(sb, "$('#"+id+"').removeClass('oaDebug');", indent);
+            p(sb, "$('.oaBindable').removeClass('oaDebug');", indent);
         }
-
-        // else sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
 
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             String s = comp.getScript();
 
-            if (getDebug()) sb.append("    $('#"+comp.getId()+"').addClass('oaDebug');\n");
-            else sb.append("    $('#"+comp.getId()+"').removeClass('oaDebug');\n");
+            if (getDebug()) p(sb, "$('#"+comp.getId()+"').addClass('oaDebug');", indent);
+            else p(sb, "$('#"+comp.getId()+"').removeClass('oaDebug');", indent);
 
-            if (!OAString.isEmpty(s)) sb.append(s + "\n");
+            if (!OAString.isEmpty(s)) p(sb, s + "", indent);
             if (comp instanceof OAJspMultipartInterface) {
-                sb.append("    $('#"+id+"').attr('enctype', 'multipart/form-data');\n");
-                // 20130602 support submit fileInput
-                sb.append("    $('#"+id+"').attr('action', 'oaform.jsp?oaform="+getId()+"');\n");
+                p(sb, "$('#"+id+"').attr('enctype', 'multipart/form-data');", indent);
+                p(sb, "$('#"+id+"').attr('action', 'oaform.jsp?oaform="+getId()+"');", indent);
             }
         }
-        getMessages(sb);
-        sb.append("\n");
+        getMessages(sb, indent);
+        p(sb, "", indent);
 
-        
-//qqqqqqqqqqqqqqqqqq see OATextField getValidationRules/messages for full example
-//qqqqqqqq need to set this form.addValidation=true         
-        // 20171104 add jquery.validate
+        // add jquery.validate
         if (addValidation) {
-            sb.append("if ($.validator) {\n");
-            sb.append("  $('#"+id+"').validate({\n");
+            p(sb, "if ($.validator) {", indent);
+            p(sb, "  $('#"+id+"').validate({", ++indent);
     
-            sb.append("    onsubmit: false");
+            p(sb, "  onsubmit: false", ++indent);
             
             boolean b = false;
             for (int i=0; ;i++) {
                 if (i >= alComponent.size()) break;
-                OAJspComponent comp = alComponent.get(i);
+                OAWebComponent comp = alComponent.get(i);
                 String s = comp.getScript();
     
-                // todo:  add other components qqqqqqqqqqq 
+                // todo:  add other components 
                 if (comp instanceof OATextField) {
                     s = ((OATextField) comp).getValidationRules();
                     if (OAString.isNotEmpty(s)) {
                         if (!b) {
                             b = true;
-                            sb.append(", rules: {\n");
+                            p(sb, ", rules: {", indent);
                             sb.append(s);
                         }
-                        else sb.append(", \n" +s);
+                        else p(sb, ", " +s, indent);
                     }
                 }
             }
             if (b) {
-                sb.append("}\n");
+                p(sb, "}", --indent);
             }            
             
             b = false;
             for (int i=0; ;i++) {
                 if (i >= alComponent.size()) break;
-                OAJspComponent comp = alComponent.get(i);
+                OAWebComponent comp = alComponent.get(i);
                 String s = comp.getScript();
     
                 // todo:  add other components qqqqqqqqqqq 
@@ -589,168 +606,165 @@ public class OAForm extends OABase implements Serializable {
                     if (OAString.isNotEmpty(s)) {
                         if (!b) {
                             b = true;
-                            sb.append(", messages: {\n");
+                            p(sb, ", messages: {", indent);
                             sb.append(s);
                         }
-                        else sb.append(", \n" +s);
+                        else p(sb, ", " +s, indent);
                     }
                 }
             }
             if (b) {
-                sb.append("}\n");
+                p(sb, "}", 1);
             }            
 
-            sb.append(",\n");            
-            sb.append("highlight : function(element) {\n");
-            sb.append("    $(element).closest('.form-group').removeClass('has-success').addClass('has-error');\n");
-            sb.append("},\n");
-            sb.append("success : function(element) {\n");
-            sb.append("    $(element).closest('.form-group').removeClass('has-error');\n");
-            sb.append("    $(element).remove();\n");
-            sb.append("},\n");
-            sb.append("errorPlacement : function(error, element) {\n");
-            sb.append("    element.parent().append(error);\n");
-            sb.append("}\n");
+            p(sb, ",", indent);            
+            p(sb, "highlight : function(element) {", indent++);
+            p(sb, "  $(element).closest('.form-group').removeClass('has-success').addClass('has-error');", indent);
+            p(sb, "},", --indent);
+            p(sb, "success : function(element) {", indent++);
+            p(sb, "  $(element).closest('.form-group').removeClass('has-error');", indent);
+            p(sb, "  $(element).remove();", indent);
+            p(sb, "},", --indent);
+            p(sb, "errorPlacement : function(error, element) {", indent);
+            p(sb, "  element.parent().append(error);", ++indent);
+            p(sb, "}", --indent);
             
-            sb.append("  });\n");
-            sb.append("}\n");
+            p(sb, "  });", --indent);
+            p(sb, "}", --indent);
         }        
         
         
         // add form submit, to verify components
-        sb.append("    $('#"+id+"').on('submit', oaSubmit);\n");
-        sb.append("    var oaSubmitCancelled;\n");
-        sb.append("    function oaSubmit(event) {\n");
-        sb.append("        oaSubmitCancelled = true;\n");
-        sb.append("        var errors = [];\n");
-        sb.append("        var requires = [];\n");
-        sb.append("        var regex;\n");
-        sb.append("        var val;\n");
+        p(sb, "$('#"+id+"').on('submit', oaSubmit);", indent);
+        p(sb, "var oaSubmitCancelled;", indent);
+        p(sb, "function oaSubmit(event) {", indent);
+        p(sb, "  oaSubmitCancelled = true;", ++indent);
+        p(sb, "  var errors = [];", indent);
+        p(sb, "  var requires = [];", indent);
+        p(sb, "  var regex;", indent);
+        p(sb, "  var val;", indent);
 
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             String s = comp.getVerifyScript();
-            if (!OAString.isEmpty(s)) sb.append("    " + s + "\n");
+            if (!OAString.isEmpty(s)) p(sb, "  " + s, indent);
         }
 
-//qqqqqqqqqqqqqqq
         // 20171104 add jquery.validate
         if (addValidation) {
-            sb.append("if ($.validator) {\n");
-            sb.append("  if(!$('#"+id+"').valid()) {\n");
-            sb.append("    $('"+id+"').validate().focusInvalid();\n");
-            sb.append("    oaShowMessage('Can not submit', 'Required fields are missing');\n");
-            sb.append("    return false;\n");
-            sb.append("  }\n");
-            sb.append("}\n");
+            p(sb, "  if ($.validator) {", ++indent);
+            p(sb, "    if(!$('#"+id+"').valid()) {", indent);
+            p(sb, "      $('"+id+"').validate().focusInvalid();", ++indent);
+            p(sb, "      oaShowMessage('Can not submit', 'Required fields are missing');", indent);
+            p(sb, "      return false;", indent);
+            p(sb, "    }", --indent);
+            p(sb, "  }", --indent);
         }        
         
-        
-        sb.append("if (requires.length > 0) {\n");
-        sb.append("    event.preventDefault();\n");
-        sb.append("    var msg = '';\n");
-        sb.append("    for (var i=0; i<requires.length; i++) {\n");
-        sb.append("        if (i > 0) {\n");
-        sb.append("            msg += ',<br>';\n");
-        // sb.append("            if (i % 3 == 0) msg += '<br>';\n");
-        sb.append("        }\n");
-        sb.append("        msg += requires[i];\n");
-        sb.append("    }\n");
-        sb.append("    oaShowMessage('Required fields are missing', msg);\n");
-        sb.append("    return false;\n");
-        sb.append("}\n");
+           
+        p(sb, "  if (requires.length > 0) {", indent);
+        p(sb, "    event.preventDefault();", ++indent);
+        p(sb, "    var msg = '';", indent);
+        p(sb, "    for (var i=0; i<requires.length; i++) {", indent);
+        p(sb, "      if (i > 0) {", ++indent);
+        p(sb, "        msg += ',<br>';", ++indent);
+        p(sb, "      }", --indent);
+        p(sb, "      msg += requires[i];", indent);
+        p(sb, "    }", --indent);
+        p(sb, "    oaShowMessage('Required fields are missing', msg);", indent);
+        p(sb, "    return false;", indent);
+        p(sb, "  }", --indent);
 
-        sb.append("if (errors.length > 0) {\n");
-        sb.append("    event.preventDefault();\n");
-        sb.append("    var msg = '';\n");
-        sb.append("    for (var i=0; i<errors.length; i++) {\n");
-        sb.append("        if (i > 0) {\n");
-        sb.append("            msg += ', ';\n");
-        sb.append("            if (i % 3 == 0) msg += '<br>';\n");
-        sb.append("        }\n");
-        sb.append("        msg += errors[i];\n");
-        sb.append("    }\n");
-        sb.append("    oaShowMessage('Errors on page', msg);\n");
-        sb.append("    return false;\n");
-        sb.append("}\n");
-        sb.append("        oaSubmitCancelled = false;\n");
-        sb.append("        return true;\n");
-        sb.append("    }\n");
+        p(sb, "  if (errors.length > 0) {", indent);
+        p(sb, "    event.preventDefault();", ++indent);
+        p(sb, "    var msg = '';", indent);
+        p(sb, "    for (var i=0; i<errors.length; i++) {", indent);
+        p(sb, "      if (i > 0) {", ++indent);
+        p(sb, "        msg += ', ';", ++indent);
+        p(sb, "        if (i % 3 == 0) msg += '<br>';", indent);
+        p(sb, "      }", --indent);
+        p(sb, "      msg += errors[i];", indent);
+        p(sb, "    }", --indent);
+        p(sb, "    oaShowMessage('Errors on page', msg);", indent);
+        p(sb, "    return false;", indent);
+        p(sb, "  }", --indent);
+        p(sb, "  oaSubmitCancelled = false;", indent);
+        p(sb, "  return true;", indent);
+        p(sb, "}", --indent); // end function oaSubmit(..)
 
-        sb.append("var cntAjaxSubmit = 0;\n");
-        sb.append("function ajaxSubmit(cmdName) {\n");
-        sb.append("  cntAjaxSubmit++;\n");
-        sb.append("  var bUseAsync = (cntAjaxSubmit == 1);\n");
-        sb.append("  if (bUseAsync && cntAjaxSubmit == 1) {\n");
-        sb.append("    $('#oaWait').fadeIn(200, function(){ if (cntAjaxSubmit < 1) {cntAjaxSubmit=0;$('#oaWait').hide();}});\n");  
-        sb.append("  }\n");
-        sb.append("  var f1 = function(data) {\n");
-        sb.append("    if (--cntAjaxSubmit < 1) {\n");
-        sb.append("      cntAjaxSubmit=0; \n");
-        sb.append("      $('#oaWait').hide();\n");
-        sb.append("    }\n");
-        sb.append("    if (data) eval(data);\n");
-        sb.append("  }\n");
-        sb.append("  var f2 = function() {\n");
-        sb.append("    if (--cntAjaxSubmit < 1) {\n");
-        sb.append("      cntAjaxSubmit=0; \n");
-        sb.append("      $('#oaWait').hide();\n");
-        sb.append("    }\n");
-        sb.append("  }\n");
+        p(sb, "var cntAjaxSubmit = 0;", indent);
+        p(sb, "function ajaxSubmit(cmdName) {", indent);
+        p(sb, "  cntAjaxSubmit++;", ++indent);
+        p(sb, "  var bUseAsync = (cntAjaxSubmit == 1);", indent);
+        p(sb, "  if (bUseAsync && cntAjaxSubmit == 1) {", indent);
+        p(sb, "    $('#oaWait').fadeIn(200, function(){ if (cntAjaxSubmit < 1) {cntAjaxSubmit=0;$('#oaWait').hide();}});", ++indent);  
+        p(sb, "  }", --indent);
+        p(sb, "  var f1 = function(data) {", indent);
+        p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
+        p(sb, "      cntAjaxSubmit=0; ", ++indent);
+        p(sb, "      $('#oaWait').hide();", indent);
+        p(sb, "    }", --indent);
+        p(sb, "    if (data) eval(data);", indent);
+        p(sb, "  }", --indent);
+        p(sb, "  var f2 = function() {", indent);
+        p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
+        p(sb, "      cntAjaxSubmit=0; ", ++indent);
+        p(sb, "      $('#oaWait').hide();", indent);
+        p(sb, "    }", --indent);
+        p(sb, "  }", --indent);
         
-        sb.append("  var args = $('#"+id+"').serialize();\n");
-        sb.append("  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;\n");
-        sb.append("  $.ajax({\n");
-        sb.append("    type: 'POST',\n");
-        sb.append("    url: 'oaajax.jsp',\n");
-        sb.append("    data: args,\n");
-        sb.append("    success: f1,\n");
-        sb.append("    error: f2,\n");
-        sb.append("    dataType: 'text',\n");
-        sb.append("    timeout: 30000,\n");
-        sb.append("    async: bUseAsync");
-        sb.append("  });\n");
-        sb.append("}\n");
+        p(sb, "  var args = $('#"+id+"').serialize();", indent);
+        p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
+        p(sb, "  $.ajax({", indent);
+        p(sb, "    type: 'POST',", ++indent);
+        p(sb, "    url: 'oaajax.jsp',", indent);
+        p(sb, "    data: args,", indent);
+        p(sb, "    success: f1,", indent);
+        p(sb, "    error: f2,", indent);
+        p(sb, "    dataType: 'text',", indent);
+        p(sb, "    timeout: 30000,", indent);
+        p(sb, "    async: bUseAsync", indent);
+        p(sb, "  });", --indent);
+        p(sb, "}", --indent);
 
-        sb.append("function ajaxSubmit2(cmdName) {\n");
-        sb.append("  var args = $('#"+id+"').serialize();\n");
-        sb.append("  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;\n");
-        sb.append("  $.ajax({\n");
-        sb.append("    type: 'POST',\n");
-        sb.append("    data: args,\n");
-        sb.append("    url: 'oaajax.jsp',\n");
-        sb.append("    success: function(data) {if (data) eval(data);},\n");
-        sb.append("    dataType: 'text'\n");
-        sb.append("  });\n");
-        sb.append("}\n");
-        
+        p(sb, "function ajaxSubmit2(cmdName) {", indent);
+        p(sb, "  var args = $('#"+id+"').serialize();", ++indent);
+        p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
+        p(sb, "  $.ajax({", indent);
+        p(sb, "    type: 'POST',", ++indent);
+        p(sb, "    data: args,", indent);
+        p(sb, "    url: 'oaajax.jsp',", indent);
+        p(sb, "    success: function(data) {if (data) eval(data);},", indent);
+        p(sb, "    dataType: 'text'", indent);
+        p(sb, "  });", --indent);
+        p(sb, "}", --indent);
         
         
         if (!OAString.isEmpty(jsAddScript)) {
-            sb.append("    " + jsAddScript + "\n");
+            p(sb, "    " + jsAddScript + "", indent);
         }
         if (!OAString.isEmpty(jsAddScriptOnce)) {
-            sb.append("    " + jsAddScriptOnce + "\n");
+            p(sb, "    " + jsAddScriptOnce + "", indent);
             jsAddScriptOnce = null;
         }
 
 
-        js = sb.toString();
+        String js = sb.toString();
         if (js.indexOf(".focus()") < 0) {
-            sb.append("    $('input:enabled:first').focus();\n");
+            p(sb, "    $('input:enabled:first').focus();", indent);
         }
 
         String s = getRedirect();
         if (OAString.isNotEmpty(s)) {
             setRedirect(null);
-            sb.append("window.location = '"+s+"';\n");            
+            p(sb, "window.location = '"+s+"';", indent);            
         }
         
-        sb.append("\n});\n"); // end jquery.ready ****
+        p(sb, "});", --indent); // end jquery.ready ****
 
 
-        sb.append("</script>\n");
+        p(sb, "</script>", --indent);
         js = sb.toString();
 
         return js;
@@ -772,21 +786,22 @@ public class OAForm extends OABase implements Serializable {
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
 
+        int indent = 0;
         boolean bDebugx = getDebug();
         if (bLastDebug != bDebugx) {
             if (bDebugx) {
-                sb.append("    $('#"+id+"').addClass('oaDebug');\n");
-                sb.append("    $('.oaBindable').addClass('oaDebug');\n");
+                p(sb, "    $('#"+id+"').addClass('oaDebug');", indent);
+                p(sb, "    $('.oaBindable').addClass('oaDebug');", indent);
             }
             else {
-                sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
-                sb.append("    $('.oaBindable').removeClass('oaDebug');\n");
+                p(sb, "    $('#"+id+"').removeClass('oaDebug');", indent);
+                p(sb, "    $('.oaBindable').removeClass('oaDebug');", indent);
             }
         }
 
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             
             String s;
             if (alNewAddComponent.contains(comp)) {
@@ -796,20 +811,19 @@ public class OAForm extends OABase implements Serializable {
                 s = comp.getAjaxScript();
             }
             
-            if (!OAString.isEmpty(s)) sb.append(s + "\n");
+            if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             if (bLastDebug != bDebugx) {
-                if (bDebugx) sb.append("    $('#"+comp.getId()+"').addClass('oaDebug');\n");
-                else sb.append("    $('#"+comp.getId()+"').removeClass('oaDebug');\n");
+                if (bDebugx) p(sb, "    $('#"+comp.getId()+"').addClass('oaDebug');", indent);
+                else p(sb, "    $('#"+comp.getId()+"').removeClass('oaDebug');", indent);
             }
         }
         alNewAddComponent.clear();
 
         
-        sb.append("$('#oacommand').val('');"); // set back to blank
-        sb.append("$('#oaparam').val('');"); // set back to blank
+        p(sb, "$('#oacommand').val('');", indent); // set back to blank
+        p(sb, "$('#oaparam').val('');", indent); // set back to blank
 
-        String js = getProcessingScript();
-        if (js != null) sb.append(js); 
+        getProcessingScript(sb, indent);
 
         String s = getAjaxCallbackScript();
         if (s != null) sb.append(s);
@@ -822,12 +836,12 @@ public class OAForm extends OABase implements Serializable {
         s = getRedirect();
         if (OAString.isNotEmpty(s)) {
             setRedirect(null);
-            sb.append("window.location = '"+s+"';");            
+            p(sb, "window.location = '"+s+"';", indent);            
         }
 
-        getMessages(sb);
+        getMessages(sb, indent);
         
-        js = sb.toString();
+        String js = sb.toString();
         if (js == null) js = "";
         
         bLastDebug = bDebugx;
@@ -838,8 +852,8 @@ public class OAForm extends OABase implements Serializable {
      * Used to show popup showing any oaprocesses that are running
      * @see #addProcess(OAProcess)
      */
-    protected String getProcessingScript() {
-        StringBuilder sb = new StringBuilder(1024);
+    protected void getProcessingScript(final StringBuilder sb, int indent) {
+        // final StringBuilder sb = new StringBuilder(1024);
 
         boolean b = false;
         String title = null;
@@ -849,6 +863,7 @@ public class OAForm extends OABase implements Serializable {
         int step2 = 0;
         String step = "";
         boolean bBlock = false;
+        // int indent = 0;
 
         for (FormProcess fp : alProcess) {
             OAProcess p = fp.p;
@@ -897,45 +912,44 @@ public class OAForm extends OABase implements Serializable {
             if (ss != null && step1 > 0 && (step1-1) < ss.length) step = ss[step1-1];
         }
         
-        sb.append("if ($().modal) {\n");  // qqqqqqqq removed once jquery-ui is no longer used
+        p(sb, "if ($().modal) {", indent++);  // qqqqqqqq removed once jquery-ui is no longer used
         if (!b) {
-            sb.append("$('#oaFormProcess').modal('hide');\n");
+            p(sb, "$('#oaFormProcess').modal('hide');", indent);
         }
         else {
             if (title == null) title = "";
             else title = OAString.convert(title, "'", "\\'");
-            sb.append("$('#oaFormProcessTitle').html('"+title+"');\n");
+            p(sb, "$('#oaFormProcessTitle').html('"+title+"');", indent);
             if (bBlock && cnt > 0) {
-                sb.append("$('#oaFormProcessClose').hide();\n");
-                sb.append("$('#oaFormProcessFooter').hide();\n");
+                p(sb, "$('#oaFormProcessClose').hide();", indent);
+                p(sb, "$('#oaFormProcessFooter').hide();", indent);
             }
             else {
-                sb.append("$('#oaFormProcessClose').show();\n");
-                sb.append("$('#oaFormProcessFooter').show();\n");
+                p(sb, "$('#oaFormProcessClose').show();", indent);
+                p(sb, "$('#oaFormProcessFooter').show();", indent);
             }
             
-            sb.append("$('#oaFormProcessProgress').css({width: '"+perc+"%'}).html('"+perc+"%');\n");
+            p(sb, "$('#oaFormProcessProgress').css({width: '"+perc+"%'}).html('"+perc+"%');", indent);
             
              if (cnt == 0 || (step1 == 0 && step2 == 0 && OAString.isEmpty(step))) {
-                sb.append("$('#oaFormProcessStep').html('');\n");
-                sb.append("$('#oaFormProcessMessage').html('');\n");
+                p(sb, "$('#oaFormProcessStep').html('');", indent);
+                p(sb, "$('#oaFormProcessMessage').html('');", indent);
             }
             else {
-                sb.append("$('#oaFormProcessStep').html('Step "+step1+" of "+step2+"');\n");
-                sb.append("$('#oaFormProcessMessage').html('"+OAString.getNonNull(step)+"');\n");
+                p(sb, "$('#oaFormProcessStep').html('Step "+step1+" of "+step2+"');", indent);
+                p(sb, "$('#oaFormProcessMessage').html('"+OAString.getNonNull(step)+"');", indent);
             }
             
-            sb.append("if ($('#oaFormProcessClosed').val() != 'true') {");
-            sb.append("$('#oaFormProcess').modal('show'); }\n");
+            p(sb, "if ($('#oaFormProcessClosed').val() != 'true') {", indent);
+            p(sb, "$('#oaFormProcess').modal('show'); }", indent);
             if (!bFormProcessClosed) requestAjaxCallback();
         }
-        sb.append("}\n");  // qqqqqqqq removed once jquery-ui is no longer used
-        return sb.toString();
+        p(sb, "}", --indent);  // qqqqqqqq removed once jquery-ui is no longer used
     }    
     
     
     
-    protected void getMessages(StringBuilder sb) {
+    protected void getMessages(StringBuilder sb, int indent) {
         String[] msg1, msg2;
 
         msg1 = msg2 = null;
@@ -944,7 +958,7 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getMessages();
             session.clearMessages();
         }
-        boolean b = _addMessages(sb, "oaFormMessage", "Message", msg1, msg2, this.getMessages());
+        boolean b = _addMessages(sb, indent, "oaFormMessage", "Message", msg1, msg2, this.getMessages());
 
         clearMessages();
 
@@ -954,7 +968,7 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getErrorMessages();
             session.clearErrorMessages();
         }
-        b = b || _addMessages(sb, "oaFormErrorMessage", "Error", msg1, msg2, this.getErrorMessages());
+        b = b || _addMessages(sb, indent, "oaFormErrorMessage", "Error", msg1, msg2, this.getErrorMessages());
         clearErrorMessages();
         
         
@@ -965,7 +979,7 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getPopupMessages();
             session.clearPopupMessages();
         }
-        b = b || _addMessages(sb, null, null, msg1, msg2, this.getPopupMessages());
+        b = b || _addMessages(sb, indent, null, null, msg1, msg2, this.getPopupMessages());
         clearPopupMessages();
 
         if (b) {  // have redirect show after message is displayed
@@ -987,7 +1001,7 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getHiddenMessages();
             session.clearHiddenMessages();
         }
-        _addMessages(sb, "oaFormHiddenMessage", "", msg1, msg2, this.getHiddenMessages());
+        _addMessages(sb, indent, "oaFormHiddenMessage", "", msg1, msg2, this.getHiddenMessages());
         clearHiddenMessages();
         
 
@@ -1000,7 +1014,7 @@ public class OAForm extends OABase implements Serializable {
             msg2 = session.getSnackbarMessages();
             session.clearSnackbarMessages();
         }
-        _addSnackbarMessages(sb, null, null, msg1, msg2, this.getSnackbarMessages());
+        _addSnackbarMessages(sb, indent, null, null, msg1, msg2, this.getSnackbarMessages());
         clearSnackbarMessages();
         
         
@@ -1019,7 +1033,7 @@ public class OAForm extends OABase implements Serializable {
     }
     
     
-    private boolean _addMessages(StringBuilder sb, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
+    private boolean _addMessages(StringBuilder sb, int indent, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
         boolean bResult = (msgs1 != null && msgs1.length > 0) || (msgs2 != null && msgs2.length > 0) || (msgs3 != null && msgs3.length > 0);
         if (title == null) title = "";
         String msg = "";
@@ -1044,33 +1058,33 @@ public class OAForm extends OABase implements Serializable {
 
         boolean bDebugx = getDebug();
         if (bLastDebug != bDebugx) {
-            if (getDebug()) sb.append("    $('#"+id+"').addClass('oaDebug');\n");
-            else sb.append("    $('#"+id+"').removeClass('oaDebug');\n");
+            if (getDebug()) p(sb, "    $('#"+id+"').addClass('oaDebug');", indent);
+            else p(sb, "    $('#"+id+"').removeClass('oaDebug');", indent);
         }
 
         msg = OAString.convert(msg, "'", "\\'");
         if (msg.length() > 0) {
             if (id != null) {
-                sb.append("if ($('#"+id+"').length) {");
-                sb.append("  $('#"+id+"').html('"+msg+"');");
-                sb.append("  $('#"+id+"').show();");
-                sb.append("} else {");
-                sb.append("    oaShowMessage('"+title+"', '"+msg+"');\n");
-                sb.append("}");
+                p(sb, "if ($('#"+id+"').length) {", indent);
+                p(sb, "  $('#"+id+"').html('"+msg+"');", ++indent);
+                p(sb, "  $('#"+id+"').show();", indent);
+                p(sb, "} else {", --indent);
+                p(sb, "  oaShowMessage('"+title+"', '"+msg+"');", ++indent);
+                p(sb, "}", --indent);
             }
             else {
-                sb.append("oaShowMessage('"+title+"', '"+msg+"');\n");
+                p(sb, "oaShowMessage('"+title+"', '"+msg+"');", indent);
             }
         }
         else {
             if (id != null) {
-                sb.append("$('#"+id+"').hide();");
+                p(sb, "$('#"+id+"').hide();", indent);
             }
         }
         return bResult;
     }
 
-    private void _addSnackbarMessages(StringBuilder sb, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
+    private void _addSnackbarMessages(StringBuilder sb, int indent, String id, String title, String[] msgs1, String[] msgs2, String[] msgs3) {
         if (title == null) title = "";
         String msg = "";
         if (msgs1 != null) {
@@ -1094,22 +1108,22 @@ public class OAForm extends OABase implements Serializable {
 
         msg = OAString.convert(msg, "'", "\\'");
         if (msg.length() > 0) {
-            sb.append("oaShowSnackbarMessage('"+msg+"');\n");
+            p(sb, "oaShowSnackbarMessage('"+msg+"');", indent);
         }
     }
     
-    public ArrayList<OAJspComponent> getComponents() {
+    public List<OAWebComponent> getComponents() {
         return alComponent;
     }
 
-    public OAJspComponent getComponent(String id) {
+    public OAWebComponent getComponent(String id) {
         return getComponent(id, null);
     }
-    public OAJspComponent getComponent(String id, Class c) {
+    public OAWebComponent getComponent(String id, Class c) {
         if (id == null) return null;
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             if (id.equalsIgnoreCase(comp.getId())) {
                 if (c == null || c.isAssignableFrom(comp.getClass())) {
                     return comp;
@@ -1118,31 +1132,31 @@ public class OAForm extends OABase implements Serializable {
         }
         return null;
     }
-    public OAJspComponent[] getComponents(String id) {
+    public OAWebComponent[] getComponents(String id) {
         if (id == null) return null;
-        ArrayList<OAJspComponent> al = new ArrayList<>();
+        ArrayList<OAWebComponent> al = new ArrayList<>();
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
+            OAWebComponent comp = alComponent.get(i);
             if (id.equalsIgnoreCase(comp.getId())) {
                 al.add(comp);
             }
         }
-        OAJspComponent[] jcs = al.toArray(new OAJspComponent[0]);
+        OAWebComponent[] jcs = al.toArray(new OAWebComponent[0]);
         return jcs;
     }
 
     public void remove(String name) {
-        OAJspComponent comp = getComponent(name);
+        OAWebComponent comp = getComponent(name);
         if (comp != null) alComponent.remove(comp);
         super.remove(name);
     }
-    public void add(OAJspComponent comp) {
+    public void add(OAWebComponent comp) {
         if (comp == null) return;
         String id = comp.getId();
 
         if (!OAString.isEmpty(id)) {
-            OAJspComponent compx = getComponent(id);
+            OAWebComponent compx = getComponent(id);
             
             if (compx != null) {
                 if ( comp.getClass().isAssignableFrom(compx.getClass()) || compx.getClass().isAssignableFrom(comp.getClass()) ) {
@@ -1306,7 +1320,7 @@ public class OAForm extends OABase implements Serializable {
             forward = getForwardUrl();
             if (OAString.isEmpty(forward)) forward = this.getUrl();
             
-            OAJspComponent compSubmit = onSubmit(request, response, hmNameValue);
+            OAWebComponent compSubmit = onSubmit(request, response, hmNameValue);
             
             forward = onSubmit(compSubmit, forward);
             forward = afterSubmit(forward);
@@ -1318,7 +1332,7 @@ public class OAForm extends OABase implements Serializable {
         return forward;
     }
 
-    protected String onSubmit(OAJspComponent compSubmit, String forward) {
+    protected String onSubmit(OAWebComponent compSubmit, String forward) {
         if (compSubmit != null) {
             String s = compSubmit.getForwardUrl();
             if (s != null) forward = s;
@@ -1352,7 +1366,7 @@ public class OAForm extends OABase implements Serializable {
         catch (Exception e) {}
 
         String id = request.getParameter("oacommand");
-        OAJspComponent comp = getComponent(id);
+        OAWebComponent comp = getComponent(id);
         if (comp == null) return getUrl();
 
         String forward = comp.getForwardUrl();
@@ -1406,7 +1420,7 @@ public class OAForm extends OABase implements Serializable {
             }
 
             // see if this was an OAFileInput component
-            OAJspComponent comp = getComponent(name);
+            OAWebComponent comp = getComponent(name);
             if (comp == null) continue;
             if (!(comp instanceof OAJspMultipartInterface)) continue;
 
@@ -1548,108 +1562,108 @@ public class OAForm extends OABase implements Serializable {
 
 
     public OALabel getLabel(String id) {
-        OAJspComponent comp = getComponent(id, OALabel.class);
+        OAWebComponent comp = getComponent(id, OALabel.class);
         if (comp instanceof OALabel) return (OALabel) comp;
         return null;
     }
     public OATextField getTextField(String id) {
-        OAJspComponent comp = getComponent(id, OATextField.class);
+        OAWebComponent comp = getComponent(id, OATextField.class);
         if (comp instanceof OATextField) return (OATextField) comp;
         return null;
     }
     public OAPassword getPassword(String id) {
-        OAJspComponent comp = getComponent(id, OAPassword.class);
+        OAWebComponent comp = getComponent(id, OAPassword.class);
         if (comp instanceof OAPassword) return (OAPassword) comp;
         return null;
     }
     public OAButton getButton(String id) {
-        OAJspComponent comp = getComponent(id, OAButton.class);
+        OAWebComponent comp = getComponent(id, OAButton.class);
         if (comp instanceof OAButton) return (OAButton) comp;
         return null;
     }
     public OAFileInput getFileInput(String id) {
-        OAJspComponent comp = getComponent(id, OAButton.class);
+        OAWebComponent comp = getComponent(id, OAButton.class);
         if (comp instanceof OAFileInput) return (OAFileInput) comp;
         return null;
     }
     
     public OAButtonList getButtonList(String id) {
-        OAJspComponent comp = getComponent(id, OAButtonList.class);
+        OAWebComponent comp = getComponent(id, OAButtonList.class);
         if (comp instanceof OAButtonList) return (OAButtonList) comp;
         return null;
     }
     public OAHtmlElement getHtmlElement(String id) {
-        OAJspComponent comp = getComponent(id, OAHtmlElement.class);
+        OAWebComponent comp = getComponent(id, OAHtmlElement.class);
         if (comp instanceof OAHtmlElement) return (OAHtmlElement) comp;
         return null;
     }
     public OATextArea getTextArea(String id) {
-        OAJspComponent comp = getComponent(id, OATextArea.class);
+        OAWebComponent comp = getComponent(id, OATextArea.class);
         if (comp instanceof OATextArea) return (OATextArea) comp;
         return null;
     }
     public OACombo getCombo(String id) {
-        OAJspComponent comp = getComponent(id, OACombo.class);
+        OAWebComponent comp = getComponent(id, OACombo.class);
         if (comp instanceof OACombo) return (OACombo) comp;
         return null;
     }
     public OATable getTable(String id) {
-        OAJspComponent comp = getComponent(id, OATable.class);
+        OAWebComponent comp = getComponent(id, OATable.class);
         if (comp instanceof OATable) return (OATable) comp;
         return null;
     }
     public OALink getLink(String id) {
-        OAJspComponent comp = getComponent(id, OALink.class);
+        OAWebComponent comp = getComponent(id, OALink.class);
         if (comp instanceof OALink) return (OALink) comp;
         return null;
     }
     public OACheckBox getCheckBox(String id) {
-        OAJspComponent comp = getComponent(id, OACheckBox.class);
+        OAWebComponent comp = getComponent(id, OACheckBox.class);
         if (comp instanceof OACheckBox) return (OACheckBox) comp;
         return null;
     }
     public OAGrid getGrid(String id) {
-        OAJspComponent comp = getComponent(id, OAGrid.class);
+        OAWebComponent comp = getComponent(id, OAGrid.class);
         if (comp instanceof OAGrid) return (OAGrid) comp;
         return null;
     }
     public OAHtmlSelect getSelect(String id) {
-        OAJspComponent comp = getComponent(id, OAHtmlSelect.class);
+        OAWebComponent comp = getComponent(id, OAHtmlSelect.class);
         if (comp instanceof OAHtmlSelect) return (OAHtmlSelect) comp;
         return null;
     }
     public OAImage getImage(String id) {
-        OAJspComponent comp = getComponent(id, OAImage.class);
+        OAWebComponent comp = getComponent(id, OAImage.class);
         if (comp instanceof OAImage) return (OAImage) comp;
         return null;
     }
     public OARadio getRadio(String id) {
-        OAJspComponent comp = getComponent(id, OARadio.class);
+        OAWebComponent comp = getComponent(id, OARadio.class);
         if (comp instanceof OARadio) return (OARadio) comp;
         return null;
     }
     public OAServletImage getServletImage(String id) {
-        OAJspComponent comp = getComponent(id, OAServletImage.class);
+        OAWebComponent comp = getComponent(id, OAServletImage.class);
         if (comp instanceof OAServletImage) return (OAServletImage) comp;
         return null;
     }
     public OAList getList(String id) {
-        OAJspComponent comp = getComponent(id, OAList.class);
+        OAWebComponent comp = getComponent(id, OAList.class);
         if (comp instanceof OAList) return (OAList) comp;
         return null;
     }
     public OADialog getDialog(String id) {
-        OAJspComponent comp = getComponent(id, OADialog.class);
+        OAWebComponent comp = getComponent(id, OADialog.class);
         if (comp instanceof OADialog) return (OADialog) comp;
         return null;
     }
     public OAPopup getPopup(String id) {
-        OAJspComponent comp = getComponent(id, OAPopup.class);
+        OAWebComponent comp = getComponent(id, OAPopup.class);
         if (comp instanceof OAPopup) return (OAPopup) comp;
         return null;
     }
     public OAPopupList getPopupList(String id) {
-        OAJspComponent comp = getComponent(id, OAPopupList.class);
+        OAWebComponent comp = getComponent(id, OAPopupList.class);
         if (comp instanceof OAPopupList) return (OAPopupList) comp;
         return null;
     }
@@ -1705,9 +1719,8 @@ public class OAForm extends OABase implements Serializable {
         
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
-            if (!(comp instanceof OAJspRequirementsInterface)) continue;
-            String[] ss = ((OAJspRequirementsInterface) comp).getRequiredCssNames();
+            OAWebComponent comp = alComponent.get(i);
+            String[] ss = comp.getRequiredCssNames();
             if (ss == null) continue;
 
             for (String s : ss) {
@@ -1746,6 +1759,8 @@ public class OAForm extends OABase implements Serializable {
         ArrayList<String> alName = new ArrayList<>();
         
         if (!alName.contains(OAJspDelegate.JS_jquery)) alName.add(OAJspDelegate.JS_jquery);
+        if (!alName.contains(OAJspDelegate.JS_jquery_ui)) alName.add(OAJspDelegate.JS_jquery_ui);
+        
         if (addValidation) {
             if (!alName.contains(OAJspDelegate.JS_jquery_validation)) alName.add(OAJspDelegate.JS_jquery_validation);
         }
@@ -1757,9 +1772,8 @@ public class OAForm extends OABase implements Serializable {
         
         for (int i=0; ;i++) {
             if (i >= alComponent.size()) break;
-            OAJspComponent comp = alComponent.get(i);
-            if (!(comp instanceof OAJspRequirementsInterface)) continue;
-            String[] ss = ((OAJspRequirementsInterface) comp).getRequiredJsNames();
+            OAWebComponent comp = alComponent.get(i);
+            String[] ss = comp.getRequiredJsNames();
             if (ss == null) continue;
 
             for (String s : ss) {

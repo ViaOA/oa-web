@@ -19,6 +19,18 @@ import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 
 
+/* Example:
+
+    OAExpander expander = new OAExpander("expandable", "expand", "click to expand", "click to collapse");
+    form.add(expander);
+    ..    
+    
+    <p id="expand">Expand here</p>
+    <div id="expandable">
+    <ol id="list"></ol>
+    </div>
+*/
+
 /**
  * Expand/Collapse (show/hide) an element by clicking on another element.
  * Also allows changing the displayed text for expanding/collapsing. 
@@ -39,7 +51,7 @@ public class OAExpander implements OAJspComponent, OAJspRequirementsInterface {
 
     /**
      * @param id
-     * @param clickId component that will toggle expand/collaps
+     * @param clickId component that will toggle expand/collapse text.
      * @param expandText name to display when expanded
      * @param collapseText name to display when collapsed
      */

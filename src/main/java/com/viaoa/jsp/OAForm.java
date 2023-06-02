@@ -147,6 +147,9 @@ public class OAForm extends OABase implements Serializable {
 
     public OAForm() {
     }
+    public OAForm(String id) {
+        setId(id);
+    }
     public OAForm(String id, String url) {
         setId(id);
         setUrl(url);
@@ -371,11 +374,9 @@ public class OAForm extends OABase implements Serializable {
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(2048);
 
-        sb.append("<script>\n");
+        // sb.append("<script>\n");
 
-       
         // outside JS methods
-
         
         sb.append("var oaShowMessage;");
         sb.append("if ($().modal) {");
@@ -492,7 +493,9 @@ public class OAForm extends OABase implements Serializable {
         sb.append("$('body').append(\"<div id='oaWait'><img src='image/oawait.gif'></div>\");");
 
         sb.append("    $('#"+id+"').attr('method', 'post');\n");
+        
         sb.append("    $('#"+id+"').attr('action', 'oaform.jsp');\n");
+
         sb.append("    $('#"+id+"').prepend(\"<input type='hidden' name='oaform' value='"+getId()+"'>\");\n");
 
         sb.append("    $('#"+id+"').prepend(\"<input id='oaajaxid' type='hidden' name='oaajaxid' value='"+aiAjaxIdLastUsed.get()+"'>\");\n");
@@ -546,7 +549,8 @@ public class OAForm extends OABase implements Serializable {
             if (!OAString.isEmpty(s)) sb.append(s + "\n");
             if (comp instanceof OAJspMultipartInterface) {
                 sb.append("    $('#"+id+"').attr('enctype', 'multipart/form-data');\n");
-                // 20130602 support submit fileInput
+                
+                // support submit fileInput
                 sb.append("    $('#"+id+"').attr('action', 'oaform.jsp?oaform="+getId()+"');\n");
             }
         }
@@ -759,7 +763,7 @@ public class OAForm extends OABase implements Serializable {
         sb.append("\n});\n"); // end jquery.ready ****
 
 
-        sb.append("</script>\n");
+        // sb.append("</script>\n");
         js = sb.toString();
 
         return js;
@@ -770,6 +774,11 @@ public class OAForm extends OABase implements Serializable {
      */
     public String getUpdateScript() {
         String s = getAjaxScript();
+        /*
+        if (OAString.isNotEmpty(s)) {
+            s = "<script>" + s + "</script>";
+        }
+        */
         return s;
     }    
     
@@ -1766,6 +1775,8 @@ public class OAForm extends OABase implements Serializable {
         ArrayList<String> alName = new ArrayList<>();
         
         if (!alName.contains(OAJspDelegate.JS_jquery)) alName.add(OAJspDelegate.JS_jquery);
+        if (!alName.contains(OAJspDelegate.JS_jquery_ui)) alName.add(OAJspDelegate.JS_jquery_ui);
+
         if (addValidation) {
             if (!alName.contains(OAJspDelegate.JS_jquery_validation)) alName.add(OAJspDelegate.JS_jquery_validation);
         }

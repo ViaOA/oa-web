@@ -13,6 +13,11 @@ package com.viaoa.jsp;
 import com.viaoa.hub.Hub;
 
 
+/* HTML
+<button id="blTest">ButtonList Test here</button>
+ */
+
+
 /* *
  * Adds a popup list to a button, and sets the button text to the selected value.
  * 

@@ -23,12 +23,22 @@ import com.viaoa.object.OAObject;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
+/* jQuery prop() method returns boolean value for selected, checked, readOnly, disabled and so on 
+     while attr() returns a defined string.
+
+http://www.namasteui.com/difference-between-prop-and-attr/
+
+*/
+
+// qqqqqqqqqqqqqqq check "disabled" and use prop instead of attr
+
+
 /**
  * Ajax table component, supports binding, editors, custom event handling.
  * @author vvia
  *
  */
-public class OATable implements OAJspComponent {
+public class OATable implements OAJspComponent, OAJspRequirementsInterface {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -265,6 +275,7 @@ public class OATable implements OAJspComponent {
         submitUpdateScript = "$('#oahidden"+id+"').val('');";
 
         submitUpdateScript += "$('table#oa"+id+" tbody tr:even').each(function(i) { if ($(this).attr('class') != 'oatableDisable') $(this).attr('class', 'oatableEven');});";
+        
         submitUpdateScript += "$('table#oa"+id+" tbody tr:odd').each(function(i) { if ($(this).attr('class') != 'oatableDisable') $(this).attr('class', 'oatableOdd');});";
         
         int topRow = (pager == null) ? 0 : pager.getTopRow();
@@ -352,7 +363,9 @@ public class OATable implements OAJspComponent {
 
 //qqqqqqqqqqqqqqqqq        
         sb.append("function oatable"+id+"RowClick() {\n");
+
         sb.append("    var v = $(this).attr('oarow');\n");
+        
         sb.append("    if (v == null) return;\n");
 
         // dont submit if it is already the AO
@@ -370,11 +383,15 @@ public class OATable implements OAJspComponent {
         
         if (pager != null) {
             sb.append("function oatable"+id+"PagerClick() {\n");
+            
             sb.append("    var v = $(this).attr('class');\n");
+            
             sb.append("    if (v == 'oatablePagerDisable') return;\n");
             sb.append("    if (v == 'oatablePagerSelected') return;\n");
             sb.append("    \n");
+            
             sb.append("    v = $(this).attr('oaValue');\n");
+            
             sb.append("    if (typeof v == 'undefined') {\n");
             sb.append("        v = $(this).html();\n");
             sb.append("    }\n");
@@ -386,18 +403,26 @@ public class OATable implements OAJspComponent {
         
         // used by: $('table#oa"+id+" tr td a').click(oatable"+id+"Click1");
         sb.append("function oatable"+id+"Click1() {\n");
+        
         sb.append("  var v = $(this).parents('tr').attr('oarow');\n");
+        
         sb.append("  if (v == null) return;\n");
         sb.append("  $('#oahidden"+id+"').val(v);\n");
 
         sb.append("  if ($(this).attr('target').length > 0) {\n");
+        
+        
         sb.append("      return true;\n");
         sb.append("  }\n");
+        
         sb.append("  if ($(this).attr('tabindex').length > 0) {\n");
+        
+        
         sb.append("      return true;\n");
         sb.append("  }\n");
 
         sb.append("  $('#oacommand').val('href='+$(this).attr('href'));\n"); 
+
         sb.append("  $('form').submit();\n");
         sb.append("  $('#oacommand').val('');\n"); 
         sb.append("  return false;\n");
@@ -689,6 +714,7 @@ public class OATable implements OAJspComponent {
         sb.append("$('table#oa"+id+" tbody tr').find('td:first').addClass('oatableColumnCount');\n");
 
         sb.append("$('table#oa"+id+" tbody tr:even').each(function(i) { if ($(this).attr('class') != 'oatableDisable') $(this).attr('class', 'oatableEven');});");
+        
         sb.append("$('table#oa"+id+" tbody tr:odd').each(function(i) { if ($(this).attr('class') != 'oatableDisable') $(this).attr('class', 'oatableOdd');});");
         
         if (hub.getPos() >= 0) {
@@ -867,5 +893,16 @@ public class OATable implements OAJspComponent {
 
     public void setVisiblePropertyPath(String visiblePropertyPath) {
         this.visiblePropertyPath = visiblePropertyPath;
+    }
+
+    @Override
+    public String[] getRequiredCssNames() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    @Override
+    public String[] getRequiredJsNames() {
+        String[] ss = new String[] { OAJspDelegate.JS_jquery, OAJspDelegate.JS_jquery_ui };
+        return ss;
     }
 }

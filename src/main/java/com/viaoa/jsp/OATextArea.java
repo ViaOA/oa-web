@@ -12,6 +12,11 @@ package com.viaoa.jsp;
 
 import com.viaoa.hub.Hub;
 
+
+/* HTML
+
+*/
+
 // attr: WRAP={"HARD","SOFT","OFF"}
 
 /**
@@ -61,6 +66,7 @@ public class OATextArea extends OATextField {
         String js = super.getScript();
 
         if (width > 0) js += ("$('#"+id+"').attr('cols', '"+width+"');\n");
+        
         if (getRows() > 0) js += ("$('#"+id+"').attr('rows', '"+getRows()+"');\n");
         
         int max = getMaxWidth();

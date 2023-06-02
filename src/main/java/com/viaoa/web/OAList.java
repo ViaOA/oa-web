@@ -28,74 +28,34 @@ import com.viaoa.web.swing.EmptyBorder;
  * 
  * @author vvia
  */
-public class OAList implements OAJspComponent, OAJspRequirementsInterface {
+public class OAList extends OAWebComponent {
     private static final long serialVersionUID = 1L;
 
-    protected Hub hub;
-
-    // Important Note:  this could be a composite (ex: OAButtonList uses OAPopupList uses OAList)
-    //    and this "id" would be different then "getId()" ... see OAButtonList constructor
-    protected String id;
-    
-    
-    protected OAForm form;
-    protected boolean bEnabled = true;
-    protected boolean bVisible = true;
-    protected boolean bAjaxSubmit=true;
-    protected boolean bSubmit=false;
-    protected String forwardUrl;
     protected String nullDescription = "";
     private boolean bShowNullDescriptionFirst;  // false=bottom of list
-    protected boolean bRequired;
-    protected String name;
 
-    protected String format;
-//    protected int lineWidth, maxRows, minLineWidth;
-    
-    protected String propertyPath;
-    protected String visiblePropertyPath;
-    protected String headingPropertyPath;
-    protected int columns;
-    
-    protected int rows;
-    protected int lastRow;
-    
-    protected String toolTip;
-    protected String toolTipHtmlTemplate;
-    protected OATemplate templateToolTip;
-    private boolean bHadToolTip;
     
     protected String htmlTemplate;
     private OATemplate template;
-    private HashMap<String, OAJspComponent> hmChildren = new HashMap<String, OAJspComponent>();
+    private Map<String, OAWebComponent> hmChildren = new HashMap<>();
     
     protected HashMap<Integer, String> hmHeading;
     
-    // css styles
-    protected String width;
-    protected String maxHeight; // ex:  200px,  12em
     
     public OAList(String id, Hub hub, String propertyPath) {
         this(id, hub, propertyPath, 0, 0);
     }
     public OAList(String id, Hub hub, String propertyPath, int cols, int rows) {
-        this.id = id;
-        this.hub = hub;
-        setPropertyPath(propertyPath);
-        this.columns = cols;
+        super(id, hub, propertyPath);
+        setColumns(cols);
         this.rows = rows;
     }
     public OAList(String id, Hub hub, String propertyPath, String width, String height) {
-        this.id = id;
-        this.hub = hub;
-        setPropertyPath(propertyPath);
+        super(id, hub, propertyPath);
         this.width = width;
         this.maxHeight = height;
     }
 
-    public OAList(Hub hub2, String cpp, int i, int j) {
-        // TODO Auto-generated constructor stub
-    }
     /**
      * set the heading to use, beginning at a specific row.
      */
@@ -104,120 +64,11 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         hmHeading.put(row, heading);
     }
     
-    /**
-     * Set the css style for width, ex: "100%"
-     */
-    public void setWidth(String width) {
-        this.width = width;
-    }
-    public String getWidth() {
-        return this.width;
-    }
 
-    /**
-     * Set the css style for height, ex: "12em"
-     */
-    public void setHeight(String height) {
-        this.maxHeight = height;
-    }
-    public String getHeight() {
-        return this.maxHeight;
-    }
-
-    
-    public int getColumns() {
-        return columns;
-    }
-    public void setColumns(int x) {
-        this.columns = x;
-    }
-
-    /**
-     * how many rows to display.
-     */
-    public int getRows() {
-        return rows;
-    }
-    public void setRows(int x) {
-        this.rows = x;
-    }
-
-    
-    public Hub getHub() {
-        return hub;
-    }
-            
-    
-    public void setForwardUrl(String forwardUrl) {
-        this.forwardUrl = forwardUrl;
-    }
-    public String getForwardUrl() {
-        return this.forwardUrl;
-    }
-    
     @Override
     public boolean isChanged() {
         return false;
     }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    public String getPropertyPath() {
-        return propertyPath;
-    }
-    public void setPropertyPath(String propertyPath) {
-        this.propertyPath = propertyPath;
-    }
-
-    public String getHeadingPropertyPath() {
-        return headingPropertyPath;
-    }
-    public void setHeadingPropertyPath(String propertyPath) {
-        this.headingPropertyPath = propertyPath;
-    }
-    
-    /** used when displaying error message for this textfield */
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    @Override
-    public void reset() {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void setForm(OAForm form) {
-        this.form = form;
-        for (Map.Entry<String, OAJspComponent> e : hmChildren.entrySet()) {
-            e.getValue().setForm(form);
-        }
-    }
-    @Override
-    public OAForm getForm() {
-        return this.form;
-    }
-
-    private boolean bDefaultFormat=true;
-    public void setFormat(String fmt) {
-        this.format = fmt;
-        bDefaultFormat = false;
-    }
-    public String getFormat() {
-        if (format == null && bDefaultFormat && hub != null) {
-            bDefaultFormat = false;
-            OAPropertyPath pp = new OAPropertyPath(hub.getObjectClass(), propertyPath);
-            if (pp != null) format = pp.getFormat();
-        }
-        return format;
-    }
-    
     
     @Override
     public boolean _beforeFormSubmitted() {
@@ -287,39 +138,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         return bWasSubmitted; // true if this caused the form submit
     }
 
-    @Override
-    public String _onSubmit(String forwardUrl) {
-        return onSubmit(forwardUrl);
-    }
-    
-    @Override
-    public String onSubmit(String forwardUrl) {
-        return forwardUrl;
-    }
-    
-    @Override
-    public String _afterFormSubmitted(String forwardUrl) {
-        return afterFormSubmitted(forwardUrl);
-    }
-    @Override
-    public String afterFormSubmitted(String forwardUrl) {
-        return forwardUrl;
-    }
 
-    public void setAjaxSubmit(boolean b) {
-        bAjaxSubmit = b;
-        if (b) setSubmit(false);
-    }
-    public boolean getAjaxSubmit() {
-        return bAjaxSubmit;
-    }
-    public void setSubmit(boolean b) {
-        if (b) setAjaxSubmit(false);
-        bSubmit = b;
-    }
-    public boolean getSubmit() {
-        return bSubmit;
-    }
     
     @Override
     public String getScript() {
@@ -513,7 +332,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             sb.append("$('#"+id+"').addClass('oaIndent');\n");
         }
 
-        strListing = OAJspUtil.createJsString(strListing, '\"');
+        strListing = OAWebUtil.createJsString(strListing, '\"');
         sb.append("$('#"+id+"').html(\""+strListing+"\");\n");
         
         sb.append("$('#"+id+" li').addClass('oaTextNoWrap');\n");
@@ -583,27 +402,6 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         return null;
     }
 
-    @Override
-    public void setEnabled(boolean b) {
-        lastAjaxSent = null;  
-        this.bEnabled = b;
-    }
-    @Override
-    public boolean getEnabled() {
-        return bEnabled && hub != null;
-    }
-
-
-    @Override
-    public void setVisible(boolean b) {
-        lastAjaxSent = null;  
-        this.bVisible = b;
-    }
-    @Override
-    public boolean getVisible() {
-        return this.bVisible;
-    }
-
     public String getNullDescription() {
         return nullDescription;
     }
@@ -631,47 +429,6 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
         return value;
     }
 
-    
-    public void setMaxHeight(String val) {
-        this.maxHeight = val;
-    }
-    public String getMaxHeigth() {
-        return this.maxHeight;
-    }
-
-    public boolean isRequired() {
-        return bRequired;
-    }
-    public boolean getRequired() {
-        return bRequired;
-    }
-    public void setRequired(boolean required) {
-        this.bRequired = required;
-    }
-
-    public void setToolTip(String tooltip) {
-        this.toolTip = tooltip;
-        templateToolTip = null;
-    }
-    public String getToolTip() {
-        return this.toolTip;
-    }
-    public void setToolTipHtmlTemplate(String tooltip) {
-        this.toolTipHtmlTemplate = tooltip;
-        templateToolTip = null;
-    }
-    public String getToolTipHtmlTemplate() {
-        return this.toolTipHtmlTemplate;
-    }
-    public String getProcessedToolTip(OAObject obj) {
-        if (OAString.isEmpty(toolTipHtmlTemplate)) return toolTipHtmlTemplate;
-        if (templateToolTip == null) {
-            templateToolTip = new OATemplate();
-            templateToolTip.setTemplate(getToolTipHtmlTemplate());
-        }
-        String s = templateToolTip.process(obj, hub, null);
-        return s;
-    }
     
     public String[] getRequiredJsNames() {
         ArrayList<String> al = new ArrayList<>();
@@ -713,15 +470,6 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
     }
 
 
-//qqqqqqqqqqqqqqqqqqqqqqqqq
-    
-    public void add(OAJspComponent comp) {
-        if (comp != null) {
-            hmChildren.put(comp.getId(), comp);
-            comp.setForm(form);
-        }
-    }
-    
     
     /**
      * @see #getTemplate()
@@ -747,7 +495,7 @@ public class OAList implements OAJspComponent, OAJspRequirementsInterface {
             @Override
             protected String getValue(OAObject obj, String propertyName, int width, String fmt, OAProperties props, boolean bUseFormat) {
                 String s;
-                OAJspComponent comp = hmChildren.get(propertyName);
+                OAWebComponent comp = hmChildren.get(propertyName);
                 if (comp == null) {
                     s = super.getValue(obj, propertyName, width, fmt, props, bUseFormat);
                 }

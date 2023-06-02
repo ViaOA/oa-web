@@ -391,7 +391,7 @@ public class OAComboBox implements OAJspComponent, OATableEditor {
 		}
 
 		// id + "_" + linkToObjectKey
-		sb.append("$('#" + id + "').attr('name', '" + ids + "');\n");
+        sb.append("$('#" + id + "').attr('name', '" + ids + "');\n");
 
 		String options = "";
 

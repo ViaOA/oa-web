@@ -26,10 +26,8 @@ import com.viaoa.template.OATemplate;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
 
-/*
-
+/* HTML
 <input id='chk' type='checkbox' name='chk' value='' checked>
-
 */
 
 /**
@@ -134,7 +132,7 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
 
 	@Override
 	public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-		String s = req.getParameter("oacommand");
+	    String s = req.getParameter("oacommand");
 		if (s == null && hmNameValue != null) {
 			String[] ss = hmNameValue.get("oacommand");
 			if (ss != null && ss.length > 0) {
@@ -198,10 +196,16 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
 			if (obj != null) {
 				updateProperty(obj, bChecked);
 			}
+			else  {
+                updateProperty(lastAjaxObject, false);
+			}
+			lastAjaxObject = null;
 		}
 		return bWasSubmitted;
 	}
 
+	private OAObject lastAjaxObject;
+	
 	protected void updateProperty(OAObject obj, boolean bSelected) {
 		if (obj != null) {
 			obj.setProperty(propertyPath, bChecked ? onValue : offValue);
@@ -313,9 +317,11 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
 
 		String ids = id;
 		boolean bValue = false;
-
+		lastAjaxObject = null;
+		
 		if (hub != null && !OAString.isEmpty(propertyPath)) {
 			OAObject obj = (OAObject) hub.getAO();
+			lastAjaxObject = obj;
 			if (obj != null) {
 				OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
 				Object[] objs = key.getObjectIds();
@@ -337,20 +343,25 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
 		}
 
 		sb.append("$('#" + id + "').attr('name', '" + groupName + "');\n");
+		
 		sb.append("$('#" + id + "').attr('value', '" + ids + "');\n");
 
 		bLastChecked = bValue;
 
 		if (bValue) {
-			sb.append("$('#" + id + "').attr('checked', 'checked');\n");
+            sb.append("$('#" + id + "').prop('checked', true);\n");
+			//was: sb.append("$('#" + id + "').attr('checked', 'checked');\n");
 		} else {
-			sb.append("$('#" + id + "').removeAttr('checked');\n");
+            sb.append("$('#" + id + "').prop('checked', false);\n");
+			// was: sb.append("$('#" + id + "').removeAttr('checked');\n");
 		}
 
 		if (getEnabled()) {
-			sb.append("$('#" + id + "').removeAttr('disabled');\n");
+            sb.append("$('#" + id + "').prop('disabled', false);\n");
+			//was: sb.append("$('#" + id + "').removeAttr('disabled');\n");
 		} else {
-			sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
+            sb.append("$('#" + id + "').prop('disabled', true);\n");
+			//was: sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
 		}
 
 		if (bVisible) {

@@ -13,6 +13,12 @@ package com.viaoa.jsp;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.OAString;
 
+/* HTML
+
+<input id="ptxtPassword" type="password">
+
+*/
+
 
 /**
  * Component for managing html password textfield.

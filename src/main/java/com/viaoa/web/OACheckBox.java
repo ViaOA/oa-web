@@ -10,12 +10,15 @@
 */
 package com.viaoa.web;
 
+import java.awt.Container;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.border.LineBorder;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
@@ -39,7 +42,7 @@ import com.viaoa.web.swing.ComponentInterface;
  *
  * @author vvia
  */
-public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequirementsInterface, ComponentInterface {
+public class OACheckBox extends OAWebComponent {
 	private static final long serialVersionUID = 1L;
 
 	protected Hub<?> hub;
@@ -562,4 +565,40 @@ public class OACheckBox implements OAJspComponent, OATableEditor, OAJspRequireme
 		// TODO Auto-generated method stub
 
 	}
+
+    @Override
+    public void removeHierarchyListener(HierarchyListener hierarchyListener) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setBorder(LineBorder lineBorder) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public String getToolTipText() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isVisible() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public Container getParent() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

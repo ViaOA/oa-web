@@ -17,6 +17,11 @@ import javax.servlet.http.*;
 
 import com.viaoa.util.*;
 
+/* example:
+
+
+*/
+
 /**
  * Create a dialog out of Html element.
  * @author vvia

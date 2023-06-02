@@ -13,6 +13,13 @@ package com.viaoa.jsp;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 
+/* HTML
+ID: <span id="lblId"></span>
+
+
+*/
+
+
 public class OALabel extends OAHtmlElement {
 
     public OALabel(String id, Hub hub, String propertyPath, int width) {

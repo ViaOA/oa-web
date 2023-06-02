@@ -92,7 +92,7 @@ public class OAHtmlAttribute {
         String aName = getAttrName();
         if (OAString.isEmpty(aName)) return null;
         
-        val = OAJspUtil.createJsString(val, '\'');
+        val = OAWebUtil.createJsString(val, '\'');
         
         if (!OAString.isEmpty(val)) s = "$('#"+id+"').attr('"+aName+"', '"+val+"');";
         else s = "$('#"+id+"').removeAttr('"+aName+"');";

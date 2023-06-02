@@ -17,6 +17,14 @@ import java.util.Arrays;
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OATypeAhead;
+import com.viaoa.util.OAString;
+
+/* HTML
+
+Notes: <input id="txtNote" type="text">
+
+*/
+
 
 /**
  * Styled TextArea component that can bind html textarea to OA using summernote js component.
@@ -85,6 +93,12 @@ public class OAStyledTextArea extends OATextField {
         sb.append(" ]\n");
         sb.append("});\n");
         
+        sb.append("$('#"+getId()+"').on('summernote.blur', function() {\n");
+        sb.append("  var txt = $(this).summernote('code');\n");        
+        sb.append("  $(this).val(txt);\n");        
+        sb.append("});\n");
+
+//qqqqqqqqqqqqqq        
         String js = super.getScript();
         sb.append(js);
         
@@ -111,7 +125,6 @@ public class OAStyledTextArea extends OATextField {
         return js;
     }
 
-
     @Override
     protected String getTextJavaScript(final boolean bIsInitializing) {
         String js = super.getTextJavaScript(bIsInitializing);
@@ -128,6 +141,8 @@ public class OAStyledTextArea extends OATextField {
         if (val == null) val = "";
 
         val = OAJspUtil.createJsString(val, '\"');
+        
+        val = OAString.convert(val, "\\n", "<BR>");
         
         js += "$('#"+getId()+"').summernote('code', \""+val+"\");\n";
         return js;
@@ -164,6 +179,7 @@ public class OAStyledTextArea extends OATextField {
     @Override
     public String[] getRequiredCssNames() {
         ArrayList<String> al = new ArrayList(Arrays.asList(super.getRequiredCssNames()));
+        al.add(OAJspDelegate.CSS_bootstrap);
         al.add(OAJspDelegate.CSS_summernote);
         String[] ss = new String[al.size()];
         return al.toArray(ss);
@@ -172,6 +188,7 @@ public class OAStyledTextArea extends OATextField {
     @Override
     public String[] getRequiredJsNames() {
         ArrayList<String> al = new ArrayList(Arrays.asList(super.getRequiredJsNames()));
+        al.add(OAJspDelegate.JS_bootstrap);
         al.add(OAJspDelegate.JS_summernote);
         String[] ss = new String[al.size()];
         return al.toArray(ss);

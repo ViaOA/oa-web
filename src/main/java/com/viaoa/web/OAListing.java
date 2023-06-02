@@ -32,7 +32,7 @@ import com.viaoa.util.OAString;
  * 
  * @author vvia
  */
-public class OAListing implements OAJspComponent {
+public class OAListing extends OAWebComponent {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;
@@ -272,7 +272,7 @@ public class OAListing implements OAJspComponent {
         sb = new StringBuilder(strListing.length() + 2048);
         sb.append("$('#"+id+"').addClass('oaListing');\n");
         
-        strListing = OAJspUtil.createJsString(strListing, '\"');
+        strListing = OAWebUtil.createJsString(strListing, '\"');
         sb.append("$('#"+id+"').html(\""+strListing+"\");\n");
         
 

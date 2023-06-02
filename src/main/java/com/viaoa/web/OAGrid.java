@@ -33,7 +33,7 @@ import com.viaoa.util.*;
  * 
  * @author vvia
  */
-public class OAGrid implements OAJspComponent, OAJspRequirementsInterface {
+public class OAGrid extends OAWebComponent {
     private static final long serialVersionUID = 1L;
 
     private Hub hub;

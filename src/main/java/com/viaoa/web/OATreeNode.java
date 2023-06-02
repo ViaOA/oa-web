@@ -122,6 +122,10 @@ public class OATreeNode {
         // TODO Auto-generated method stub
         return null;
     }
+    public void setAllowDnd(boolean b) {
+        // TODO Auto-generated method stub
+        
+    }
     
     
 }

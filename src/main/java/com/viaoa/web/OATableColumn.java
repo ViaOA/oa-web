@@ -176,5 +176,9 @@ public class OATableColumn implements java.io.Serializable {
     public OATableEditor getEditor() {
         return this.editor;
     }
+    public void setFilterComponent(OAJspComponent oaTextFieldFilter) {
+        // TODO Auto-generated method stub
+        
+    }
 }
 

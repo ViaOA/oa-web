@@ -27,6 +27,8 @@ import com.viaoa.object.*;
 import com.viaoa.object.OATypeAhead;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
+import com.viaoa.web.ui.base.OAApplication;
+import com.viaoa.web.ui.base.OASession;
 
 
 /* HTML
@@ -2109,6 +2111,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		sb.append("$('#" + id + " + span').html(\"" + OAJspUtil.createJsString(s, '\"') + "\");\n");
 	}
 
+	@Override
 	public String getValidationRules() {
 		// IMPORTANT NOTE:  validation uses attr name as identifier, not id.
 		//      need to set nameIncludesObjectId=false
@@ -2213,6 +2216,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		return sb.toString();
 	}
 
+	@Override
 	public String getValidationMessages() {
 		if (!getRequired()) {
 			return null;

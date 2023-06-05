@@ -16,6 +16,7 @@ import java.util.*;
 import javax.servlet.http.*;
 
 import com.viaoa.util.*;
+import com.viaoa.web.ui.base.OAApplication;
 
 /* example:
 

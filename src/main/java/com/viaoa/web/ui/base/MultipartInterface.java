@@ -8,7 +8,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-package com.viaoa.web.ui;
+package com.viaoa.web.ui.base;
 
 import java.io.OutputStream;
 
@@ -17,7 +17,7 @@ import java.io.OutputStream;
  * @author vvia
  *
  */
-public interface OAJspMultipartInterface extends java.io.Serializable{
+public interface MultipartInterface extends java.io.Serializable{
     
     OutputStream getOutputStream(int length, String originalFileName);
     

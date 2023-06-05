@@ -20,9 +20,6 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 
 import com.viaoa.annotation.OAOne;
 import com.viaoa.hub.Hub;
@@ -71,6 +68,9 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
 
     protected Object hubObject; // single object, that will be put in temp hub
 
+    protected Hub hubSelect;
+
+    
     // all of these are used internally 
     protected Hub hubTemp;
     protected Hub hubLink; // link hub for Hub
@@ -91,7 +91,8 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     
     private OAForm form;
     private String name;
-    
+    private OALabel label;
+
     private String toolTip;
     private OATemplate templateToolTip;
     protected boolean bHadToolTip;
@@ -194,6 +195,18 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     }
     
     
+    /**
+     * Returns the Hub that this component will work with.
+     */
+    public Hub getSelectHub() {
+        return hubSelect;
+    }
+
+    public Hub getMultiSelectHub() {
+        return hubSelect;
+    }
+    
+    
     public void setToolTip(String tooltip) {
         this.toolTip = tooltip;
         templateToolTip = null;
@@ -201,6 +214,16 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     public String getToolTip() {
         return this.toolTip;
     }
+
+    public void setToolTipText(String tooltip) {
+        this.toolTip = tooltip;
+        templateToolTip = null;
+    }
+    public String getToolTipText() {
+        return this.toolTip;
+    }
+
+    
     
     public String getProcessedToolTip() {
         if (OAString.isEmpty(toolTip) || toolTip.indexOf("<") < 0) return toolTip;
@@ -217,6 +240,17 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
         return s;
     }
 
+    public void setLabel(OALabel lbl) {
+        this.label = lbl;
+    }
+
+    public OALabel getLabel() {
+        return this.label;
+    }
+
+    
+    
+    
     public void setConfirmMessage(String msg) {
         this.confirmMessage = msg;
         templateConfirmMessage = null;
@@ -471,7 +505,7 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
         changeListener = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAWebComponent.this.callUpdate();
+                OAWebComponent.this.update();
             }
         };
         return changeListener;
@@ -484,7 +518,7 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
         changeListenerEnabled = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAWebComponent.this.callUpdate();
+                OAWebComponent.this.update();
             }
         };
         return changeListenerEnabled;
@@ -502,19 +536,19 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
         changeListenerVisible = new MyHubChangeListener() {
             @Override
             protected void onChange() {
-                OAWebComponent.this.callUpdate();
+                OAWebComponent.this.update();
             }
         };
         return changeListenerVisible;
     }
+    protected void update() {
+        // TODO Auto-generated method stub
+        //qqqqqqqqqqqqqqq
+    }
+
     public HubProp addVisibleObjectCallbackCheck(Hub hub, String propertyName) {
         return getVisibleChangeListener().addObjectCallbackEnabled(hub, propertyName);
     }
-    
-    
-    
-    
-
     
     
     public boolean isChanged() {
@@ -1210,18 +1244,8 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
             return;
         }
 
-        if (label != null) {
-            label.setBorder(new LineBorder(Color.green, 2));
-        } else {
-            component.setBorder(new LineBorder(Color.green, 2));
-        }
 
-        String tt;
-        if (component != null) {
-            tt = "Comp=" + component.getClass().getSimpleName();
-        } else {
-            tt = "no component";
-        }
+        String tt = "Comp=" + getClass().getSimpleName();
 
         tt += "<br>Hub=" + OAString.trunc(getHub() + "", 80);
         if (OAString.isNotEmpty(propertyPath)) {
@@ -1249,7 +1273,7 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
         if (label != null) {
             label.setToolTipText("<html>" + tt);
         } else {
-            component.setToolTipText("<html>" + tt);
+            setToolTipText("<html>" + tt);
         }
     }
     
@@ -1261,7 +1285,7 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
             return false;
         }
 
-        if (getHub() == hub && prop.equalsIgnoreCase(getHubListenerPropertyName())) {
+        if (getHub() == hub && prop.equalsIgnoreCase(getPropertyPath())) {
             if (!bAoOnly || hub.getAO() == object) {
                 return true;
             }
@@ -1463,10 +1487,10 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     @Override
     public void afterAdd(HubEvent e) {
         if (bIsHubCalc) {
-            callUpdate();
+            update();
         } else if (bListenToHubSize) {
             if (getHub().size() == 1) {
-                callUpdate();
+                update();
             }
         }
     }
@@ -1474,10 +1498,10 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     @Override
     public void afterRemove(HubEvent e) {
         if (bIsHubCalc) {
-            callUpdate();
+            update();
         } else if (bListenToHubSize) {
             if (getHub().size() == 0) {
-                callUpdate();
+                update();
             }
         }
     }
@@ -1485,24 +1509,24 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     @Override
     public void afterRemoveAll(HubEvent e) {
         if (bIsHubCalc) {
-            callUpdate();
+            update();
         } else if (bListenToHubSize) {
-            callUpdate();
+            update();
         }
     }
 
     @Override
     public void onNewList(HubEvent e) {
-        callUpdate();
+        update();
     }
 
     @Override
     public void afterInsert(HubEvent e) {
         if (bIsHubCalc) {
-            callUpdate();
+            update();
         } else if (bListenToHubSize) {
             if (getHub().size() == 1) {
-                callUpdate();
+                update();
             }
         }
     }
@@ -1511,25 +1535,12 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
 
     @Override
     public void afterChangeActiveObject(HubEvent e) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            if (!abAfterChangeAO.compareAndSet(false, true)) {
-                return;
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    abAfterChangeAO.set(false);
-                    afterChangeActiveObject();
-                }
-            });
-        } else {
-            afterChangeActiveObject();
-        }
+        afterChangeActiveObject();
     }
 
     @Override
     public void afterNewList(HubEvent e) {
-        callUpdate();
+        update();
     }
 
     private final AtomicInteger aiAfterPropChange = new AtomicInteger();
@@ -1548,24 +1559,12 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
             return;
         }
 
-        if (!SwingUtilities.isEventDispatchThread()) {
-            final int x = aiAfterPropChange.incrementAndGet();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (x == aiAfterPropChange.get()) {
-                        _afterPropertyChange(e);
-                    }
-                }
-            });
-        } else {
-            _afterPropertyChange(e);
-        }
+        _afterPropertyChange(e);
     }
 
     private void _afterPropertyChange(HubEvent e) {
         afterPropertyChange();
-        callUpdate();
+        update();
     }
 
     // called if the actual property is changed in the actualHub.activeObject
@@ -1573,6 +1572,6 @@ public class OAWebComponent extends HubListenerAdapter implements java.io.Serial
     }
 
     protected void afterChangeActiveObject() {
-        callUpdate();
+        update();
     }
 }

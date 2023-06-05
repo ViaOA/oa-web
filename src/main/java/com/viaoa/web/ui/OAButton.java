@@ -22,6 +22,7 @@ import com.viaoa.object.OAObject;
 import com.viaoa.object.OAObjectReflectDelegate;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
+import com.viaoa.web.ui.base.OASession;
 
 /* HTML
 

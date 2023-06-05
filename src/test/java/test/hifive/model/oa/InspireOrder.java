@@ -324,7 +324,7 @@ public class InspireOrder extends OAObject {
 		firePropertyChange(P_InternationalVisaSentDate, old, this.internationalVisaSentDate);
 	}
 
-	@OAProperty(displayName = "Points Ordered", description = "How many points were ordered", defaultValue = "0", displayLength = 5, format = "#,##0")
+	@OAProperty(displayName = "Points Ordered", description = "How many points were ordered", defaultValue = "0", displayLength = 5, outputFormat = "#,##0")
 	@OAColumn(sqlType = java.sql.Types.INTEGER)
 	/**
 	 * How many points were ordered

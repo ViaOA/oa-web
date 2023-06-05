@@ -1,4 +1,4 @@
-/*  Copyright 1999 Vince Via vvia@viaoa.com
+/*  Copyright 1999-2015 Vince Via vvia@viaoa.com
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -8,14 +8,17 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-package com.viaoa.web.ui;
+package com.viaoa.web.html;
 
+import java.awt.Container;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.border.LineBorder;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
@@ -25,10 +28,12 @@ import com.viaoa.object.OAObjectKeyDelegate;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAString;
-import com.viaoa.web.ui.base.BaseComponent;
+import com.viaoa.web.swing.ComponentInterface;
 
-/* HTML
+/*
+
 <input id='chk' type='checkbox' name='chk' value='' checked>
+
 */
 
 /**
@@ -37,41 +42,43 @@ import com.viaoa.web.ui.base.BaseComponent;
  *
  * @author vvia
  */
-public class OACheckBox extends BaseComponent {
+public class CheckBox extends OAWebComponent {
 	private static final long serialVersionUID = 1L;
+
+	protected Hub<?> hub;
+	protected String id;
+	protected String propertyPath;
+	protected String visiblePropertyPath;
+	protected String enablePropertyPath;
+	protected OAForm form;
+	protected boolean bEnabled = true;
+	protected boolean bVisible = true;
+	protected boolean bAjaxSubmit;
+	protected boolean bSubmit;
 
 	private Object onValue = true, offValue = false;
 	private boolean bChecked;
 	private boolean bLastChecked;
 	protected String groupName;
+	private boolean bFocus;
+	protected String forwardUrl;
 
+	protected String toolTip;
+	protected OATemplate templateToolTip;
+	private boolean bHadToolTip;
 
-    public OACheckBox(String id) {
-        super(id);
-    }
-	
-	
-    public OACheckBox(String id, Hub hub, String propertyPath) {
-        super(id, hub, propertyPath);
-    }
-	
-	
-	public OACheckBox(String id, Hub hub, String propertyPath) {
+	public CheckBox(String id, Hub hub, String propertyPath) {
 		this.id = groupName = id;
 		this.hub = hub;
 		setPropertyPath(propertyPath);
 	}
 
-	public OACheckBox(Hub hub, String propertyPath) {
-		this.hub = hub;
-		setPropertyPath(propertyPath);
-	}
-
-	public OACheckBox(String id) {
+	public CheckBox(String id) {
 		this.id = groupName = id;
 	}
 
-	public OACheckBox() {
+	public CheckBox(Hub hub, String prop) {
+		// TODO Auto-generated constructor stub
 	}
 
 	public void setOnValue(Object obj) {
@@ -101,11 +108,6 @@ public class OACheckBox extends BaseComponent {
 	}
 
 	@Override
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	@Override
 	public void reset() {
 		bChecked = bLastChecked;
 	}
@@ -127,7 +129,7 @@ public class OACheckBox extends BaseComponent {
 
 	@Override
 	public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-	    String s = req.getParameter("oacommand");
+		String s = req.getParameter("oacommand");
 		if (s == null && hmNameValue != null) {
 			String[] ss = hmNameValue.get("oacommand");
 			if (ss != null && ss.length > 0) {
@@ -191,16 +193,10 @@ public class OACheckBox extends BaseComponent {
 			if (obj != null) {
 				updateProperty(obj, bChecked);
 			}
-			else  {
-                updateProperty(lastAjaxObject, false);
-			}
-			lastAjaxObject = null;
 		}
 		return bWasSubmitted;
 	}
 
-	private OAObject lastAjaxObject;
-	
 	protected void updateProperty(OAObject obj, boolean bSelected) {
 		if (obj != null) {
 			obj.setProperty(propertyPath, bChecked ? onValue : offValue);
@@ -312,11 +308,9 @@ public class OACheckBox extends BaseComponent {
 
 		String ids = id;
 		boolean bValue = false;
-		lastAjaxObject = null;
-		
+
 		if (hub != null && !OAString.isEmpty(propertyPath)) {
 			OAObject obj = (OAObject) hub.getAO();
-			lastAjaxObject = obj;
 			if (obj != null) {
 				OAObjectKey key = OAObjectKeyDelegate.getKey(obj);
 				Object[] objs = key.getObjectIds();
@@ -338,25 +332,20 @@ public class OACheckBox extends BaseComponent {
 		}
 
 		sb.append("$('#" + id + "').attr('name', '" + groupName + "');\n");
-		
 		sb.append("$('#" + id + "').attr('value', '" + ids + "');\n");
 
 		bLastChecked = bValue;
 
 		if (bValue) {
-            sb.append("$('#" + id + "').prop('checked', true);\n");
-			//was: sb.append("$('#" + id + "').attr('checked', 'checked');\n");
+			sb.append("$('#" + id + "').attr('checked', 'checked');\n");
 		} else {
-            sb.append("$('#" + id + "').prop('checked', false);\n");
-			// was: sb.append("$('#" + id + "').removeAttr('checked');\n");
+			sb.append("$('#" + id + "').removeAttr('checked');\n");
 		}
 
 		if (getEnabled()) {
-            sb.append("$('#" + id + "').prop('disabled', false);\n");
-			//was: sb.append("$('#" + id + "').removeAttr('disabled');\n");
+			sb.append("$('#" + id + "').removeAttr('disabled');\n");
 		} else {
-            sb.append("$('#" + id + "').prop('disabled', true);\n");
-			//was: sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
+			sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
 		}
 
 		if (bVisible) {
@@ -561,4 +550,55 @@ public class OACheckBox extends BaseComponent {
 	@Override
 	public void _beforeOnSubmit() {
 	}
+
+	public void setText(String string) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void setToolTipText(String string) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void setEnabled(Hub hub, String prop, Object val) {
+		// TODO Auto-generated method stub
+
+	}
+
+    @Override
+    public void removeHierarchyListener(HierarchyListener hierarchyListener) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setBorder(LineBorder lineBorder) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public String getToolTipText() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isVisible() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public Container getParent() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

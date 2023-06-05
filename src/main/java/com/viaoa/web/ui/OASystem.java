@@ -13,6 +13,8 @@ package com.viaoa.web.ui;
 import java.io.*;
 import javax.servlet.ServletContext;
 
+import com.viaoa.web.ui.base.OAApplication;
+
 /**
  * Top component used for managing web server, others include application, user sesssion, page/form.
  * @author vvia

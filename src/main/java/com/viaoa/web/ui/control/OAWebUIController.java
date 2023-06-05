@@ -92,7 +92,7 @@ import com.viaoa.web.swing.JTextField;
  * controller Classes (Model/View/Controller) for UI components.
  */
 public class OAWebUIController extends HubListenerAdapter {
-	private static Logger LOG = Logger.getLogger(OAWebController.class.getName());
+	private static Logger LOG = Logger.getLogger(OAWebUIController.class.getName());
 
 	public boolean DEBUG; // used for debugging a single component. ex: ((OALabel)lbl).setDebug(true)
 	public static boolean DEBUGUI = false; // used by debug() to show info

@@ -83,7 +83,7 @@ public class BaseForm extends OABase implements Serializable {
 
     protected OASession session;
     protected String id;
-    protected String url;  // jsp name
+    protected String url;
     protected String title;
 
     protected String forwardUrl;
@@ -98,8 +98,8 @@ public class BaseForm extends OABase implements Serializable {
     private final ArrayList<FormProcess> alProcess = new ArrayList<>(3);
     private volatile boolean bFormProcessClosed;
 
-    protected final ArrayList<String> alRequiredCssName = new ArrayList<>();
-    protected final ArrayList<String> alRequiredJsName = new ArrayList<>();
+    protected final List<String> alRequiredCssName = new ArrayList<>();
+    protected final List<String> alRequiredJsName = new ArrayList<>();
 
     // where to redirect after displaying any error messages
     protected String urlRedirect;

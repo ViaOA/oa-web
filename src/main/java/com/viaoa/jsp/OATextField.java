@@ -1620,7 +1620,8 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
         OAPropertyInfo pi = oi.getPropertyInfo(pp);
-        return pi.getMinLength();
+//qqqqqqqqqq        return pi.getMinLength();
+        return 0;
     }
 	
     public void setMaxInputLength(int x) {

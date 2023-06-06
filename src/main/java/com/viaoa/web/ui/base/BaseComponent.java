@@ -28,7 +28,10 @@ public class BaseComponent {
 
     protected String id;
     protected BaseForm form;
+    
     private String name;
+    protected String value;
+
     protected String labelId;
     protected String floatLabel;
 
@@ -37,13 +40,12 @@ public class BaseComponent {
     
     protected boolean bRequired;
     private boolean bFocus;
-    protected String value;
     protected String forwardUrl;
     protected boolean bSubmit, bAjaxSubmit;
     protected String toolTip;
 
-    // flags
-    private String lastAjaxSent;
+    // internal flags
+    protected String lastAjaxSent;
     private boolean bHadToolTip;
     private boolean bFloatLabelInit;
     
@@ -179,6 +181,10 @@ public class BaseComponent {
         lastAjaxSent = null;
         StringBuilder sb = new StringBuilder(1024);
 
+        String s = getName();
+        if (OAString.isEmpty(s)) s = getId();
+        sb.append("$('#" + id + "').attr('name', '"+s+"');\n");
+        
         if (isRequired()) {
             sb.append("$('#" + id + "').addClass('oaRequired');\n");
             sb.append("$('#" + id + "').prop('required', true);\n");
@@ -197,7 +203,7 @@ public class BaseComponent {
 
         sb.append(getAjaxScript(true));
 
-        String s = getVerifyScript();
+        s = getVerifyScript();
         if (OAString.isNotEmpty(s)) {
             sb.append("\n");
             sb.append(s);
@@ -218,10 +224,15 @@ public class BaseComponent {
     protected String getAjaxScript(final boolean bIsInitializing) {
         StringBuilder sb = new StringBuilder(1024);
 
+        String s = getValue();
+        if (s == null) s = "";
+        sb.append("$('#" + id + "').val('"+s+"');\n");
+        
+        
         if (!bFloatLabelInit) {
             getFloatLabelJs(sb);
         }
-
+        
         // tooltip
         String prefix = null;
         String tt = getProcessedToolTip();
@@ -283,21 +294,24 @@ public class BaseComponent {
         sb.append("$('#" + id + " + span').html(\"" + OAJspUtil.createJsString(getFloatLabel(), '\"') + "\");\n");
     }
 
-
     protected String getEnabledScript() {
         StringBuilder sb = new StringBuilder(64);
         final String lblId = getLabelId();
         if (getEnabled()) {
             if (OAString.isNotEmpty(lblId)) {
                 sb.append("$('#" + lblId + "').prop('disabled', false);\n");
+                sb.append("$('#" + lblId + "').removeAttr('disabled');\n");
             }
             sb.append("$('#" + id + "').prop('disabled', false);\n");
+            sb.append("$('#" + id + "').removeAttr('disabled');\n");
         }
         else {
             if (OAString.isNotEmpty(lblId)) {
                 sb.append("$('#" + lblId + "').prop('disabled', true);\n");
+                sb.append("$('#" + lblId + "').attr('disabled', 'disabled');\n");
             }
             sb.append("$('#" + id + "').prop('disabled', true);\n");
+            sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
         }
         return sb.toString();
     }
@@ -321,84 +335,7 @@ public class BaseComponent {
     }
 
 
-    
-    
-    /*
-    
-submitBefore
 
-boolean submitShouldCancel
-
-
-submit
-
-  
-submitAfter
-    
-    
-    
-    */
-    
-    public boolean _beforeFormSubmitted() {
-        return true;
-    }
-
-    
-    //qqqqqqq only called by component that did the submit
-    public void _beforeOnSubmit() {
-    }
-    
-    
-    public String _afterFormSubmitted(String forwardUrl) {
-        return afterFormSubmitted(forwardUrl);
-    }
-
-    public String afterFormSubmitted(String forwardUrl) {
-        return forwardUrl;
-    }
-
-    public String _onSubmit(String forwardUrl) {
-        return onSubmit(forwardUrl);
-    }
-
-    public String onSubmit(String forwardUrl) {
-        return forwardUrl;
-    }
-
-    public boolean _onFormSubmitted(HttpServletRequest req, HttpServletResponse resp, HashMap<String, String[]> hmNameValue) {
-
-        String s = req.getParameter("oacommand");
-        if (s == null && hmNameValue != null) {
-            String[] ss = hmNameValue.get("oacommand");
-            if (ss != null && ss.length > 0) {
-                s = ss[0];
-            }
-        }
-        final boolean bWasSubmitted = (id != null && id.equals(s));
-
-        String value = null;
-        if (hmNameValue != null) {
-            for (Map.Entry<String, String[]> ex : hmNameValue.entrySet()) {
-                name = ex.getKey();
-                if (!name.toUpperCase().startsWith(id.toUpperCase())) {
-                    continue;
-                }
-
-                String[] values = ex.getValue();
-                if (values != null && values.length > 0) {
-                    value = values[0];
-                }
-            }
-        }
-
-        setValue(value);
-        return bWasSubmitted;
-    }
-
-    
-    
-    
-    
     
     public String getValidationRules() {
         return null;
@@ -408,17 +345,6 @@ submitAfter
     public String getValidationMessages() {
         return null;
     }
-    
-    
-    public String getTableEditorHtml() {
-        return null;
-    }
-
-    
-    
-    
-    
-    
     
     
     
@@ -476,6 +402,9 @@ submitAfter
     public String getRenderHtml(OAObject obj) {
         return null;
     }
-    
+
+    public String getTableEditorHtml() {
+        return null;
+    }
 
 }

@@ -8,12 +8,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-package com.viaoa.jsp;
+package com.viaoa.web.ui.hold;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -28,6 +27,9 @@ import com.viaoa.object.*;
 import com.viaoa.object.OATypeAhead;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
+import com.viaoa.web.server.OAApplication;
+import com.viaoa.web.server.OASession;
+import com.viaoa.web.ui.base.OAJspDelegate;
 
 
 /* HTML
@@ -1621,8 +1623,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
         
         OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(hub.getObjectClass());
         OAPropertyInfo pi = oi.getPropertyInfo(pp);
-//qqqqqqqqqq        return pi.getMinLength();
-        return 0;
+        return pi.getMinLength();
     }
 	
     public void setMaxInputLength(int x) {
@@ -1739,7 +1740,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 			return null;
 		}
 
-		List<OAObject> al = typeAhead.search(searchText);
+		ArrayList<OAObject> al = typeAhead.search(searchText);
 		if (al == null) {
 			return null;
 		}
@@ -1785,7 +1786,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 			return null;
 		}
 
-		List al = typeAhead.search(searchText);
+		ArrayList al = typeAhead.search(searchText);
 		if (al == null) {
 			return null;
 		}
@@ -2096,13 +2097,13 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 			sb.append("$('#" + id + "').addClass('oaFloatLabel');\n");
 
 			if (OAString.isEmpty(getFloatLabel())) {
-				sb.append("$('#" + id + "').after('<span class=\\'active\\'></span>');\n");
+				sb.append("$('#" + id + "').after('<span class='active'></span>');\n");
 			} else {
 				sb.append("$('#" + id + "').after('<span></span>');\n");
 				sb.append("$('#" + id + "').on('propertychange change keyup paste input', function() { if ($('#" + id
-						+ "').val().length > 0) $('#" + id + " + span').addClass(\\'active\\'); else $('#" + id
-						+ " + span').removeClass(\\'active\\'); });\n");
-				sb.append("if ($('#" + id + "').val().length > 0) $('#" + id + " + span').addClass(\\'active\\');\n");
+						+ "').val().length > 0) $('#" + id + " + span').addClass('active'); else $('#" + id
+						+ " + span').removeClass('active'); });\n");
+				sb.append("if ($('#" + id + "').val().length > 0) $('#" + id + " + span').addClass('active');\n");
 			}
 			bFloatLabelJsInit = true;
 		}
@@ -2111,6 +2112,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		sb.append("$('#" + id + " + span').html(\"" + OAJspUtil.createJsString(s, '\"') + "\");\n");
 	}
 
+	@Override
 	public String getValidationRules() {
 		// IMPORTANT NOTE:  validation uses attr name as identifier, not id.
 		//      need to set nameIncludesObjectId=false
@@ -2215,6 +2217,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		return sb.toString();
 	}
 
+	@Override
 	public String getValidationMessages() {
 		if (!getRequired()) {
 			return null;

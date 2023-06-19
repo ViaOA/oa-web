@@ -367,7 +367,6 @@ public class OAForm extends OABase implements Serializable {
      * @return
      */
     public String getInitScript() {
-        getSession().put("oaformLast", this);  // used by oadebug.jsp, oaenable.jsp to know the last page that was viewed
 
         alNewAddComponent.clear();
         

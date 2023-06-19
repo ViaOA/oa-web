@@ -73,18 +73,18 @@ import com.viaoa.util.OADate;
 import com.viaoa.util.OANullObject;
 import com.viaoa.util.OAPropertyPath;
 import com.viaoa.util.OAString;
-import com.viaoa.web.OALabel;
-import com.viaoa.web.OAResizePanel;
-import com.viaoa.web.OATabbedPane;
-import com.viaoa.web.OATable;
-import com.viaoa.web.OATableComponent;
-import com.viaoa.web.OATextField;
-import com.viaoa.web.OAWebComponent;
-import com.viaoa.web.OAWebUtil;
+import com.viaoa.web.oldversion.OALabel;
+import com.viaoa.web.oldversion.OAResizePanel;
+import com.viaoa.web.oldversion.OATabbedPane;
+import com.viaoa.web.oldversion.OATable;
+import com.viaoa.web.oldversion.OATableComponent;
+import com.viaoa.web.oldversion.OATextField;
+import com.viaoa.web.oldversion.OAWebComponent;
 import com.viaoa.web.swing.JLabel;
 import com.viaoa.web.swing.JTabbedPane;
 import com.viaoa.web.swing.JTable;
 import com.viaoa.web.swing.JTextField;
+import com.viaoa.web.util.OAWebUtil;
 
 /**
  * Base controller class for OAWeb components. 

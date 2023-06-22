@@ -365,8 +365,14 @@ public class OAForm extends OABase implements Serializable {
     }
 
     protected void beforePageLoad() {
+        for (OAHtmlComponent comp : alComponent) {
+            comp.beforePageLoad();
+        }
     }
     protected void afterPageLoad() {
+        for (OAHtmlComponent comp : alComponent) {
+            comp.afterPageLoad();
+        }
     }
     
     
@@ -1369,6 +1375,7 @@ public class OAForm extends OABase implements Serializable {
 
         // all are called, allows components to set submit component
         for (OAHtmlComponent comp : alComponent) {
+            if (!comp.getEnabled()) continue;
             comp.onSubmitPrecheck(formSubmitEvent);
             if (formSubmitEvent.getCancel()) break;
         }
@@ -1376,6 +1383,7 @@ public class OAForm extends OABase implements Serializable {
         if (!formSubmitEvent.getCancel()) {
             // all are called, allows components to cancel
             for (OAHtmlComponent comp : alComponent) {
+                if (!comp.getEnabled()) continue;
                 comp.onSubmitBeforeLoadValues(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
             }
@@ -1383,12 +1391,14 @@ public class OAForm extends OABase implements Serializable {
         
         if (!formSubmitEvent.getCancel()) {
             for (OAHtmlComponent comp : alComponent) {
+                if (!comp.getEnabled()) continue;
                 comp.onSubmitLoadValues(formSubmitEvent);
             }
         }
 
         if (!formSubmitEvent.getCancel()) {
             for (OAHtmlComponent comp : alComponent) {
+                if (!comp.getEnabled()) continue;
                 comp.onSubmitAfterLoadValues(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
             }
@@ -1408,6 +1418,7 @@ public class OAForm extends OABase implements Serializable {
 
         if (!formSubmitEvent.getCancel()) {
             for (OAHtmlComponent comp : alComponent) {
+                if (!comp.getEnabled()) continue;
                 comp.onSubmitCompleted(formSubmitEvent);
             }
         }

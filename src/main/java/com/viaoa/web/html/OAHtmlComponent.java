@@ -35,17 +35,19 @@ public class OAHtmlComponent {
     protected OAForm form;
     
     protected String name;
+    private boolean bDebug;
 
     // true if the page needs reloaded (to call oaForm.getScript)
     private boolean bNeedsReloaded; 
     
     // the attribute "value" is used differently, based on the element type.
     public static enum ValueAttributeType {
-        Text(EventType.OnBlur),
-        Checkbox(EventType.OnChange),
-        Radio(EventType.OnChange),
-        Button(EventType.OnClick),
-        Select(EventType.OnChange);
+        Text(EventType.OnBlur),   // value of input/text
+        Checkbox(EventType.OnChange),  // value sent on submit
+        Radio(EventType.OnChange),  // value sent on submit
+        Button(EventType.OnClick),  // button text
+        File(EventType.OnBlur),   // value of file selected
+        Select(EventType.OnChange); // selected option value 
         
         private EventType eventType;
         
@@ -68,8 +70,8 @@ public class OAHtmlComponent {
         return this.valueAttributeType;
     }
     public void setValueAttributeType(ValueAttributeType vat) {
+        if (this.valueAttributeType != vat) setNeedsReloaded(true);
         this.valueAttributeType = vat;
-        this.bNeedsReloaded = true;
     }
     
     public InputType getInputType() {
@@ -175,8 +177,8 @@ public class OAHtmlComponent {
     protected List<String> dataList; 
 
     protected Map<String, String> hmStyle;
-    private List<String> alAddedStyles;
-    private List<String> alRemovedStyles;
+    private List<String> alStyleAdd;
+    private List<String> alStyleRemove;
 
     protected Set<String> hsClass;
     protected Set<String> hsClassAdd;
@@ -453,8 +455,8 @@ public class OAHtmlComponent {
         return id;
     }
     public void setId(String id) {
+        if (OAStr.isNotEqual(this.id, id)) setNeedsReloaded(true);
         this.id = id;
-        this.bNeedsReloaded = true;
     }
 
     
@@ -462,24 +464,24 @@ public class OAHtmlComponent {
         return this.form;
     }
     public void setForm(OAForm form) {
+        if (this.form != form) setNeedsReloaded(true);
         this.form = form;
-        this.bNeedsReloaded = true;
     }
     
     public String getName() {
         return name;
     }
     public void setName(String name) {
+        if (OAStr.isNotEqual(this.name, name)) setNeedsReloaded(true);
         this.name = name;
-        this.bNeedsReloaded = true;
     }
 
     public String getType() {
         return type;
     }
     public void setType(String type) {
+        if (OAStr.isNotEqual(this.type, type)) setNeedsReloaded(true);
         this.type = type;
-        this.bNeedsReloaded = true;
     }
     public void setType(InputType type) {
         setType(type == null ? InputType.Text.getDisplay() : type.getDisplay());
@@ -490,8 +492,8 @@ public class OAHtmlComponent {
         return labelId;
     }
     public void setLabelId(String id) {
+        if (OAStr.isNotEqual(this.labelId, id)) setNeedsReloaded(true);
         this.labelId = id;
-        this.bNeedsReloaded = true;
     }
     
     public String getFloatLabel() {
@@ -499,6 +501,7 @@ public class OAHtmlComponent {
     }
     public void setFloatLabel(String floatLabel) {
         this.bFloatLabelChanged |= OACompare.isNotEqual(this.floatLabel, floatLabel);
+        if (bFloatLabelChanged && OAStr.isNotEmpty(this.floatLabel)) setNeedsReloaded(true);
         this.floatLabel = floatLabel;
     }
 
@@ -602,6 +605,7 @@ public class OAHtmlComponent {
         return this.value;
     }
     public void setValue(String value) {
+        if (OAStr.isEqual(this.value, value)) return;
         this.value = value;
         this.bValueChangedByAjax = false;
     }
@@ -610,6 +614,23 @@ public class OAHtmlComponent {
         return this.values;
     }
     public void setValues(String[] values) {
+        if (this.values == values) return;
+        if (OACompare.isEqual(this.values, values)) return;
+        /*was
+        if (this.values != null && values != null) {
+            int x = this.values.length;
+            if (x == values.length) {
+                boolean b = true;
+                for (int i=0; i<x; i++) {
+                    if (OAStr.isNotEqual(this.values[i], values[i])) {
+                        b = false;
+                        break;
+                    }
+                }
+                if (b) return; // same
+            }
+        }
+        */
         this.values = values;
         this.bValueChangedByAjax = false;
     }
@@ -619,39 +640,39 @@ public class OAHtmlComponent {
         return this.forwardUrl;
     }
     public void setForwardUrl(String forwardUrl) {
+        if (OAStr.isNotEqual(this.forwardUrl, forwardUrl)) setNeedsReloaded(true);
         this.forwardUrl = forwardUrl;
-        this.bNeedsReloaded = true;
     }
 
     public boolean getSubmit() {
         return bSubmit;
     }
     public void setSubmit(boolean b) {
+        if (this.bSubmit != b) setNeedsReloaded(true);
         bSubmit = b;
-        this.bNeedsReloaded = true;
     }
     
     public boolean getAjaxSubmit() {
         return bAjaxSubmit;
     }
     public void setAjaxSubmit(boolean b) {
+        if (this.bAjaxSubmit != b) setNeedsReloaded(true);
         bAjaxSubmit = b;
-        this.bNeedsReloaded = true;
     }
 
     public String getToolTip() {
         return this.toolTipText;
     }
-    public void setToolTip(String tooltip) {
-        this.bToolTipChanged |= OACompare.isNotEqual(this.toolTipText, tooltip);
-        this.toolTipText = tooltip;
+    public void setToolTip(String toolTip) {
+        this.bToolTipChanged |= OACompare.isNotEqual(this.toolTipText, toolTip);
+        this.toolTipText = toolTip;
     }
 
     public String getToolTipText() {
         return this.toolTipText;
     }
-    public void setToolTipText(String tooltip) {
-        setToolTip(toolTipText);
+    public void setToolTipText(String toolTip) {
+        setToolTip(toolTip);
     }
 
     public String getToolTipTemplate() {
@@ -707,12 +728,10 @@ public class OAHtmlComponent {
             switch (vat) {
             case Text:
                 setValue(ss == null ? null : ss.length==0 ? null : ss[0]);
-                this.bValueChangedByAjax = formSubmitEvent.getAjax();
                 break;
             case Checkbox:
                 boolean b = (ss != null && ss.length > 0);
                 setChecked(b);
-                this.bValueChangedByAjax = formSubmitEvent.getAjax();
                 break;
             case Radio:
                 b = (ss != null && ss.length > 0);
@@ -720,7 +739,6 @@ public class OAHtmlComponent {
                     b = OAStr.isEqual(getValue(), ss[0], true);
                 }
                 setChecked(b);
-                this.bValueChangedByAjax = formSubmitEvent.getAjax();
                 break;
             case Button:
                 break;
@@ -745,6 +763,7 @@ public class OAHtmlComponent {
                 }                        
             }
         }
+        this.bValueChangedByAjax = formSubmitEvent.getAjax();
     }
 
     // only called on the component that submitted, if event was not previously cancelled.
@@ -799,7 +818,8 @@ public class OAHtmlComponent {
     public String getStyle(String name) {
         if (OAStr.isEmpty(name)) return null;
         if (hmStyle == null) return  null;
-        return hmStyle.get(name);
+        String s = hmStyle.get(name);
+        return s;
     }
     public List<String> getStyles() {
         List<String> al = new ArrayList();
@@ -812,7 +832,7 @@ public class OAHtmlComponent {
         return al;
     }
 
-    public void addStyle(String name, String value) {
+    public void addStyle(final String name, final String value) {
         if (OAStr.isEmpty(name)) return;
         if (OAStr.isEmpty(value)) {
             removeStyle(name);
@@ -825,49 +845,51 @@ public class OAHtmlComponent {
             if (s != null && s.equals(value)) return;
         }
         hmStyle.put(name, value);
-        if (alAddedStyles == null) alAddedStyles = new ArrayList();
-        alAddedStyles.add(name);
+        if (alStyleAdd == null) alStyleAdd = new ArrayList();
+        alStyleAdd.add(name);
+        if (alStyleRemove != null) alStyleRemove.remove(name);
     }
     
-    
-    public void removeStyle(String name) {
+    public void removeStyle(final String name) {
         if (OAStr.isEmpty(name)) return;
         if (hmStyle == null) return;
         if (hmStyle.get(name) == null) return;
 
         hmStyle.remove(name);
-        if (alRemovedStyles == null) alRemovedStyles = new ArrayList();
-        alRemovedStyles.add(name);
+        if (alStyleRemove == null) alStyleRemove = new ArrayList();
+        alStyleRemove.add(name);
+        if (alStyleAdd != null) alStyleAdd.remove(name);
     }
     
-    
-    protected String getStyleJs() {
+    protected String getStyleJs(final boolean bIsInitializing) {
         ArrayList<String> al = new ArrayList<String>();
 
-        /*
-        if (hmStyle != null) {
-            for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
-                String sx = ex.getKey();
-                String v = ex.getValue();
-                al.add("'"+sx + "':'" + v + "'");
+        if (bIsInitializing) {
+            if (hmStyle != null) {
+                for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
+                    String sx = ex.getKey();
+                    String v = ex.getValue();
+                    al.add("'"+sx + "':'" + v + "'");
+                }
             }
         }
-        */
-
-        if (alAddedStyles != null) {
-            for (String name : alAddedStyles) {
-                String val = hmStyle.get(name);
-                al.add("'"+name + "':'" + val + "'");
+        else {
+            if (alStyleAdd != null) {
+                for (String name : alStyleAdd) {
+                    String val = hmStyle.get(name);
+                    al.add("'"+name + "':'" + val + "'");
+                }
             }
-            alAddedStyles.clear();
+        
+            if (alStyleRemove != null) {
+                for (String name : alStyleRemove) {
+                    al.add("'"+name + "':'initial'");
+                    //was: al.add("'"+name + "':'inherit'");
+                }
+            }        
         }
-    
-        if (alRemovedStyles != null) {
-            for (String name : alRemovedStyles) {
-                al.add("'"+name + "':'inherit'");
-            }
-            alRemovedStyles.clear();
-        }        
+        if (alStyleAdd != null) alStyleAdd.clear();
+        if (alStyleRemove != null) alStyleRemove.clear();
         
         String css = null;
         for (String s : al) {
@@ -1009,11 +1031,9 @@ public class OAHtmlComponent {
         else if (overflow.equalsIgnoreCase("hidden")) {
             addStyle("text-overflow", "ellipsis");
         }
-        
     }
     public void setOverflow(OverflowType overflowType) {
         setOverflow(overflowType == null ? OverflowType.Default.getDisplay() : overflowType.getDisplay());
-        this.bNeedsReloaded = true;
     }
     
     
@@ -1033,20 +1053,27 @@ public class OAHtmlComponent {
     
     
     
-    public void addClass(String name) {
+    public void addClass(final String name) {
         if (OAStr.isEmpty(name)) return;
+        if (hsClass == null) hsClass = new HashSet<>();
+        else if (hsClass.contains(name)) return;
+        hsClass.add(name);
+        
         if (hsClassAdd == null) hsClassAdd = new HashSet<>();
         hsClass.add(name);
-        hsClassAdd.add(name);
+        if (hsClassRemove != null) hsClassRemove.remove(name); 
     }
-    public void removeClass(String name) {
+    public void removeClass(final String name) {
         if (OAStr.isEmpty(name)) return;
-        if (hsClassAdd != null) {
-            hsClassAdd.remove(name);
-        }
+        if (hsClass == null) return;
         hsClass.remove(name);
+        
+        if (hsClassAdd != null) {
+            if (hsClassAdd.remove(name)) return;
+        }
         if (hsClassRemove == null) hsClassRemove = new HashSet<>();
         hsClassRemove.add(name);
+        if (hsClassAdd != null) hsClassAdd.remove(name); 
     }
 
     public List<String> getClasses() {
@@ -1060,28 +1087,41 @@ public class OAHtmlComponent {
     }
 
     
-    protected String getClassJs() {
+    protected String getClassJs(final boolean bIsInitializing) {
         String s = null;
         Iterator itx;
-        if (hsClassAdd != null) {
-            itx = hsClassAdd.iterator();
-            for ( ; itx.hasNext() ;  ) {
-                String sx = (String) itx.next();
-                if (s == null) s = "";
-                s += "$('#"+id+"').addClass('"+sx+"');";
-            }
-            hsClassAdd.clear();
-        }
         
-        if (hsClassRemove != null) {
-            itx = hsClassRemove.iterator();
-            for ( ; itx.hasNext() ;  ) {
-                String sx = (String) itx.next();
-                if (s == null) s = "";
-                s += "$('#"+id+"').removeClass('"+sx+"');";
+        if (bIsInitializing) {
+            if (hsClass != null) {
+                itx = hsClass.iterator();
+                for ( ; itx.hasNext() ;  ) {
+                    String sx = (String) itx.next();
+                    if (s == null) s = "";
+                    s += "$('#"+id+"').addClass('"+sx+"');";
+                }
             }
-            hsClassRemove.clear();
-        }        
+        }
+        else {
+            if (hsClassAdd != null) {
+                itx = hsClassAdd.iterator();
+                for ( ; itx.hasNext() ;  ) {
+                    String sx = (String) itx.next();
+                    if (s == null) s = "";
+                    s += "$('#"+id+"').addClass('"+sx+"');";
+                }
+            }
+            
+            if (hsClassRemove != null) {
+                itx = hsClassRemove.iterator();
+                for ( ; itx.hasNext() ;  ) {
+                    String sx = (String) itx.next();
+                    if (s == null) s = "";
+                    s += "$('#"+id+"').removeClass('"+sx+"');";
+                }
+            }     
+        }
+        if (hsClassAdd != null) hsClassAdd.clear();
+        if (hsClassRemove != null) hsClassRemove.clear();
         return s;
     }
 
@@ -1089,12 +1129,11 @@ public class OAHtmlComponent {
         return inputMode;
     }
     public void setInputMode(String mode) {
+        if (OAStr.isNotEqual(this.inputMode, mode)) setNeedsReloaded(true);
         this.inputMode = mode;
-        this.bNeedsReloaded = true;
     }
     public void setInputMode(InputModeType type) {
-        this.inputMode = type == null ? InputModeType.Default.getDisplay() : type.getDisplay();
-        this.bNeedsReloaded = true;
+        setInputMode(type == null ? InputModeType.Default.getDisplay() : type.getDisplay());
     }
     
     /**
@@ -1105,15 +1144,15 @@ public class OAHtmlComponent {
         return this.confirmMessage;
     }
     public void setConfirmMessage(String msg) {
+        if (OAStr.isNotEqual(this.confirmMessage, msg)) setNeedsReloaded(true);
         confirmMessage = msg;
-        this.bNeedsReloaded = true;
     }
     public String getConfirmMessageTemplate() {
         return this.confirmMessageTemplate;
     }
     public void setConfirmMessageTemplate(String msg) {
+        if (OAStr.isNotEqual(this.confirmMessageTemplate, msg)) setNeedsReloaded(true);
         this.confirmMessageTemplate = msg;
-        this.bNeedsReloaded = true;
     }
     public String getCalcConfirmMessage() {
         return getToolTipText();
@@ -1154,8 +1193,8 @@ public class OAHtmlComponent {
         return eventName;
     }
     public void setEventName(String name) {
+        if (OAStr.isNotEqual(this.eventName, name)) setNeedsReloaded(true);
         this.eventName = name;
-        this.bNeedsReloaded = true;
     }
     public void setEventType(EventType eventType) {
         setEventName(eventType == null ? null : eventType.getDisplay());
@@ -1168,8 +1207,8 @@ public class OAHtmlComponent {
         return bIsPlainText;
     }
     public void setPlainText(boolean b) {
+        if (this.bIsPlainText != b) setNeedsReloaded(true);
         bIsPlainText = b;
-        this.bNeedsReloaded = true;
     }
 
 //qqqqqqqqqqqqqq add js for this    
@@ -1194,14 +1233,28 @@ public class OAHtmlComponent {
         return this.bMultiple;
     }
     public void setMultiple(boolean b) {
+        if (this.bMultiple != b) setNeedsReloaded(true);
         this.bMultiple = b;
-        this.bNeedsReloaded = true;
     }
     
-
+    /**
+     * Called by OAForm.
+     */
+    public void beforePageLoad() {
+    }
+    /**
+     * Called by OAForm.
+     */
+    public void afterPageLoad() {
+    }
+    
     public String getScript() {
-        this.bNeedsReloaded = false;
+        String s = _getScript();
+        setNeedsReloaded(false);
+        return s;
+    }
 
+    protected String _getScript() {
         StringBuilder sb = new StringBuilder(1024);
 
         String s = getCalcName();
@@ -1225,9 +1278,7 @@ public class OAHtmlComponent {
         }
         else confirm = "";
 
-
         getDataListJs(sb);
-
         
         s = getVerifyScript();
         if (OAString.isNotEmpty(s)) {
@@ -1241,6 +1292,17 @@ public class OAHtmlComponent {
         
             if (getSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName + "(function() {\n");
+                
+//qQQQQQQQQQQQQQQ ONLY IF TEXT Value is used                
+//qqqqqqqqq new ... add to ajaxsubmit qqqqqqqqq
+                if (getValueAttributeType() == ValueAttributeType.Text) {
+                    sb.append("if (typeof this.oaPrevValue === \"undefined\") {\n");
+                    sb.append("    if (this.value === this.getAttribute(\"value\")) return false;\n");
+                    sb.append("}\n");
+                    sb.append("else if (this.value === this.oaPrevValue) return false;\n");
+                    sb.append("this.oaPrevValue = this.value;\n");
+                }                
+                
                 if (OAStr.isNotEmpty(confirm)) {
                     sb.append("  "+confirm);
                 }
@@ -1253,6 +1315,17 @@ public class OAHtmlComponent {
             }
             else if (getAjaxSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName+"(function() {\n");
+
+//qQQQQQQQQQQQQQQ ONLY IF TEXT Value is used                
+//qqqqqqqqq new ... add to submit qqqqqqqqq                
+                if (getValueAttributeType() == ValueAttributeType.Text) {
+                    sb.append("if (typeof this.oaPrevValue === \"undefined\") {\n");
+                    sb.append("    if (this.value === this.getAttribute(\"value\")) return false;\n");
+                    sb.append("}\n");
+                    sb.append("else if (this.value === this.oaPrevValue) return false;\n");
+                    sb.append("this.oaPrevValue = this.value;\n");
+                }
+                
                 if (OAStr.isNotEmpty(confirm)) {
                     sb.append("  "+confirm);
                 }
@@ -1263,7 +1336,8 @@ public class OAHtmlComponent {
                 sb.append("  return false;\n");
                 sb.append("});\n");
             }
-            else if (OAStr.isNotEmpty(getForwardUrl())) {
+            
+            if (OAStr.isNotEmpty(getForwardUrl())) {
                 sb.append("$('#"+id+"')."+eventName+"(function() {"+confirm+"window.location = 'oaforward.jsp?oaform="+getForm().getId()+"&oacommand="+id+"';return false;});\n");
             }
         }
@@ -1296,12 +1370,21 @@ public class OAHtmlComponent {
         String s = getValue();
         if (s == null) s = "";
         
-        if (!this.bValueChangedByAjax) {
+        
+        ValueAttributeType vat = getValueAttributeType();        
+        
+        if (vat != null && !this.bValueChangedByAjax) {
             sb.append("$('#" + id + "').val('"+s+"');\n");
+
+//qqqqqqqqqqqqqqqq            
+            if (!bIsInitializing && vat == ValueAttributeType.Text) {
+                
+                sb.append("$('#" + id + "').oaPrevValue = $('#" + id + "').val(); //qqqqqqqqqqqqqqq\n");
+            }
         }
         
         if (bIsInitializing || ((hsClassAdd != null && hsClassAdd.size() > 0) || (hsClassRemove != null && hsClassRemove.size() > 0))) {
-            s = getClassJs();
+            s = getClassJs(bIsInitializing);
             if (OAString.isNotEmpty(s)) sb.append(s);
         }
         
@@ -1319,14 +1402,14 @@ public class OAHtmlComponent {
             sb.append("$('#"+id+"').css('cursor', '"+s+"');\n");
         }
         
-        if (bIsInitializing || (alAddedStyles != null && alAddedStyles.size() > 0) || (alRemovedStyles != null && alRemovedStyles.size() > 0)) {
-            s = getStyleJs();
+        if (bIsInitializing || (alStyleAdd != null && alStyleAdd.size() > 0) || (alStyleRemove != null && alStyleRemove.size() > 0)) {
+            s = getStyleJs(bIsInitializing);
             if (OAStr.isNotEmpty(s)) {
                 sb.append("$('#"+id+"').css("+s+");\n");
             }
         }
         
-        if (bWrapChanged || (bIsInitializing || OAStr.isNotEmpty(getWrap()))) {
+        if (bWrapChanged || (bIsInitializing && OAStr.isNotEmpty(getWrap()))) {
             bWrapChanged = false;
             s = getWrap();
             if (OAStr.isNotEmpty(s)) {
@@ -1567,9 +1650,9 @@ public class OAHtmlComponent {
         
         if (bIsInitializing || bOptionsChanged) {
             bOptionsChanged = false;
-            String list = "";
             List<HtmlOption> al = getOptions();
             if (al != null) {
+                String list = "";
                 boolean bInOptGroup = false;
                 for (HtmlOption ho : al) {
                     
@@ -1601,8 +1684,8 @@ public class OAHtmlComponent {
                 if (bInOptGroup) {
                     list += "</optgroup>";
                 }
+                sb.append("$('#" + id + "').html('" + OAJspUtil.createJsString(list, '\'') + "');\n");
             }
-            sb.append("$('#" + id + "').html('" + OAJspUtil.createJsString(list, '\'') + "');\n");
         }
         
         
@@ -1797,4 +1880,16 @@ public class OAHtmlComponent {
     public boolean getNeedsReloaded() {
         return bNeedsReloaded;
     }
+
+    protected void setNeedsReloaded(boolean b) {
+        this.bNeedsReloaded = b;
+    }
+    
+    public boolean getDebug() {
+        return this.bDebug;
+    }
+    public void setDebug(boolean b) {
+        this.bDebug = b;
+    }
+    
 }

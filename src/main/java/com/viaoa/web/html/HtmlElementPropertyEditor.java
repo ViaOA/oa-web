@@ -1,17 +1,20 @@
 package com.viaoa.web.html;
 
+import java.util.*;
+
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.*;
 
 public class HtmlElementPropertyEditor {
     private final OAForm form;
-    private final OAHtmlComponent oaHtmlComponent;
+    private final OAHtmlComponent htmlComp;
     
     public HtmlElementPropertyEditor(final OAForm form, final HtmlElement he) {
         this.form = form;
-        this.oaHtmlComponent = he.getOAHtmlComponent();
+        this.htmlComp = he.getOAHtmlComponent();
         setup();
     }
     
@@ -19,6 +22,22 @@ public class HtmlElementPropertyEditor {
         InputCheckBox chk;
         InputText txt;
 
+        HtmlElement he = new HtmlElement("cmdReloadMessage") {
+            public void beforePageLoad() {
+                setVisible(false);
+            }
+            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
+                setVisible(HtmlElementPropertyEditor.this.htmlComp.getNeedsReloaded());
+            }
+        };
+        he.addStyle("background-color", "yellow");
+        he.addStyle("font-weight", "bold");
+        form.add(he);
+
+        he = new HtmlElement("cmdOAReset");
+        he.setToolTip("re-create form and components");
+        form.add(he);
+        
         InputButton cmdAjaxSubmit = new InputButton("cmdDoAjaxSubmit");
         cmdAjaxSubmit.setValue("ajaxSubmit");
         cmdAjaxSubmit.setAjaxSubmit(true);
@@ -26,79 +45,97 @@ public class HtmlElementPropertyEditor {
 
         txt = new InputText("txtId") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setId(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setId(getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getId());
+        txt.setValue(htmlComp.getId());
         form.add(txt);
         
         txt = new InputText("txtValue") {
+            String hold1;
+            String hold2;
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setValue(getValue());
+            public void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                hold1 = getValue();
+                hold2 = HtmlElementPropertyEditor.this.htmlComp.getValue();
+            }
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                boolean b = false;
+                if (OAStr.isNotEqual(hold1, getValue())) {
+                    if (OAStr.isEqualIgnoreCase(hold2, HtmlElementPropertyEditor.this.htmlComp.getValue())) {
+                        b = true;
+                        HtmlElementPropertyEditor.this.htmlComp.setValue(getValue());
+                    }
+                }
+                if (!b) setValue(HtmlElementPropertyEditor.this.htmlComp.getValue());
+            }
+            @Override
+            public void beforePageLoad() {
+                setValue(HtmlElementPropertyEditor.this.htmlComp.getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getValue());
+        txt.setValue(htmlComp.getValue());
         form.add(txt);
         
         txt = new InputText("txtLabelId") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setLabelId(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setLabelId(getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getLabelId());
+        txt.setValue(htmlComp.getLabelId());
         form.add(txt);
 
         txt = new InputText("txtFloatLabel") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setFloatLabel(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setFloatLabel(getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getFloatLabel());
+        txt.setValue(htmlComp.getFloatLabel());
         form.add(txt);
 
         txt = new InputText("txtPlaceHolder") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setPlaceHolder(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setPlaceHolder(getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getPlaceHolder());
+        txt.setValue(htmlComp.getPlaceHolder());
         form.add(txt);
         
         txt = new InputText("txtToolTipText") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setToolTipText(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setToolTipText(getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getToolTipText());
+        txt.setValue(htmlComp.getToolTipText());
         form.add(txt);
         
         txt = new InputText("txtAutoComplete") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setAutoComplete(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setAutoComplete(getValue());
             }
         };
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getAutoComplete());
+        txt.setValue(htmlComp.getAutoComplete());
         form.add(txt);
                 
         
         
         chk = new InputCheckBox("chkFormDebug") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 HtmlElementPropertyEditor.this.form.setDebug(getChecked());
             }
         };
@@ -108,166 +145,183 @@ public class HtmlElementPropertyEditor {
 
         chk = new InputCheckBox("chkEnabled") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setEnabled(getChecked());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setEnabled(getChecked());
             }
         };
-        chk.setChecked(oaHtmlComponent.getEnabled());
+        chk.setChecked(htmlComp.getEnabled());
         chk.setAjaxSubmit(true);
         form.add(chk);
         
         chk = new InputCheckBox("chkVisible") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setVisible(getChecked());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setVisible(getChecked());
             }
         };
-        chk.setChecked(oaHtmlComponent.getVisible());
+        chk.setChecked(htmlComp.getVisible());
         chk.setAjaxSubmit(true);
         form.add(chk);
         
         chk = new InputCheckBox("chkHidden") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setHidden(getChecked());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setHidden(getChecked());
             }
         };
-        chk.setChecked(oaHtmlComponent.getHidden());
+        chk.setChecked(htmlComp.getHidden());
         chk.setAjaxSubmit(true);
         form.add(chk);
         
         chk = new InputCheckBox("chkAjaxSubmit") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setAjaxSubmit(getChecked());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setAjaxSubmit(getChecked());
             }
         };
-        chk.setChecked(oaHtmlComponent.getAjaxSubmit());
+        chk.setChecked(htmlComp.getAjaxSubmit());
         chk.setAjaxSubmit(true);
         form.add(chk);
 
         chk = new InputCheckBox("chkSubmit") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setSubmit(getChecked());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setSubmit(getChecked());
             }
         };
-        chk.setChecked(oaHtmlComponent.getSubmit());
+        chk.setChecked(htmlComp.getSubmit());
         chk.setAjaxSubmit(true);
         form.add(chk);
         
         chk = new InputCheckBox("chkSpellCheck") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setSpellCheck(getChecked());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setSpellCheck(getChecked());
             }
         };
-        chk.setChecked(oaHtmlComponent.getSpellCheck());
+        chk.setChecked(htmlComp.getSpellCheck());
         chk.setAjaxSubmit(true);
         form.add(chk);
 
         
         txt = new InputText("txtHeight") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setHeight(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setHeight(getValue());
             }
         };
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getHeight());
+        txt.setValue(htmlComp.getHeight());
         form.add(txt);
         
         txt = new InputText("txtWidth") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setWidth(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setWidth(getValue());
             }
         };
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getWidth());
+        txt.setValue(htmlComp.getWidth());
         form.add(txt);
 
         txt = new InputText("txtMinHeight") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setMinHeight(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMinHeight(getValue());
             }
         };
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getMinHeight());
+        txt.setValue(htmlComp.getMinHeight());
         form.add(txt);
         
         txt = new InputText("txtMinWidth") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setMinHeight(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMinWidth(getValue());
             }
         };
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getMinWidth());
+        txt.setValue(htmlComp.getMinWidth());
         form.add(txt);
         
         txt = new InputText("txtMaxHeight") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setMaxHeight(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMaxHeight(getValue());
             }
         };
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getMaxHeight());
+        txt.setValue(htmlComp.getMaxHeight());
         form.add(txt);
         
         txt = new InputText("txtMaxWidth") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setMaxHeight(getValue());
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMaxWidth(getValue());
             }
         };
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oaHtmlComponent.getMaxWidth());
+        txt.setValue(htmlComp.getMaxWidth());
         form.add(txt);
-        
         
         InputNumber txtNumber = new InputNumber("txtSize") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setSize(OAConv.toInt(getValue()));
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setSize(OAConv.toInt(getValue()));
             }
         };
-        txt.setSize(5);
-        txt.setAjaxSubmit(true);
-        txt.setValue(""+oaHtmlComponent.getSize());
-        form.add(txt);
+        txtNumber.setSize(5);
+        txtNumber.setAjaxSubmit(true);
+        if (htmlComp.getSize() > 0) txtNumber.setValue(""+htmlComp.getSize());
+        form.add(txtNumber);
 
         txtNumber = new InputNumber("txtMinLength") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setMinLength(OAConv.toInt(getValue()));
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMinLength(OAConv.toInt(getValue()));
             }
         };
-        txt.setSize(3);
-        txt.setAjaxSubmit(true);
-        txt.setValue(""+oaHtmlComponent.getMinLength());
-        form.add(txt);
+        txtNumber.setSize(3);
+        txtNumber.setAjaxSubmit(true);
+        if (htmlComp.getMinLength() > 0) txtNumber.setValue(""+htmlComp.getMinLength());
+        form.add(txtNumber);
         
         txtNumber = new InputNumber("txtMaxLength") {
             @Override
-            public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                HtmlElementPropertyEditor.this.oaHtmlComponent.setMaxLength(OAConv.toInt(getValue()));
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMaxLength(OAConv.toInt(getValue()));
             }
         };
-        txt.setSize(5);
-        txt.setAjaxSubmit(true);
-        txt.setValue(""+oaHtmlComponent.getMaxLength());
-        form.add(txt);
+        txtNumber.setSize(5);
+        txtNumber.setAjaxSubmit(true);
+        if (htmlComp.getMaxLength() > 0) txtNumber.setValue(""+htmlComp.getMaxLength());
+        form.add(txtNumber);
         
-//qqqqqqqqq label to show eventName qqqq        
+
+        txt = new InputText("txtDataList") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                String s = getValue();
+                if (OAStr.isEmpty(s)) {
+                    HtmlElementPropertyEditor.this.htmlComp.setDataList(null);
+                    return;
+                }
+                List<String> al = Arrays.asList(s.split(",\\s*"));
+                HtmlElementPropertyEditor.this.htmlComp.setDataList(al);
+            }
+        };
+        txt.setSize(40);
+        txt.setAjaxSubmit(true);
+        form.add(txt);
+
+//qqqqqqqqqqqqq add txtMin & txtMax qqqqqqqqqqq        
+        
         
     }
 

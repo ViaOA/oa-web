@@ -21,6 +21,37 @@ public class InputRange extends HtmlFormElement {
         oaHtmlComponent.setValue(value);
     }
 
+    public String getPlaceHolder() {
+        return oaHtmlComponent.getPlaceHolder();
+    }
+    public void setPlaceHolder(String placeHolder) {
+        oaHtmlComponent.setPlaceHolder(placeHolder);
+    }
+    
+    public boolean getReadOnly() {
+        return oaHtmlComponent.getReadOnly();
+    }
+
+    public boolean isReadOnly() {
+        return oaHtmlComponent.getReadOnly();
+    }
+    public void setReadOnly(boolean b) {
+        oaHtmlComponent.setReadOnly(b);
+    }
+    
+    public boolean getRequired() {
+        return oaHtmlComponent.getRequired();
+    }
+
+    public boolean isRequired() {
+        return oaHtmlComponent.getRequired();
+    }
+
+    public void setRequired(boolean req) {
+        oaHtmlComponent.setRequired(req);
+    }
+    
+    
     public int getMin() {
         return oaHtmlComponent.getMin();
     }
@@ -37,20 +68,7 @@ public class InputRange extends HtmlFormElement {
         oaHtmlComponent.setMax(val);
     }
     
-    public boolean getReadOnly() {
-        return oaHtmlComponent.getReadOnly();
-    }
 
-    public boolean isReadOnly() {
-        return oaHtmlComponent.getReadOnly();
-    }
-    public void setReadOnly(boolean b) {
-        oaHtmlComponent.setReadOnly(b);
-    }
-
-    public boolean getRequired() {
-        return oaHtmlComponent.getRequired();
-    }
 
     
     public int getStep() {

@@ -81,6 +81,19 @@ public class InputText extends HtmlFormElement {
         oaHtmlComponent.setDataList(lst);
     }
     
+
+    
+    /**
+     * The display width of the text field, number of characters wide.
+     */
+    public int getSize() {
+        return oaHtmlComponent.getSize();
+    }
+
+    public void setSize(int val) {
+        oaHtmlComponent.setSize(val);
+    }
+    
     public int getMinLength() {
         return oaHtmlComponent.getMinLength();
     }
@@ -96,17 +109,16 @@ public class InputText extends HtmlFormElement {
     public void setMaxLength(int val) {
         oaHtmlComponent.setMaxLength(val);
     }
-    
-    /**
-     * The display width of the text field, number of characters wide.
-     */
-    public int getSize() {
-        return oaHtmlComponent.getSize();
-    }
 
-    public void setSize(int val) {
-        oaHtmlComponent.setSize(val);
+    public String getAutoComplete() {
+        return oaHtmlComponent.getAutoComplete();
     }
+    public void setAutoComplete(String val) {
+        oaHtmlComponent.setAutoComplete(val);
+    }
+    
+    
+    
 
     public String getInputMode() {
         return oaHtmlComponent.getInputMode();
@@ -120,12 +132,6 @@ public class InputText extends HtmlFormElement {
         oaHtmlComponent.setInputMode(type);
     }
 
-    public String getAutoComplete() {
-        return oaHtmlComponent.getAutoComplete();
-    }
-    public void setAutoComplete(String val) {
-        oaHtmlComponent.setAutoComplete(val);
-    }
 
     public boolean getSpellCheck() {
         return oaHtmlComponent.getSpellCheck();

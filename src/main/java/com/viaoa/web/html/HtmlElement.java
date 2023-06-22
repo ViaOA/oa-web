@@ -4,6 +4,8 @@ import static com.viaoa.web.html.OAHtmlComponent.CursorType;
 import static com.viaoa.web.html.OAHtmlComponent.EventType;
 import static com.viaoa.web.html.OAHtmlComponent.OverflowType;
 
+import java.util.List;
+
 import com.viaoa.object.OAObject;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
@@ -54,7 +56,22 @@ public class HtmlElement {
                 super.onSubmitCompleted(formSubmitEvent);
                 HtmlElement.this.onSubmitCompleted(formSubmitEvent);
             }
+            
+            @Override
+            public void beforePageLoad() {
+                super.beforePageLoad();
+                HtmlElement.this.beforePageLoad();
+            }
+            
+            @Override
+            public void afterPageLoad() {
+                super.afterPageLoad();
+                HtmlElement.this.afterPageLoad();
+            }
         };
+        
+        int xx = 4; //qqqqqqq
+        xx++;
     }
 
     /**
@@ -161,7 +178,11 @@ public class HtmlElement {
     }
 
     public String getStyle(String name) {
-        oaHtmlComponent.getStyle(name);
+        return oaHtmlComponent.getStyle(name);
+    }
+
+    public List<String> getStyles() {
+        return oaHtmlComponent.getStyles();
     }
     
     public void addStyle(String name, String value) {
@@ -172,6 +193,9 @@ public class HtmlElement {
         oaHtmlComponent.removeStyle(name);
     }
 
+    public List<String> getClasses() {
+        return oaHtmlComponent.getClasses();
+    }
     public void addClass(String name) {
         oaHtmlComponent.addClass(name);
     }
@@ -318,6 +342,14 @@ public class HtmlElement {
 
     public boolean getNeedsReloaded() {
         return oaHtmlComponent.getNeedsReloaded();
+    }
+
+    // called by OAForm
+    public void beforePageLoad() {
+    }
+    
+    // called by OAForm
+    public void afterPageLoad() {
     }
     
     // chance to cancel event

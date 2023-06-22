@@ -108,6 +108,13 @@ public class HtmlFormElement extends HtmlElement {
     public String getTableEditorHtml() {
         return oaHtmlComponent.getTableEditorHtml();
     }
+    
+    public boolean getDebug() {
+        return oaHtmlComponent.getDebug();
+    }
+    public void setDebug(boolean b) {
+        oaHtmlComponent.setDebug(b);
+    }
 }
 
 /* Notes: 

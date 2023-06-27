@@ -11,6 +11,14 @@ public class InputReset extends HtmlFormElement {
         super(id, InputType.Reset);
     }
 
+    public String getButtonText() {
+        return oaHtmlComponent.getValue();
+    }
+    public void setButtonText(String value) {
+        oaHtmlComponent.setValue(value);
+    }
+    
+    
     // the button text
     public String getValue() {
         return oaHtmlComponent.getValue();

@@ -15,6 +15,13 @@ public class InputSubmit extends HtmlFormElement {
         super(id, InputType.Submit);   
     }
     
+    public String getButtonText() {
+        return oaHtmlComponent.getValue();
+    }
+    public void setButtonText(String value) {
+        oaHtmlComponent.setValue(value);
+    }
+    
     // the button text and value that is submitted if clicked.
     public String getValue() {
         return oaHtmlComponent.getValue();

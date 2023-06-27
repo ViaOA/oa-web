@@ -52,30 +52,28 @@ public class InputRange extends HtmlFormElement {
     }
     
     
-    public int getMin() {
+    public String getMin() {
         return oaHtmlComponent.getMin();
     }
 
-    public void setMin(int val) {
+    public void setMin(String val) {
         oaHtmlComponent.setMin(val);
     }
     
-    public int getMax() {
+    public String getMax() {
         return oaHtmlComponent.getMax();
     }
 
-    public void setMax(int val) {
+    public void setMax(String val) {
         oaHtmlComponent.setMax(val);
     }
     
 
-
-    
-    public int getStep() {
+    public String getStep() {
         return oaHtmlComponent.getStep();
     }
 
-    public void setStep(int val) {
+    public void setStep(String val) {
         oaHtmlComponent.setStep(val);
     }
     

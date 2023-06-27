@@ -3,9 +3,13 @@ package com.viaoa.web.html.input;
 import com.viaoa.web.html.HtmlFormElement;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
+/**
+ * Form submit button that uses an image.
+ *
+ */
 public class InputImage extends HtmlFormElement {
 
-    // Note: it submits value.x, value.y  if it's clicked qqqqqqqqqqq
+    // Note: it submits value.x, value.y  if it's clicked 
     // OAForm will set the OAFormSubmitEvent.imageClickX/Y 
     
     

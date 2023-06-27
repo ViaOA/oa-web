@@ -7,7 +7,7 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 public class InputDate extends InputRange {
 
-//  spellcheck    
+// might need to methods that are in InputText
     
     public InputDate(String id) {
         super(id, InputType.Date);

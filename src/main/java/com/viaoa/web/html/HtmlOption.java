@@ -6,7 +6,7 @@ public class HtmlOption {
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option
 // optgroup    
 
-    protected boolean bEnabled; // attribute, uses  'disabled'
+    protected boolean bEnabled=true; // attribute, uses  'disabled'
     protected boolean bSelected; // attribute
     protected String value;  // attribute sent to server on submit
     protected String label;  // display

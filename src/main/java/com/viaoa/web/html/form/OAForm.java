@@ -27,6 +27,7 @@ import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlElement;
 import com.viaoa.web.html.OAHtmlComponent;
+import com.viaoa.web.html.OAHtmlComponent.InputType;
 import com.viaoa.web.server.OAApplication;
 import com.viaoa.web.server.OABase;
 import com.viaoa.web.server.OASession;
@@ -551,7 +552,7 @@ public class OAForm extends OABase implements Serializable {
             // else p(sb, "$('#"+comp.getId()+"').removeClass('oaDebug');", indent);
 
             if (!OAString.isEmpty(s)) p(sb, s + "", indent);
-            if (comp instanceof OAFormMultipartInterface) {
+            if (comp.getInputType() == InputType.File) { 
                 if (b) {
                     p(sb, "$('#"+id+"').attr('enctype', 'multipart/form-data');", indent);
                     p(sb, "$('#"+id+"').attr('action', 'oaform.jsp?oaform="+getId()+"');", indent);
@@ -1290,10 +1291,15 @@ public class OAForm extends OABase implements Serializable {
         final String contentType = formSubmitEvent.getRequest().getContentType();
         if ((contentType != null) && (contentType.indexOf("multipart/form-data") >= 0)) {
             try {
-                processMultipart(formSubmitEvent.getRequest(), hmNameValue);
+                processMultipart(formSubmitEvent, hmNameValue);
             }
             catch (Exception e){
                 this.addErrorMessage(e.toString());
+            }
+//qqqqqqqqqqqqqqqq            
+            if (true || formSubmitEvent.getSession().getCalcDebug()) {
+                hmNameValue.forEach( (k,v) -> 
+                System.out.println("  Key: " + k + ": Values[0]: " + ((v == null || v.length == 0) ? "" : v[0])));
             }
         }
         else {
@@ -1344,40 +1350,44 @@ public class OAForm extends OABase implements Serializable {
         }
         
         // set the component that submitted (if any)
-        String id = formSubmitEvent.getRequest().getParameter("oacommand");
-        if (OAStr.isNotEmpty(id)) formSubmitEvent.setSubmitOAHtmlComponent(getComponent(id));
-        else {
-            for (OAHtmlComponent comp : alComponent) {
-//qqqqqqqqqq test                
-                if (OAStr.equalsIgnoreCase(comp.getType(), OAHtmlComponent.InputType.Submit.getDisplay())) {
-                    if (formSubmitEvent.getSubmitOAHtmlComponent() == null) {
-                        String s = comp.getCalcName();
-                        if (OAStr.isEmpty(s)) s = comp.getId();
-                        if (formSubmitEvent.getRequest().getParameter(s) != null) {
-                            formSubmitEvent.setSubmitOAHtmlComponent(comp);
+        if (!formSubmitEvent.getCancel()) {
+            String id = formSubmitEvent.getRequest().getParameter("oacommand");
+            if (OAStr.isNotEmpty(id)) formSubmitEvent.setSubmitOAHtmlComponent(getComponent(id));
+            else {
+                for (OAHtmlComponent comp : alComponent) {
+    //qqqqqqqqqq test                
+                    if (OAStr.equalsIgnoreCase(comp.getType(), OAHtmlComponent.InputType.Submit.getDisplay())) {
+                        if (formSubmitEvent.getSubmitOAHtmlComponent() == null) {
+                            String s = comp.getCalcName();
+                            if (OAStr.isEmpty(s)) s = comp.getId();
+                            if (formSubmitEvent.getRequest().getParameter(s) != null) {
+                                formSubmitEvent.setSubmitOAHtmlComponent(comp);
+                            }
                         }
                     }
+                    if (OAStr.equalsIgnoreCase(comp.getType(), OAHtmlComponent.InputType.Image.getDisplay())) {
+    //qqqqqqqqqq test                
+                        String s = comp.getCalcName();
+                        String val = formSubmitEvent.getRequest().getParameter(s+".x");
+                        if (val != null) {
+                            formSubmitEvent.setImageClickX(OAConv.toInt(val));
+                            val = formSubmitEvent.getRequest().getParameter(s+".y");
+                            formSubmitEvent.setImageClickY(OAConv.toInt(val));
+                            formSubmitEvent.setSubmitOAHtmlComponent(comp);
+                            break;
+                        }
+                    }                
                 }
-                if (OAStr.equalsIgnoreCase(comp.getType(), OAHtmlComponent.InputType.Image.getDisplay())) {
-//qqqqqqqqqq test                
-                    String s = comp.getCalcName();
-                    String val = formSubmitEvent.getRequest().getParameter(s+".x");
-                    if (val != null) {
-                        formSubmitEvent.setImageClickX(OAConv.toInt(val));
-                        val = formSubmitEvent.getRequest().getParameter(s+".y");
-                        formSubmitEvent.setImageClickY(OAConv.toInt(val));
-                        formSubmitEvent.setSubmitOAHtmlComponent(comp);
-                        break;
-                    }
-                }                
             }
         }
-
+        
         // all are called, allows components to set submit component
-        for (OAHtmlComponent comp : alComponent) {
-            if (!comp.getEnabled()) continue;
-            comp.onSubmitPrecheck(formSubmitEvent);
-            if (formSubmitEvent.getCancel()) break;
+        if (!formSubmitEvent.getCancel()) {
+            for (OAHtmlComponent comp : alComponent) {
+                if (!comp.getEnabled()) continue;
+                comp.onSubmitPrecheck(formSubmitEvent);
+                if (formSubmitEvent.getCancel()) break;
+            }
         }
         
         if (!formSubmitEvent.getCancel()) {
@@ -1426,14 +1436,49 @@ public class OAForm extends OABase implements Serializable {
     
 
     // Parse Multipart posted forms ============================================================
-    protected void processMultipart(ServletRequest request, Map<String, String[]> hmNameValue) throws Exception {
-        int len = request.getContentLength();
-        if (len <= 1) return;
+    protected void processMultipart(OAFormSubmitEvent formSubmitEvent, Map<String, String[]> hmNameValue) throws Exception {
+        final ServletRequest request = formSubmitEvent.getRequest();
+        int contentLength = request.getContentLength();
+        if (contentLength <= 1) return;
         String contentType = request.getContentType();
+        
+        
+        /* example: 
+
+POST / HTTP/1.1
+Host: localhost:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,* / *;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Cookie: __atuvc=34%7C7; permanent=0; _gitlab_session=226ad8a0be43681acf38c2fab9497240; __profilin=p%3Dt; request_method=GET
+Connection: keep-alive
+Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
+Content-Length: 554
+
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="text"
+
+text default
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="file1"; filename="a.txt"
+Content-Type: text/plain
+
+Content of a.txt.
+
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="file2"; filename="a.html"
+Content-Type: text/html
+
+<!DOCTYPE html><title>Content of a.html.</title>
+
+-----------------------------9051914041544843365972754266--       
+        */
+        
         String sep = "--" + contentType.substring(contentType.indexOf("boundary=")+9);
         sep += "\r\n";
 
-        BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
+        final BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
 
         for (int i=0;;i++) {
             String s = getNextMultipart(bis, null, sep);
@@ -1447,7 +1492,7 @@ public class OAForm extends OABase implements Serializable {
             String[] nameValue = processMultipart(s);
             /*
                 [0]=txtCreate [1]=10/21/2008
-                 [0]=fiFile [1]=; filename="budget.txt"
+                [0]=fiFile [1]=; filename="budget.txt"
             */
 
             if (nameValue == null) continue;
@@ -1456,24 +1501,27 @@ public class OAForm extends OABase implements Serializable {
             if (values == null) hmNameValue.put(name, new String[] { nameValue[1] });
             else {
                 String[] newValues = new String[values.length+1];
-                System.arraycopy(values,0,newValues,0,values.length);
+                System.arraycopy(values,0,newValues ,0, values.length);
                 newValues[values.length] = nameValue[1];
-                hmNameValue.put(name,newValues);
+                hmNameValue.put(name, newValues);
             }
 
             // see if this was an OAFileInput component
             OAHtmlComponent comp = getComponent(name);
             if (comp == null) continue;
-            if (!(comp instanceof OAFormMultipartInterface)) continue;
+            
+            if (comp.getInputType() != InputType.File) continue; 
 
-            if (nameValue.length < 2) continue;
-            String fname = nameValue[1];
+            if (nameValue.length < 2) continue; 
+            String fname = nameValue[1];   // ; filename="Power_Bill_2023-06-15.pdf"
             int x = fname.indexOf('\"');
             if (x >= 0) fname = fname.substring(x+1);
             fname = OAStr.convert(fname, "\"", null);
             if (OAString.isEmpty(fname)) continue;
 
-            OutputStream os = ((OAFormMultipartInterface)comp).getOutputStream(len, fname);
+            OutputStream os = comp.onSubmitGetFileOutputStream(formSubmitEvent, fname, contentLength);
+            if (formSubmitEvent.getCancel()) break;
+            
             if (os == null) {
                 os = new OutputStream() {
                     @Override

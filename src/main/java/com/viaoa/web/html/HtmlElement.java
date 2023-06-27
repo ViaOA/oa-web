@@ -4,6 +4,7 @@ import static com.viaoa.web.html.OAHtmlComponent.CursorType;
 import static com.viaoa.web.html.OAHtmlComponent.EventType;
 import static com.viaoa.web.html.OAHtmlComponent.OverflowType;
 
+import java.io.OutputStream;
 import java.util.List;
 
 import com.viaoa.object.OAObject;
@@ -19,6 +20,12 @@ public class HtmlElement {
 
     public HtmlElement(String id) {
         oaHtmlComponent = new OAHtmlComponent(id) {
+            @Override
+            public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fname, long contentLength) {
+                OutputStream os = HtmlElement.this.onSubmitGetFileOutputStream(fname, contentLength);
+                return os;
+            }
+            
             @Override
             public void onSubmitPrecheck(OAFormSubmitEvent formSubmitEvent) {
                 super.onSubmitPrecheck(formSubmitEvent);
@@ -369,4 +376,8 @@ public class HtmlElement {
     public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
     }
 
+    
+    public OutputStream onSubmitGetFileOutputStream(String fname, long contentLength) {
+        return null;
+    }
 }

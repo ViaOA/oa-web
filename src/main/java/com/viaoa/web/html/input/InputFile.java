@@ -1,28 +1,25 @@
 package com.viaoa.web.html.input;
 
-import java.io.OutputStream;
+import java.io.*;
 
-import com.viaoa.util.OACompare;
-import com.viaoa.web.html.HtmlElement;
 import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.html.form.OAFormMultipartInterface;
 
-public class InputFile extends HtmlFormElement implements OAFormMultipartInterface {
+/**
+ * Component used to upload file(s).
+ * 
+ */
+public class InputFile extends HtmlFormElement {
 
 /*    
 Attributes: 
 accept, capture,  
   
-  
 <input type="file" name="file" id="file" accept="image/*" multiple />
-    
 <input type="file" accept="image/*;capture=camera" />
 <input type="file" accept="video/*;capture=camcorder" />
 <input type="file" accept="audio/*;capture=microphone" />    
-    
-  
+ 
 */    
     public InputFile(String id) {
         super(id, InputType.File);
@@ -44,10 +41,10 @@ accept, capture,
 
 
     public String getAccept() {
-        return oaHtmlComponent.getFileAccept();
+        return oaHtmlComponent.getAccept();
     }
-    public void setFileAccept(String val) {
-        oaHtmlComponent.setFileAccept(val);
+    public void setAccept(String val) {
+        oaHtmlComponent.setAccept(val);
     }
 
     public boolean getMultiple() {
@@ -58,10 +55,7 @@ accept, capture,
     }
 
     @Override
-    public OutputStream getOutputStream(int length, String originalFileName) {
-        // TODO Auto-generated method stub qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
-        return null;
+    public OutputStream onSubmitGetFileOutputStream(String fname, long contentLength) {
+        return super.onSubmitGetFileOutputStream(fname, contentLength);
     }
-
-    
 }

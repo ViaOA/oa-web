@@ -152,6 +152,16 @@ public class HtmlElementPropertyEditor {
         chk.setChecked(htmlComp.getEnabled());
         chk.setAjaxSubmit(true);
         form.add(chk);
+
+        chk = new InputCheckBox("chkReadOnly") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setReadOnly(getChecked());
+            }
+        };
+        chk.setChecked(htmlComp.getReadOnly());
+        chk.setAjaxSubmit(true);
+        form.add(chk);
         
         chk = new InputCheckBox("chkVisible") {
             @Override
@@ -270,6 +280,7 @@ public class HtmlElementPropertyEditor {
         txt.setValue(htmlComp.getMaxWidth());
         form.add(txt);
         
+        // display size (in chars) of txt field
         InputNumber txtNumber = new InputNumber("txtSize") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
@@ -281,6 +292,7 @@ public class HtmlElementPropertyEditor {
         if (htmlComp.getSize() > 0) txtNumber.setValue(""+htmlComp.getSize());
         form.add(txtNumber);
 
+        // min input size (in chars) of txt field
         txtNumber = new InputNumber("txtMinLength") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
@@ -292,6 +304,7 @@ public class HtmlElementPropertyEditor {
         if (htmlComp.getMinLength() > 0) txtNumber.setValue(""+htmlComp.getMinLength());
         form.add(txtNumber);
         
+        // max input size (in chars) of txt field
         txtNumber = new InputNumber("txtMaxLength") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
@@ -320,9 +333,75 @@ public class HtmlElementPropertyEditor {
         txt.setAjaxSubmit(true);
         form.add(txt);
 
-//qqqqqqqqqqqqq add txtMin & txtMax qqqqqqqqqqq        
+        // min value allowed
+        txt = new InputText("txtMin") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMin(getValue());
+            }
+        };
+        txt.setSize(12);
+        txt.setAjaxSubmit(true);
+        txt.setValue(htmlComp.getMin());
+        form.add(txt);
+        
+        // max value allowed
+        txt = new InputText("txtMax") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMax(getValue());
+            }
+        };
+        txt.setSize(12);
+        txt.setAjaxSubmit(true);
+        txt.setValue(htmlComp.getMax());
+        form.add(txt);
+
+        txt = new InputText("txtStep") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setStep(getValue());
+            }
+        };
+        txt.setSize(12);
+        txt.setAjaxSubmit(true);
+        txt.setValue(htmlComp.getStep());
+        form.add(txt);
         
         
+        chk = new InputCheckBox("chkMultiple") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setMultiple(getChecked());
+            }
+        };
+        chk.setChecked(htmlComp.getMultiple());
+        chk.setAjaxSubmit(true);
+        form.add(chk);
+
+        txt = new InputText("txtAccept") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setAccept(getValue());
+            }
+        };
+        txt.setSize(12);
+        txt.setAjaxSubmit(true);
+        txt.setValue(htmlComp.getAccept());
+        form.add(txt);
+
+    
+        txt = new InputText("txtSrc") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                HtmlElementPropertyEditor.this.htmlComp.setSrc(getValue());
+            }
+        };
+        // txt.setSize(8);
+        txt.setAjaxSubmit(true);
+        txt.setValue(htmlComp.getSrc());
+        form.add(txt);
+    
     }
 
 }

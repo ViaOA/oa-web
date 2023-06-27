@@ -32,10 +32,16 @@ public class InputButton extends HtmlFormElement {
 
     public InputButton(String id) {
         super(id, InputType.Button);
-        
-        
     }
 
+    public String getButtonText() {
+        return oaHtmlComponent.getValue();
+    }
+    public void setButtonText(String value) {
+        oaHtmlComponent.setValue(value);
+    }
+    
+    
     // the button text and value that is submitted if clicked.
     public String getValue() {
         return oaHtmlComponent.getValue();

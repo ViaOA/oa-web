@@ -20,10 +20,25 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  */
 public class InputCheckBox extends HtmlFormElement {
 
-    public InputCheckBox(String id) {
+    
+    /**
+     * A group of radio buttons need to use the same name, but each should have it's own unique Id;
+     * @param id
+     * @param name used by the other group of radio buttons.
+     * @param value that is submitted if this radio is selected.
+     */
+    public InputCheckBox(String id, String name, String value) {
         super(id, InputType.CheckBox);
+        setValue(value);
     }
-
+    public InputCheckBox(String id, String value) {
+        this(id, id, value);
+    }
+    public InputCheckBox(String id) {
+        this(id, id, id);
+    }
+    
+    
     public String getValue() {
         return oaHtmlComponent.getValue();
     }

@@ -1,7 +1,7 @@
 package com.viaoa.web.html;
 
 import com.viaoa.object.OAObject;
-import com.viaoa.web.html.OAHtmlComponent.ValueAttributeType;
+import com.viaoa.web.html.OAHtmlComponent.ComponentType;
 
 import static com.viaoa.web.html.OAHtmlComponent.InputModeType;
 import static com.viaoa.web.html.OAHtmlComponent.InputType;
@@ -32,11 +32,11 @@ public class HtmlFormElement extends HtmlElement {
         this(id, type, null);
     }
     
-    public HtmlFormElement(String id, InputType type, ValueAttributeType vat) {
+    public HtmlFormElement(String id, InputType type, ComponentType vat) {
         super(id);
         if (type != null) oaHtmlComponent.setType(type);
         else if (vat != null) {
-            oaHtmlComponent.setValueAttributeType(vat);
+            oaHtmlComponent.setComponentType(vat);
         }
     }
 

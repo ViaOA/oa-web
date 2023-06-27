@@ -2,10 +2,11 @@ package com.viaoa.web.html;
 
 import java.util.*;
 
-import com.viaoa.web.html.OAHtmlComponent.ValueAttributeType;
+import com.viaoa.web.html.OAHtmlComponent.ComponentType;
 
 public class HtmlSelect extends HtmlFormElement {
 
+//qqqqqqqqqqqqqqqqqqq ALSO create an HtmlButton qqqqqqqqqqqq with submit/reset attributes ?? qqqqqqq    
     
 //qqqqqqqqqqqqqq Values stores all of the selected items qqqqqqqqqqqqqqqqqqqqqqqqqqq    
     
@@ -13,7 +14,7 @@ public class HtmlSelect extends HtmlFormElement {
     // qqqq use disabled
     
     public HtmlSelect(String id) {
-        super(id, null, ValueAttributeType.Select);
+        super(id, null, ComponentType.Select);
     }
     
     /**

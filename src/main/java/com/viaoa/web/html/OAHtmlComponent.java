@@ -6,6 +6,8 @@
  * language governing permissions and limitations under the License. */
 package com.viaoa.web.html;
 
+import java.io.File;
+import java.io.OutputStream;
 import java.util.*;
 
 import com.viaoa.web.html.form.OAFormInsertDelegate;
@@ -41,37 +43,48 @@ public class OAHtmlComponent {
     private boolean bNeedsReloaded; 
     
     // the attribute "value" is used differently, based on the element type.
-    public static enum ValueAttributeType {
+    public static enum ComponentType {
         Text(EventType.OnBlur),   // value of input/text
+        Range(EventType.OnChange),  // value of input/text
         Checkbox(EventType.OnChange),  // value sent on submit
         Radio(EventType.OnChange),  // value sent on submit
         Button(EventType.OnClick),  // button text
-        File(EventType.OnBlur),   // value of file selected
+        File(EventType.OnBlur),   // does not use value
         Select(EventType.OnChange); // selected option value 
         
         private EventType eventType;
         
-        ValueAttributeType(EventType et) {
+        ComponentType(EventType et) {
             this.eventType = et;
         }
         
         public EventType getDefaultEventType() {
             return eventType;
         }
+        
+        public boolean getUsesValue() {
+            boolean b = (this != File); 
+            return b;
+        }
+        public boolean getUsesChecked() {
+            boolean b = (this == Radio || this == Checkbox); 
+            return b;
+        }
+        
     }
-    protected ValueAttributeType valueAttributeType;
+    protected ComponentType componentType;
     
-    public ValueAttributeType getValueAttributeType() {
-        if (valueAttributeType == null) {
+    public ComponentType getComponentType() {
+        if (componentType == null) {
             InputType it = getInputType();
             if (it == null) return null;
-            this.valueAttributeType = it.getValueAttributeType();
+            this.componentType = it.getComponentType();
         }
-        return this.valueAttributeType;
+        return this.componentType;
     }
-    public void setValueAttributeType(ValueAttributeType vat) {
-        if (this.valueAttributeType != vat) setNeedsReloaded(true);
-        this.valueAttributeType = vat;
+    public void setComponentType(ComponentType ct) {
+        if (this.componentType != ct) setNeedsReloaded(true);
+        this.componentType = ct;
     }
     
     public InputType getInputType() {
@@ -87,47 +100,47 @@ public class OAHtmlComponent {
     
     // Types used for an Input Element
     public static enum InputType {
-        Button(ValueAttributeType.Button),
-        CheckBox(ValueAttributeType.Checkbox),
-        Color(ValueAttributeType.Text),
-        Date(ValueAttributeType.Text),
-        DateTimeLocal("datetime-local", ValueAttributeType.Text),
-        Email(ValueAttributeType.Text),
-        File(),
-        Hidden(ValueAttributeType.Text),
+        Button(ComponentType.Button),
+        CheckBox(ComponentType.Checkbox),
+        Color(ComponentType.Text),
+        Date(ComponentType.Text),
+        DateTimeLocal("datetime-local", ComponentType.Text),
+        Email(ComponentType.Text),
+        File(ComponentType.File),
+        Hidden(ComponentType.Text),
         Image(),
-        Month(ValueAttributeType.Text),
-        Number(ValueAttributeType.Text),
-        Password(ValueAttributeType.Text),
-        Radio(ValueAttributeType.Radio),
-        Range(ValueAttributeType.Text),
+        Month(ComponentType.Text),
+        Number(ComponentType.Text),
+        Password(ComponentType.Text),
+        Radio(ComponentType.Radio),
+        Range(ComponentType.Range),
         Reset(),
-        Search(ValueAttributeType.Text),
+        Search(ComponentType.Text),
         Submit(),
-        Tel(ValueAttributeType.Text),
-        Text(ValueAttributeType.Text),
-        Time(ValueAttributeType.Text),
-        Url(ValueAttributeType.Text),
-        Week(ValueAttributeType.Text);
+        Tel(ComponentType.Text),
+        Text(ComponentType.Text),
+        Time(ComponentType.Text),
+        Url(ComponentType.Text),
+        Week(ComponentType.Text);
         
         private String display;
-        private ValueAttributeType valueAttributeType;
+        private ComponentType componentType;
         
         InputType() {
             display = name().toLowerCase();
         }
 
-        InputType(ValueAttributeType vat) {
+        InputType(ComponentType ct) {
             display = name().toLowerCase();
-            this.valueAttributeType = vat;
+            this.componentType = ct;
         }
-        public ValueAttributeType getValueAttributeType() {
-            return valueAttributeType;
+        public ComponentType getComponentType() {
+            return componentType;
             
         }
-        InputType(String name, ValueAttributeType vat) {
+        InputType(String name, ComponentType ct) {
             this.display = name;
-            this.valueAttributeType = vat;
+            this.componentType = ct;
         }
 
         InputType(String name) {
@@ -166,8 +179,9 @@ public class OAHtmlComponent {
     protected String toolTipTemplate;
     
     private boolean bIsPlainText;  // true if the text is not HTML
-    private String autoComplete;
-    private String fileAccept;
+    private String autoComplete; // To disable, set to "off"
+    private String accept;
+    private String capture;
     protected boolean bMultiple;
     
     /**
@@ -197,14 +211,16 @@ public class OAHtmlComponent {
     // number of chars for text, password
     protected int minLength;
     protected int maxLength;
-    protected int size;  // types: text, search, tel, url, email, and password ... also used for select, for number of rows 
+
+    // types: text, search, tel, url, email, and password ... also used for select, for number of rows
+    protected int size;   
 
     protected int cols;  // textarea
     protected int rows;  // textarea
     
     // input min/max values
-    protected int min;
-    protected int max;
+    protected String min;
+    protected String max;
     
     protected int imageHeight;
     protected int imageWidth;
@@ -279,6 +295,7 @@ public class OAHtmlComponent {
     
     // https://www.w3schools.com/tags/ref_eventattributes.asp
     public static enum EventType {
+        Unknown(),
         OnBlur(),
         OnClick(),
         OnDoubleClick(),
@@ -335,7 +352,7 @@ public class OAHtmlComponent {
     }
     protected String cursor;
     protected String alt; // for image
-    protected int step;
+    protected String step;
     protected String innerHtml;
     
 // autofocus
@@ -420,6 +437,7 @@ public class OAHtmlComponent {
     // internal flags
     protected String lastAjaxSent;
     private boolean bToolTipChanged;
+    private boolean bToolTipChangedInit;
     private boolean bFloatLabelChanged;
     private boolean bPlaceHolderChanged;
     private boolean bPatternChanged;
@@ -431,8 +449,9 @@ public class OAHtmlComponent {
     private boolean bValueChangedByAjax;
     private boolean bDataListChanged;
     private boolean bCursorChanged;
-    private boolean bAutoComponentChanged; // qqqqqqqqq todo: needs to add JS code & tested
-    private boolean bFileAcceptChanged; // qqqqqqqqq todo: needs to add JS code & tested
+    private boolean bAutoCompleteChanged; 
+    private boolean bAcceptChanged;
+    private boolean bCaptureChanged;
     private boolean bLengthsChanged;
     private boolean bAltChanged;
     private boolean bStepChanged;
@@ -455,7 +474,7 @@ public class OAHtmlComponent {
         return id;
     }
     public void setId(String id) {
-        if (OAStr.isNotEqual(this.id, id)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.id, id)) setNeedsReloaded(true);
         this.id = id;
     }
 
@@ -472,7 +491,7 @@ public class OAHtmlComponent {
         return name;
     }
     public void setName(String name) {
-        if (OAStr.isNotEqual(this.name, name)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.name, name)) setNeedsReloaded(true);
         this.name = name;
     }
 
@@ -480,7 +499,7 @@ public class OAHtmlComponent {
         return type;
     }
     public void setType(String type) {
-        if (OAStr.isNotEqual(this.type, type)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.type, type)) setNeedsReloaded(true);
         this.type = type;
     }
     public void setType(InputType type) {
@@ -492,7 +511,7 @@ public class OAHtmlComponent {
         return labelId;
     }
     public void setLabelId(String id) {
-        if (OAStr.isNotEqual(this.labelId, id)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.labelId, id)) setNeedsReloaded(true);
         this.labelId = id;
     }
     
@@ -500,7 +519,7 @@ public class OAHtmlComponent {
         return this.floatLabel;
     }
     public void setFloatLabel(String floatLabel) {
-        this.bFloatLabelChanged |= OACompare.isNotEqual(this.floatLabel, floatLabel);
+        this.bFloatLabelChanged |= OAStr.isNotEqualNullEqualsBlank(this.floatLabel, floatLabel);
         if (bFloatLabelChanged && OAStr.isNotEmpty(this.floatLabel)) setNeedsReloaded(true);
         this.floatLabel = floatLabel;
     }
@@ -509,7 +528,7 @@ public class OAHtmlComponent {
         return this.placeHolder;
     }
     public void setPlaceHolder(String placeHolder) {
-        this.bPlaceHolderChanged |= OACompare.isNotEqual(this.placeHolder, placeHolder);
+        this.bPlaceHolderChanged |= OAStr.isNotEqualNullEqualsBlank(this.placeHolder, placeHolder);
         this.placeHolder = placeHolder;
     }
     
@@ -517,7 +536,7 @@ public class OAHtmlComponent {
         return this.pattern;
     }
     public void setPattern(String pattern) {
-        this.bPatternChanged |= OACompare.isNotEqual(this.pattern, pattern);
+        this.bPatternChanged |= OAStr.isNotEqualNullEqualsBlank(this.pattern, pattern);
         this.pattern = pattern;
     }
     
@@ -605,7 +624,7 @@ public class OAHtmlComponent {
         return this.value;
     }
     public void setValue(String value) {
-        if (OAStr.isEqual(this.value, value)) return;
+        if (OAStr.isEqual(this.value, value, false, true)) return;
         this.value = value;
         this.bValueChangedByAjax = false;
     }
@@ -640,7 +659,7 @@ public class OAHtmlComponent {
         return this.forwardUrl;
     }
     public void setForwardUrl(String forwardUrl) {
-        if (OAStr.isNotEqual(this.forwardUrl, forwardUrl)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.forwardUrl, forwardUrl)) setNeedsReloaded(true);
         this.forwardUrl = forwardUrl;
     }
 
@@ -664,7 +683,7 @@ public class OAHtmlComponent {
         return this.toolTipText;
     }
     public void setToolTip(String toolTip) {
-        this.bToolTipChanged |= OACompare.isNotEqual(this.toolTipText, toolTip);
+        this.bToolTipChanged |= OAStr.isNotEqualNullEqualsBlank(this.toolTipText, toolTip);
         this.toolTipText = toolTip;
     }
 
@@ -695,6 +714,16 @@ public class OAHtmlComponent {
         return false;
     }
 
+    
+    /**
+     * Called when parsing the request data for a multipart form that has an Input type=File.
+     * @param contentLength is the total length of the submit, not just the file being uploaded. 
+     * @return null to ignore.
+     */
+    public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fname, long contentLength) {
+        return null;
+    }
+    
     // allows components to do prechecks
     public void onSubmitPrecheck(final OAFormSubmitEvent formSubmitEvent) {
     }
@@ -723,12 +752,9 @@ public class OAHtmlComponent {
         if (OAStr.isEmpty(s)) return;
         
         String[] ss = formSubmitEvent.getNameValueMap().get(s);
-        ValueAttributeType vat = getValueAttributeType();
-        if (vat != null) {
-            switch (vat) {
-            case Text:
-                setValue(ss == null ? null : ss.length==0 ? null : ss[0]);
-                break;
+        final ComponentType ct = getComponentType();
+        if (ct != null) {
+            switch (ct) {
             case Checkbox:
                 boolean b = (ss != null && ss.length > 0);
                 setChecked(b);
@@ -744,23 +770,36 @@ public class OAHtmlComponent {
                 break;
             case Select:
                 setValues(ss);
+                if (ss != null && ss.length == 1) setValue(ss[0]);
+                else setValue(null);
+                
                 List<HtmlOption> al = getOptions();
-                if (al != null && ss != null) {
+                if (al != null) {
                     for (HtmlOption ho : al) {
                         if (ho instanceof HtmlOptionGroup) {
                             continue;
                         }
                         boolean bx = false;
-                        for (String sx : ss) {
-                            if (OAStr.isEqual(ho.getValue(), sx)) {
-                                bx = true;
-                                break;
+                        if (ss != null) {
+                            for (String sx : ss) {
+                                if (OAStr.isEqual(ho.getValue(), sx)) {
+                                    bx = true;
+                                    break;
+                                }
                             }
                         }
                         bOptionsChanged |= (ho.getSelected() != bx);
                         ho.setSelected(bx);
                     }
-                }                        
+                } 
+            case File:
+                // value not used, multipart-form processes the uploaded file(s) 
+                break;
+            case Text:
+            case Range:
+            default:
+                setValue(ss == null ? null : ss.length==0 ? null : ss[0]);
+                break;
             }
         }
         this.bValueChangedByAjax = formSubmitEvent.getAjax();
@@ -801,7 +840,7 @@ public class OAHtmlComponent {
         return list;
     }
     public void setList(String listId) {
-        bListChanged |= OAStr.isNotEqual(this.list, listId);
+        bListChanged |= OAStr.isNotEqualNullEqualsBlank(this.list, listId);
         this.list = listId;
     }
     
@@ -985,19 +1024,19 @@ public class OAHtmlComponent {
         this.rows = val;
     }
     
-    public int getMin() {
+    public String getMin() {
         return this.min;
     }
-    public void setMin(int val) {
-        bMinChanged |= this.min != val;
+    public void setMin(String val) {
+        bMinChanged |= OAStr.isNotEqualNullEqualsBlank(this.min, val);
         this.min = val;
     }
 
-    public int getMax() {
+    public String getMax() {
         return this.max;
     }
-    public void setMax(int val) {
-        bMaxChanged |= this.max != val;
+    public void setMax(String val) {
+        bMaxChanged |= OAStr.isNotEqualNullEqualsBlank(this.max, val);
         this.max = val;
     }
     
@@ -1041,7 +1080,7 @@ public class OAHtmlComponent {
         return this.source;
     }
     public void setSource(String val) {
-        bImageChanged |= OACompare.isNotEqual(this.source, val);
+        bImageChanged |= OAStr.isNotEqualNullEqualsBlank(this.source, val);
         this.source = val;
     }
     public String getSrc() {
@@ -1129,7 +1168,7 @@ public class OAHtmlComponent {
         return inputMode;
     }
     public void setInputMode(String mode) {
-        if (OAStr.isNotEqual(this.inputMode, mode)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.inputMode, mode)) setNeedsReloaded(true);
         this.inputMode = mode;
     }
     public void setInputMode(InputModeType type) {
@@ -1144,14 +1183,14 @@ public class OAHtmlComponent {
         return this.confirmMessage;
     }
     public void setConfirmMessage(String msg) {
-        if (OAStr.isNotEqual(this.confirmMessage, msg)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.confirmMessage, msg)) setNeedsReloaded(true);
         confirmMessage = msg;
     }
     public String getConfirmMessageTemplate() {
         return this.confirmMessageTemplate;
     }
     public void setConfirmMessageTemplate(String msg) {
-        if (OAStr.isNotEqual(this.confirmMessageTemplate, msg)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.confirmMessageTemplate, msg)) setNeedsReloaded(true);
         this.confirmMessageTemplate = msg;
     }
     public String getCalcConfirmMessage() {
@@ -1162,7 +1201,7 @@ public class OAHtmlComponent {
         return cursor;
     }
     public void setCursor(String cursorName) {
-        bCursorChanged |= OACompare.isNotEqual(this.cursor, cursorName);
+        bCursorChanged |= OAStr.isNotEqualNullEqualsBlank(this.cursor, cursorName);
         this.cursor = cursorName;
     }
     public void setCursor(CursorType cursorType) {
@@ -1173,13 +1212,13 @@ public class OAHtmlComponent {
         String name = getEventName();
         if (OAStr.isNotEmpty(name)) return name;
         
-        ValueAttributeType vat = getValueAttributeType();
-        if (vat == null) {
+        ComponentType ct = getComponentType();
+        if (ct == null) {
             InputType it = getInputType();
-            if (it != null) vat = it.getValueAttributeType();
+            if (it != null) ct = it.getComponentType();
         }
-        if (vat != null) {
-            EventType et = vat.getDefaultEventType();
+        if (ct != null) {
+            EventType et = ct.getDefaultEventType();
             if (et != null) name = et.getDisplay();
         }
         if (OAStr.isEmpty(name)) name = EventType.OnClick.getDisplay();
@@ -1193,7 +1232,7 @@ public class OAHtmlComponent {
         return eventName;
     }
     public void setEventName(String name) {
-        if (OAStr.isNotEqual(this.eventName, name)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.eventName, name)) setNeedsReloaded(true);
         this.eventName = name;
     }
     public void setEventType(EventType eventType) {
@@ -1211,24 +1250,51 @@ public class OAHtmlComponent {
         bIsPlainText = b;
     }
 
-//qqqqqqqqqqqqqq add js for this    
     public String getAutoComplete() {
         return this.autoComplete;
     }
+    /**
+     * To disable, set to "off" 
+     * <p>
+     * on (default), off, email, name, tel, credit-card, password, etc
+     * (not all work)
+     * 
+     */
     public void setAutoComplete(String val) {
-        bAutoComponentChanged |= OACompare.isNotEqual(this.autoComplete, val);
+        bAutoCompleteChanged |= OAStr.isNotEqualNullEqualsBlank(this.autoComplete, val);
         this.autoComplete = val;
     }
 
+    /* examples: 
+    <input type="file" accept=".jpg, .png, .gif">  
+    <input type="file" accept="image/*;capture=camera" />
+    <input type="file" accept="video/*;capture=camcorder" />
+    <input type="file" accept="audio/*;capture=microphone" />    
+    */    
 
-    public String getFileAccept() {
-        return this.fileAccept;
+    /** 
+     * Types of files that can be accepted for file uploading.    
+     */
+    public String getAccept() {
+        return this.accept;
     }
-    public void setFileAccept(String val) {
-        bFileAcceptChanged |= OACompare.isNotEqual(this.fileAccept, val);
-        this.fileAccept = val;
+    public void setAccept(String val) {
+        bAcceptChanged |= OAStr.isNotEqualNullEqualsBlank(this.accept, val);
+        this.accept = val;
     }
 
+    /**
+        Used with input type=file attribute access, 
+        to set the device that should be used to capture, either: camera || camcorder || microphone />
+     */
+    public String getCapture() {
+        return this.capture;
+    }
+    public void setCapture(String val) {
+        bAcceptChanged |= OAStr.isNotEqualNullEqualsBlank(this.capture, val);
+        this.capture = val;
+    }
+    
     public boolean getMultiple() {
         return this.bMultiple;
     }
@@ -1257,6 +1323,8 @@ public class OAHtmlComponent {
     protected String _getScript() {
         StringBuilder sb = new StringBuilder(1024);
 
+        final ComponentType componentType = getComponentType();        
+        
         String s = getCalcName();
         sb.append("$('#" + id + "').attr('name', '"+s+"');\n");
 
@@ -1269,7 +1337,10 @@ public class OAHtmlComponent {
             sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
-        if (getMultiple()) sb.append("$('#" + id + "').attr('multiple', true);\n");
+        if (getMultiple()) sb.append("$('#" + id + "').attr('multiple', 'multiple');\n");
+        else if (componentType == ComponentType.File) {
+            sb.append("$('#" + id + "').removeAttr('multiple');\n");
+        }
 
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
@@ -1293,15 +1364,16 @@ public class OAHtmlComponent {
             if (getSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName + "(function() {\n");
                 
-//qQQQQQQQQQQQQQQ ONLY IF TEXT Value is used                
-//qqqqqqqqq new ... add to ajaxsubmit qqqqqqqqq
-                if (getValueAttributeType() == ValueAttributeType.Text) {
+                if (componentType != null && componentType.getUsesValue() && componentType.getDefaultEventType() == EventType.OnBlur) {
+                    sb.append("if (this.value === this.oaPrevValue) return false;\n");
+                    /*was:
                     sb.append("if (typeof this.oaPrevValue === \"undefined\") {\n");
                     sb.append("    if (this.value === this.getAttribute(\"value\")) return false;\n");
                     sb.append("}\n");
                     sb.append("else if (this.value === this.oaPrevValue) return false;\n");
+                    */
                     sb.append("this.oaPrevValue = this.value;\n");
-                }                
+                }
                 
                 if (OAStr.isNotEmpty(confirm)) {
                     sb.append("  "+confirm);
@@ -1316,13 +1388,14 @@ public class OAHtmlComponent {
             else if (getAjaxSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName+"(function() {\n");
 
-//qQQQQQQQQQQQQQQ ONLY IF TEXT Value is used                
-//qqqqqqqqq new ... add to submit qqqqqqqqq                
-                if (getValueAttributeType() == ValueAttributeType.Text) {
+                if (componentType != null && componentType.getUsesValue() && componentType.getDefaultEventType() == EventType.OnBlur) {
+                    sb.append("if (this.value === this.oaPrevValue) return false;\n");
+                    /*was:
                     sb.append("if (typeof this.oaPrevValue === \"undefined\") {\n");
                     sb.append("    if (this.value === this.getAttribute(\"value\")) return false;\n");
                     sb.append("}\n");
                     sb.append("else if (this.value === this.oaPrevValue) return false;\n");
+                    */
                     sb.append("this.oaPrevValue = this.value;\n");
                 }
                 
@@ -1371,17 +1444,16 @@ public class OAHtmlComponent {
         if (s == null) s = "";
         
         
-        ValueAttributeType vat = getValueAttributeType();        
+        final ComponentType ct = getComponentType();        
         
-        if (vat != null && !this.bValueChangedByAjax) {
-            sb.append("$('#" + id + "').val('"+s+"');\n");
-
-//qqqqqqqqqqqqqqqq            
-            if (!bIsInitializing && vat == ValueAttributeType.Text) {
-                
-                sb.append("$('#" + id + "').oaPrevValue = $('#" + id + "').val(); //qqqqqqqqqqqqqqq\n");
+        if (ct == null || ct.getUsesValue()) {
+            if (!this.bValueChangedByAjax) {
+                s = OAJspUtil.createEmbeddedJsString(s, '\'');
+                sb.append("$('#" + id + "').val('"+s+"');\n");
+                sb.append("$('#" + id + "')[0].oaPrevValue = $('#" + id + "').val();\n");
             }
         }
+        
         
         if (bIsInitializing || ((hsClassAdd != null && hsClassAdd.size() > 0) || (hsClassRemove != null && hsClassRemove.size() > 0))) {
             s = getClassJs(bIsInitializing);
@@ -1420,7 +1492,37 @@ public class OAHtmlComponent {
             }
         }
         
+        if (bAcceptChanged || (bIsInitializing && OAStr.isNotEmpty(getAccept()))) {
+            bAcceptChanged = false;
+            s = getAccept();
+            
+            if (OAString.isNotEmpty(getCapture())) {
+                // <input type="file" accept="audio/*;capture=microphone" />    
+                
+                if (s == null) s = "";
+                s += ";capture=" + getCapture();
+            }
+            
+            if (OAStr.isNotEmpty(s)) {
+                sb.append("$('#"+id+"').attr('accept', '"+s+"');\n");
+            }
+            else if (componentType == ComponentType.File) {
+                sb.append("$('#"+id+"').removeAttr('accept');\n");
+            }
+        }
         
+                
+        if (bAutoCompleteChanged || (bIsInitializing && OAStr.isNotEmpty(getAutoComplete()))) {
+            bAutoCompleteChanged = false;
+            s = getAutoComplete();
+            if (OAStr.isNotEmpty(s)) {
+                sb.append("$('#"+id+"').attr('autocomplete', '"+s+"');\n");
+            }
+            else if (componentType == ComponentType.File) {
+                sb.append("$('#"+id+"').removeAttr('autocomplete');\n");
+            }
+        }
+
         
         
         if (bListChanged || (bIsInitializing && OAStr.isNotEmpty(getList()))) {
@@ -1452,11 +1554,29 @@ public class OAHtmlComponent {
                 sb.append("$('#" + id + "').attr('rows', "+getRows()+");\n");
             }
         }
-             
+
+        if (bMinChanged || (bIsInitializing && OAStr.isNotEmpty(getMin()))) {
+            bMinChanged = false;
+            if (OAStr.isEmpty(getMin())) {
+                sb.append("$('#" + id + "').removeAttr('min');\n");
+            }
+            else sb.append("$('#" + id + "').attr('min', '"+getMin()+"');\n");
+        }
+        if (bMaxChanged || (bIsInitializing && OAStr.isNotEmpty(getMax()))) {
+            bMaxChanged = false;
+            if (OAStr.isEmpty(getMax())) {
+                sb.append("$('#" + id + "').removeAttr('max');\n");
+            }
+            else sb.append("$('#" + id + "').attr('max', '"+getMax()+"');\n");
+        }
+        
         
         if (bPlaceHolderChanged || (bIsInitializing && OAStr.isNotEmpty(getPlaceHolder()))) {
             bPlaceHolderChanged = false;
-            sb.append("$('#" + id + "').attr('placeholder', '"+getPlaceHolder()+"');\n");
+            if (OAStr.isEmpty(getPlaceHolder())) { 
+                sb.append("$('#" + id + "').removeAttr('placeholder');\n");
+            }
+            else sb.append("$('#" + id + "').attr('placeholder', '"+getPlaceHolder()+"');\n");
         }
         
         if (bFloatLabelChanged || (bIsInitializing && OAStr.isNotEmpty(getFloatLabel()))) {
@@ -1482,15 +1602,14 @@ public class OAHtmlComponent {
             if (getImageHeight() > 0) sb.append("$('#" + id + "').attr('width', "+getImageHeight()+");\n");
         }
             
-        
-        
         // tooltip
         if (bToolTipChanged || (bIsInitializing && OAStr.isNotEmpty(getToolTipText()))) {
             bToolTipChanged = false;
             String prefix = null;
             String tt = getCalcToolTip();
             if (OAString.isNotEmpty(tt)) {
-                if (bIsInitializing) {
+                if (bIsInitializing || !bToolTipChangedInit) {
+                    bToolTipChangedInit = true;
                     sb.append("$('#" + id + "').tooltip();\n");
                 }
                 tt = OAJspUtil.createJsString(tt, '\'');
@@ -1518,11 +1637,11 @@ public class OAHtmlComponent {
             bReadOnlyChanged = false;
             if (isReadOnly()) {
                 sb.append("$('#" + id + "').prop('readOnly', true);\n");
-                sb.append("$('#" + id + "').attr('readonly', 'readonly');\n");
+                // sb.append("$('#" + id + "').attr('readonly', 'readonly');\n");
             }
             else {
                 sb.append("$('#" + id + "').prop('readOnly', false);\n");
-                sb.append("$('#" + id + "').removeAttr('readonly');\n");
+                // sb.append("$('#" + id + "').removeAttr('readonly');\n");
             }
         }
         
@@ -1531,21 +1650,21 @@ public class OAHtmlComponent {
             bHiddenChanged = false;
             if (isHidden()) {
                 sb.append("$('#" + id + "').prop('hidden', true);\n");
-                sb.append("$('#" + id + "').attr('hidden', 'hidden');\n");
+                // sb.append("$('#" + id + "').attr('hidden', 'hidden');\n");
             }
             else {
                 sb.append("$('#" + id + "').prop('hidden', false);\n");
-                sb.append("$('#" + id + "').removeAttr('hidden');\n");
+                // sb.append("$('#" + id + "').removeAttr('hidden');\n");
             }
             
             if (OAStr.isNotEmpty(getLabelId())) {
                 if (isHidden()) {
                     sb.append("$('#" + getLabelId() + "').prop('hidden', true);\n");
-                    sb.append("$('#" + getLabelId() + "').attr('hidden', 'hidden');\n");
+                    // sb.append("$('#" + getLabelId() + "').attr('hidden', 'hidden');\n");
                 }
                 else {
                     sb.append("$('#" + getLabelId() + "').prop('hidden', false);\n");
-                    sb.append("$('#" + getLabelId() + "').removeAttr('hidden');\n");
+                    // sb.append("$('#" + getLabelId() + "').removeAttr('hidden');\n");
                 }
             }
         }
@@ -1576,12 +1695,12 @@ public class OAHtmlComponent {
             if (isRequired()) {
                 sb.append("$('#" + id + "').addClass('oaRequired');\n");
                 sb.append("$('#" + id + "').prop('required', true);\n");
-                sb.append("$('#" + id + "').attr('required', 'required');\n");
+                // sb.append("$('#" + id + "').attr('required', 'required');\n");
             }
             else {
                 sb.append("$('#" + id + "').removeClass('oaRequired');\n");
                 sb.append("$('#" + id + "').prop('required', false);\n");
-                sb.append("$('#" + id + "').removeAttr('required');\n");
+                // sb.append("$('#" + id + "').removeAttr('required');\n");
             }
         }
 
@@ -1595,10 +1714,10 @@ public class OAHtmlComponent {
             }
         }
 
-        if (bStepChanged || (bIsInitializing && getStep() != 0)) {
+        if (bStepChanged || (bIsInitializing && OAStr.isNotEmpty(getStep()) ) ) {
             bStepChanged = false;
-            if (getStep() != 0) {
-                sb.append("$('#" + id + "').attr('step', "+getStep()+");\n");
+            if (OAStr.isNotEmpty(getStep())) {
+                sb.append("$('#" + id + "').attr('step', '"+getStep()+"');\n");
             }
             else {
                 sb.append("$('#" + id + "').removeAttr('step');\n");
@@ -1610,24 +1729,24 @@ public class OAHtmlComponent {
             if (!bValueChangedByAjax) { 
                 if (isChecked()) {
                     sb.append("$('#" + id + "').prop('checked', true);\n");
-                    sb.append("$('#" + id + "').attr('checked', 'checked');\n");
+                    // sb.append("$('#" + id + "').attr('checked', 'checked');\n");
                 }
                 else {
                     sb.append("$('#" + id + "').prop('checked', false);\n");
-                    sb.append("$('#" + id + "').removeAttr('checked');\n");
+                    // sb.append("$('#" + id + "').removeAttr('checked');\n");
                 }
             }
         }
         
         if (bSpellCheckChanged || (bIsInitializing && isSpellCheck())) {
             bSpellCheckChanged = false;
-            if (isChecked()) {
+            if (isSpellCheck()) {
                 sb.append("$('#" + id + "').prop('spellchecked', true);\n");
-                sb.append("$('#" + id + "').attr('spellchecked', true);\n");
+                // sb.append("$('#" + id + "').attr('spellchecked', true);\n");
             }
             else {
                 sb.append("$('#" + id + "').prop('spellcheck', false);\n");
-                sb.append("$('#" + id + "').removeAttr('spellcheck');\n");
+                // sb.append("$('#" + id + "').removeAttr('spellcheck');\n");
             }
         }
         
@@ -1720,7 +1839,7 @@ public class OAHtmlComponent {
         return innerHtml;
     }
     public void setInnerHtml(String html) {
-        bInnerHtmlChanged |= OAStr.isNotEqual(this.innerHtml, html);
+        bInnerHtmlChanged |= OAStr.isNotEqualNullEqualsBlank(this.innerHtml, html);
         this.innerHtml = html;
     }
     
@@ -1748,46 +1867,23 @@ public class OAHtmlComponent {
         final String lblId = getLabelId();
         if (getEnabled()) {
             if (OAString.isNotEmpty(lblId)) {
-                sb.append("$('#" + lblId + "').removeAttr('disabled');\n");
                 sb.append("$('#" + lblId + "').prop('disabled', false);\n");
+                // sb.append("$('#" + lblId + "').removeAttr('disabled');\n");
             }
-            sb.append("$('#" + id + "').removeAttr('disabled');\n");
             sb.append("$('#" + id + "').prop('disabled', false);\n");
+            // sb.append("$('#" + id + "').removeAttr('disabled');\n");
         }
         else {
             if (OAString.isNotEmpty(lblId)) {
-                sb.append("$('#" + lblId + "').attr('disabled', 'disabled');\n");
                 sb.append("$('#" + lblId + "').prop('disabled', true);\n");
+                // sb.append("$('#" + lblId + "').attr('disabled', 'disabled');\n");
             }
-            sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
             sb.append("$('#" + id + "').prop('disabled', true);\n");
+            // sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
         }
         return sb.toString();
     }
 
-/*qqqqqqq    
-    protected String getVisibleScript() {
-        StringBuilder sb = new StringBuilder(64);
-        final String lblId = getLabelId();
-        if (getVisible()) {
-            if (OAString.isNotEmpty(lblId)) {
-                sb.append("$('#" + lblId + "').show();\n");
-            }
-            else {
-                // qqqqqqqq sb.append("$('#" + lblId + "').getLabel().show();\n"); //qqqqqq need to see if getLable!=null
-                // qqqqqq also put in getEnabledScript
-            }
-            sb.append("$('#" + id + "').show();\n");
-        }
-        else {
-            if (OAString.isNotEmpty(lblId)) {
-                sb.append("$('#" + lblId + "').hide();\n");
-            }
-            sb.append("$('#" + id + "').hide();\n");
-        }
-        return sb.toString();
-    }
-*/
     
     public String getValidationRules() {
         return null;
@@ -1820,15 +1916,15 @@ public class OAHtmlComponent {
         return this.alt;
     }
     public void setAlt(String alt) {
-        this.bAltChanged |= OACompare.isNotEqual(this.alt, alt);
+        this.bAltChanged |= OAStr.isNotEqualNullEqualsBlank(this.alt, alt);
         this.alt = alt;
     }
     
-    public int getStep() {
+    public String getStep() {
         return this.step;
     }
-    public void setStep(int step) {
-        this.bStepChanged |= this.step != step;
+    public void setStep(String step) {
+        this.bStepChanged |= OAStr.isNotEqualNullEqualsBlank(this.step, step);
         this.step = step;
     }
     
@@ -1870,7 +1966,7 @@ public class OAHtmlComponent {
         return wrap;
     }
     public void setWrap(String wrap) {
-        bWrapChanged |= OACompare.isNotEqual(this.wrap, wrap);
+        bWrapChanged |= OAStr.isNotEqualNullEqualsBlank(this.wrap, wrap);
         this.wrap = wrap;
     }
     public void setWrap(WrapType wrapType) {
@@ -1891,5 +1987,6 @@ public class OAHtmlComponent {
     public void setDebug(boolean b) {
         this.bDebug = b;
     }
+
     
 }

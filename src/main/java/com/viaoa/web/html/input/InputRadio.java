@@ -20,8 +20,14 @@ public class InputRadio extends HtmlFormElement {
      */
     public InputRadio(String id, String name, String value) {
         super(id, InputType.Radio);
+        setName(name);
+        setValue(value);
     }
 
+    public InputRadio(String id, String name) {
+        this(id, name, id);
+    }
+    
     public String getValue(String value) {
         return oaHtmlComponent.getValue();
     }

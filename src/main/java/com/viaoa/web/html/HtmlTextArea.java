@@ -1,12 +1,12 @@
 package com.viaoa.web.html;
 
-import com.viaoa.web.html.OAHtmlComponent.ValueAttributeType;
+import com.viaoa.web.html.OAHtmlComponent.ComponentType;
 
 public class HtmlTextArea extends HtmlFormElement {
 
     
     public HtmlTextArea(String id) {
-        super(id, null, ValueAttributeType.Text);
+        super(id, null, ComponentType.Text);
     }
     
     //qqqqqqqqqq ???

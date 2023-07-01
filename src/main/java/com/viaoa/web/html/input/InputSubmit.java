@@ -1,18 +1,32 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
 
-// note: if clicked, then OAFormSubmitEvent.submitOAComponent will be set to this
+/* 
+  <input id="cmd" type="submit" name="cmd" value="Submit Button">
+*/
 
-public class InputSubmit extends HtmlFormElement {
+/**
+  Submit button.
+  <p>
+  notes:<br> 
+  value is also the buttons label/text<br>
+  see: use the HtmlButton with type=submit to create a submit button where value is not the buttons text.<br> 
+  <p>
+  if clicked:
+  submit will send name="cmd", value="Button text"
+*/
+public class InputSubmit extends InputElement {
 
-    
     public InputSubmit(String id) {
         super(id, InputType.Submit);   
+    }
+    
+    protected InputSubmit(String id, InputType type) {
+        super(id, type);
     }
     
     public String getButtonText() {
@@ -30,14 +44,12 @@ public class InputSubmit extends HtmlFormElement {
         oaHtmlComponent.setValue(value);
     }
     
-    
-//qqqqqqqqqqqq value is the button's Text/label ....... see OAHtmlFormSubmitEvent     
-
-/*    
-    @Override
-    public void onSubmitRunCommand(OAHtmlFormSubmitEvent formSubmitEvent) {
-        // TODO Auto-generated method stub
-        super.onSubmitRunCommand(formSubmitEvent);
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
     }
-*/    
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
 }

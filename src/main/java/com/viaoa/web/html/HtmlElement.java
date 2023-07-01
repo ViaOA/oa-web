@@ -5,7 +5,7 @@ import static com.viaoa.web.html.OAHtmlComponent.EventType;
 import static com.viaoa.web.html.OAHtmlComponent.OverflowType;
 
 import java.io.OutputStream;
-import java.util.List;
+import java.util.*;
 
 import com.viaoa.object.OAObject;
 import com.viaoa.web.html.form.OAForm;
@@ -13,19 +13,16 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /**
  * Base class for all HTML Elements.
+ * <p>
+ * This will use an internal OAHtmlComponent, which can work with any and all HTML elements.
  * 
  */
 public class HtmlElement {
+    // use this to manage any of the HTML elements
     protected final OAHtmlComponent oaHtmlComponent;
 
     public HtmlElement(String id) {
-        oaHtmlComponent = new OAHtmlComponent(id) {
-            @Override
-            public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fname, long contentLength) {
-                OutputStream os = HtmlElement.this.onSubmitGetFileOutputStream(fname, contentLength);
-                return os;
-            }
-            
+        this.oaHtmlComponent = new OAHtmlComponent(id) {
             @Override
             public void onSubmitPrecheck(OAFormSubmitEvent formSubmitEvent) {
                 super.onSubmitPrecheck(formSubmitEvent);
@@ -58,6 +55,7 @@ public class HtmlElement {
                 super.onSubmit(formSubmitEvent);
                 HtmlElement.this.onSubmit(formSubmitEvent);
             }
+
             @Override
             public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
                 super.onSubmitCompleted(formSubmitEvent);
@@ -75,10 +73,36 @@ public class HtmlElement {
                 super.afterPageLoad();
                 HtmlElement.this.afterPageLoad();
             }
+
+            @Override
+            public String getScript() {
+                String js = super.getScript();
+                js = HtmlElement.this.getScript(js);
+                return js;
+            }
+
+            @Override
+            public String getVerifyScript() {
+                String js = super.getVerifyScript();
+                js = HtmlElement.this.getVerifyScript(js);
+                return js;
+            }
+
+            @Override
+            public String getAjaxScript(final boolean bIsInitializing) {
+                String js = super.getAjaxScript(bIsInitializing);
+                js = HtmlElement.this.getAjaxScript(js, bIsInitializing);
+                return js;
+            }
+            
+            @Override
+            public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fname, long contentLength) {
+                OutputStream os = super.onSubmitGetFileOutputStream(formSubmitEvent, fname, contentLength);
+                OutputStream os2 = HtmlElement.this.onSubmitGetFileOutputStream(fname, contentLength);
+                if (os2 != null) os = os2;
+                return os;
+            }
         };
-        
-        int xx = 4; //qqqqqqq
-        xx++;
     }
 
     /**
@@ -168,8 +192,8 @@ public class HtmlElement {
         oaHtmlComponent.setToolTipTemplate(toolTipTemplate);
     }
 
-    public String getCalcToolTip() {
-        return oaHtmlComponent.getCalcToolTip();
+    public String getCalcToolTipText() {
+        return oaHtmlComponent.getCalcToolTipText();
     }
 
     public boolean getPlainText() {
@@ -184,6 +208,16 @@ public class HtmlElement {
         oaHtmlComponent.setPlainText(b);
     }
 
+    public String getTitle() {
+        return oaHtmlComponent.getTitle();
+    }
+
+    public void setTitle(String title) {
+        oaHtmlComponent.setTitle(title);
+    }
+
+    
+    
     public String getStyle(String name) {
         return oaHtmlComponent.getStyle(name);
     }
@@ -323,27 +357,35 @@ public class HtmlElement {
         oaHtmlComponent.setInnerHtml(html);
     }
     
+    public char getAccessKey() {
+        return oaHtmlComponent.getAccessKey();
+    }
+
+    public void setAccessKey(char ch) {
+        oaHtmlComponent.setAccessKey(ch);
+    }
     
-    public String getScript() {
-        return oaHtmlComponent.getScript();
-    }
-    public String getVerifyScript() {
-        return oaHtmlComponent.getVerifyScript();
+    public int getTabIndex() {
+        return oaHtmlComponent.getTabIndex();
     }
 
-    public String getAjaxScript() {
-        return oaHtmlComponent.getAjaxScript();
+    public void setTabIndex(int val) {
+        oaHtmlComponent.setTabIndex(val);
     }
-    public String getAjaxScript(final boolean bIsInitializing) {
-        return oaHtmlComponent.getAjaxScript(bIsInitializing);
-    }
+    
 
+    public boolean getDebug() {
+        return oaHtmlComponent.getDebug();
+    }
+    public void setDebug(boolean b) {
+        oaHtmlComponent.setDebug(b);
+    }
 
     public boolean isChanged() {
         return oaHtmlComponent.isChanged();
     }
 
-    public String getRenderHtml(OAObject obj) {
+    protected String getRenderHtml(OAObject obj) {
         return oaHtmlComponent.getEditorHtml(obj);
     }
 
@@ -351,33 +393,85 @@ public class HtmlElement {
         return oaHtmlComponent.getNeedsReloaded();
     }
 
-    // called by OAForm
-    public void beforePageLoad() {
+
+
+    // These are all originated through OAForm --------------------------
+
+    protected String getScript(String js) {
+        return js;
+    }
+    protected String getVerifyScript(String js) {
+        return js;
+    }
+
+    protected String getAjaxScript(String js, final boolean bIsInitializing) {
+        return js;
+    }
+    
+    
+    protected void beforePageLoad() {
     }
     
     // called by OAForm
-    public void afterPageLoad() {
+    protected void afterPageLoad() {
     }
     
     // chance to cancel event
-    public void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
+    protected void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
     }
-    public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+    protected void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
     }
-    public void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
+    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
     }
     
     /**
-     * Only called for the component that submitted, event must not be cancelled.
+     * Only called for the component that submitted.
      */
-    public void onSubmit(OAFormSubmitEvent formSubmitEvent) {
+    protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
     }
     
-    public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
+    protected void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
     }
 
-    
-    public OutputStream onSubmitGetFileOutputStream(String fname, long contentLength) {
+    protected OutputStream onSubmitGetFileOutputStream(String fname, long contentLength) {
         return null;
+    }
+
+    private static Set<String> hsSupported = new HashSet();  // lowercase
+    static {
+        hsSupported.add("id");
+        hsSupported.add("hidden");
+        hsSupported.add("visible");
+        hsSupported.add("forwardurl");
+        hsSupported.add("submit");
+        hsSupported.add("ajaxsubmit");
+        hsSupported.add("tooltip");
+        hsSupported.add("tooltiptext");
+        hsSupported.add("tooltiptemplate");
+        hsSupported.add("tooltiptexttemplate");
+        hsSupported.add("plaintext");
+        hsSupported.add("title");
+        hsSupported.add("style");
+        hsSupported.add("class");
+        hsSupported.add("confirmmessage");
+        hsSupported.add("confirmmessagetemplate");
+        hsSupported.add("height");
+        hsSupported.add("width");
+        hsSupported.add("minheight");
+        hsSupported.add("minwidth");
+        hsSupported.add("maxheight");
+        hsSupported.add("maxwidth");
+        hsSupported.add("overflow");
+        hsSupported.add("eventname");
+        hsSupported.add("cursor");
+        hsSupported.add("innerhtml");
+        hsSupported.add("accesskey");
+        hsSupported.add("tabindex");
+        hsSupported.add("debug");
+    }
+    
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return hsSupported.contains(name.toLowerCase());
     }
 }

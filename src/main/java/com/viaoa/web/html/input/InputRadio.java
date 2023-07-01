@@ -1,20 +1,22 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.util.OAStr;
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
 
-// <input type="radio" id="soup" name="meal" value="soup" checked />
+/*
+ <input type="radio" id="radBeef" name="meal" value="beef" />
+ <input type="radio" id="radChicken" name="meal" value="chicken" checked />
+ <input type="radio" id="radTofu" name="meal" value="tofu" />
 
-// NOTE:  all grouped checkboxes should have different ID, but the same Name
-public class InputRadio extends HtmlFormElement {
+ NOTE:  all grouped checkboxes should have different Id, but the same Name with different value.
+*/ 
+ 
+public class InputRadio extends InputElement {
 
     /**
      * A group of radio buttons need to use the same name, but each should have it's own unique Id;
-     * @param id
      * @param name used by the other group of radio buttons.
      * @param value that is submitted if this radio is selected.
      */
@@ -45,7 +47,17 @@ public class InputRadio extends HtmlFormElement {
         oaHtmlComponent.setChecked(b);
     }
 
+
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("checked");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+
 }
 
 
-//qqqq create subclass RadioToggleButton

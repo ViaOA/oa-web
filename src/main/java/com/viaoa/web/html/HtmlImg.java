@@ -1,7 +1,22 @@
 package com.viaoa.web.html;
 
-public class HtmlImg extends HtmlFormElement {
+import java.util.HashSet;
+import java.util.Set;
 
+public class HtmlImg extends HtmlElement {
+
+    private static Set<String> hsSupported = new HashSet();  // lowercase
+    static {
+        hsSupported.add("src");
+        hsSupported.add("alt");
+        hsSupported.add("imageHeight");
+        hsSupported.add("imageWidth");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+    
     public HtmlImg(String id) {
         super(id);
     }
@@ -39,8 +54,10 @@ public class HtmlImg extends HtmlFormElement {
         return oaHtmlComponent.getImageWidth();
     }
 
+    /*remove ??
     public void setWidth(int val) {
         oaHtmlComponent.setImageWidth(val);
     }
+    */
 
 }

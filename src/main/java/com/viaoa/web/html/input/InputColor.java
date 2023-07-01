@@ -1,11 +1,16 @@
 package com.viaoa.web.html.input;
 
-import java.util.List;
+import java.util.*;
 
-import com.viaoa.web.html.HtmlFormElement;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
-public class InputColor extends HtmlFormElement {
+/*
+
+<input id="color" type="color" name="color" value="#cba9b2">
+
+*/
+
+public class InputColor extends InputElement {
 
     public InputColor(String id) {
         super(id, InputType.Color);
@@ -18,8 +23,9 @@ public class InputColor extends HtmlFormElement {
         oaHtmlComponent.setValue(value);
     }
 
-//qqqqqqqqqq datalist of "#AA00BB" colors    
-    // Id of datalist element
+    /**
+     * Id of datalist element, of "#AA00BB" colors.    
+     */
     public String getList() {
         return oaHtmlComponent.getList();
     }
@@ -36,4 +42,23 @@ public class InputColor extends HtmlFormElement {
         oaHtmlComponent.setDataList(lst);
     }
 
+    public String getFloatLabel() {
+        return oaHtmlComponent.getFloatLabel();
+    }
+
+    public void setFloatLabel(String floatLabel) {
+        oaHtmlComponent.setFloatLabel(floatLabel);
+    }
+    
+
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("list");  // id of existing element datalist  
+        hsSupported.add("datalist");  // new datalist to use
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
 }

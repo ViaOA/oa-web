@@ -1,18 +1,54 @@
 package com.viaoa.web.html;
 
-import com.viaoa.web.html.OAHtmlComponent.ComponentType;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.viaoa.web.html.OAHtmlComponent.FormElementType;
+import com.viaoa.web.html.input.InputElement;
+
+/*
+
+
+textarea {
+  resize: none;
+}
+
+*/
 
 public class HtmlTextArea extends HtmlFormElement {
-
     
-    public HtmlTextArea(String id) {
-        super(id, null, ComponentType.Text);
+    private static Set<String> hsSupported = new HashSet();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("spellcheck");
+        hsSupported.add("cols");
+        hsSupported.add("rows");
+        hsSupported.add("autocomplete");
+        hsSupported.add("placeholder");
+        hsSupported.add("readonly");
+        hsSupported.add("required");
+        hsSupported.add("minlength");
+        hsSupported.add("maxlength");
+        hsSupported.add("wrap");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
     
-    //qqqqqqqqqq ???
-    // Size attribute is the rows to display
- 
     
+    
+    public HtmlTextArea(String id) {
+        super(id, FormElementType.Text);
+    }
+    
+    public String getValue() {
+        return oaHtmlComponent.getValue();
+    }
+    public void setValue(String value) {
+        oaHtmlComponent.setValue(value);
+    }
+
     public boolean getSpellCheck() {
         return oaHtmlComponent.getSpellCheck();
     }
@@ -92,12 +128,10 @@ public class HtmlTextArea extends HtmlFormElement {
         oaHtmlComponent.setMaxLength(val);
     }
 
-    
-    
-    
-//    , , , , and required
-    // minlength, maxlength
-    
-// wrap = hard, soft (default), off     
-    
+    public String getWrap() {
+        return oaHtmlComponent.getWrap();
+    }
+    public void setWrap(String wrap) {
+        oaHtmlComponent.setWrap(wrap);
+    }
 }

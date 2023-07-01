@@ -1,10 +1,6 @@
 package com.viaoa.web.html.input;
-
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
+import java.util.*;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 
 /*
@@ -15,11 +11,9 @@ InputButton comp = new InputButton("cmd");
 comp.setValue("Button Here!");
 form.add(comp);
 
-
 <label><input id="cmd" type="button" value="Wrong text"></label>
 
 */
-//qqqqqqqqqqq "value" attribute is the button text
 
 /**
  * Input element with type = button.
@@ -28,8 +22,19 @@ form.add(comp);
  * See also: Button element  
  *
  */
-public class InputButton extends HtmlFormElement {
+public class InputButton extends InputElement {
 
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("buttontext");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+    
+    
     public InputButton(String id) {
         super(id, InputType.Button);
     }

@@ -1,14 +1,15 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.OAHtmlComponent;
-import com.viaoa.web.html.OAHtmlComponent.InputModeType;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+
+/*
+
+<input id="date" type="date" name="date" value="2023-06-30">
+
+*/
 
 public class InputDate extends InputRange {
 
-// might need to methods that are in InputText
-    
     public InputDate(String id) {
         super(id, InputType.Date);
     }

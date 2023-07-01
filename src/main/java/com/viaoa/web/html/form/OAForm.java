@@ -33,7 +33,6 @@ import com.viaoa.web.server.OABase;
 import com.viaoa.web.server.OASession;
 
 /*
-
 <script>
 $(document).ready(function() {
     $('#logo-slider').hi5slider({
@@ -72,7 +71,7 @@ $(document).ready(function() {
  * default forwardUrl
  * send script to page (addScript)
  * manage ajax or regular submit
- * calls each component 3 times on submission: before, beforeOnSubmit, onSubmit, getReturn js script
+ * Multiple stage handling for submits, with event.
  *
  * @author vvia
  */
@@ -196,7 +195,6 @@ public class OAForm extends OABase implements Serializable {
         }
     }
     
-    
     private static class FormProcess {
         OAProcess p; 
         boolean bShowInDialog;
@@ -206,7 +204,6 @@ public class OAForm extends OABase implements Serializable {
             bShowInDialog = true;
         }
     }
-    
 
     public void addProcess(OAProcess p) {
         if (p == null) return;
@@ -597,7 +594,6 @@ public class OAForm extends OABase implements Serializable {
                 OAHtmlComponent comp = alComponent.get(i);
                 String s = comp.getScript();
     
-                // todo:  add other components qqqqqqqqqqq 
                 s = comp.getValidationMessages();
                 if (OAString.isNotEmpty(s)) {
                     if (!b) {
@@ -677,7 +673,7 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "    for (var i=0; i<errors.length; i++) {", indent);
         p(sb, "      if (i > 0) {", ++indent);
         p(sb, "        msg += ', ';", ++indent);
-        p(sb, "        if (i % 3 == 0) msg += '<br>';", indent);
+        p(sb, "        msg += '<br>';", indent);
         p(sb, "      }", --indent);
         p(sb, "      msg += errors[i];", indent);
         p(sb, "    }", --indent);
@@ -708,7 +704,22 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "      $('#oaWait').hide();", indent);
         p(sb, "    }", --indent);
         p(sb, "  }", --indent);
+
+        // 20260628 support for sending enctype=multipart
+        p(sb, "  var objAjax = {", indent);
+        p(sb, "    method: 'POST',", ++indent);
+        p(sb, "    url: 'oaajax.jsp?oaform="+id+"',", indent);
+        p(sb, "    data: new FormData($('#"+id+"')[0]),", indent);
+        p(sb, "    processData: false,", indent); // so that jq does not try to serialize
+        p(sb, "    contentType: false,", indent); // so jq wont do it's default 
+        p(sb, "    dataType: 'script',", indent);
+        p(sb, "    timeout: 30000,", indent);
+        p(sb, "    async: bUseAsync", indent);
+        p(sb, "  };", --indent);
         
+        p(sb, "  $.ajax(objAjax).done(f1).fail(f2);", indent);
+        
+        /*was:
         p(sb, "  var args = $('#"+id+"').serialize();", indent);
         p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
         p(sb, "  $.ajax({", indent);
@@ -721,18 +732,19 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "    timeout: 30000,", indent);
         p(sb, "    async: bUseAsync", indent);
         p(sb, "  });", --indent);
+        */
+        
         p(sb, "}", --indent);
 
         p(sb, "function ajaxSubmit2(cmdName) {", indent);
         p(sb, "  var args = $('#"+id+"').serialize();", ++indent);
         p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
         p(sb, "  $.ajax({", indent);
-        p(sb, "    type: 'POST',", ++indent);
+        p(sb, "    method: 'POST',", ++indent);
         p(sb, "    data: args,", indent);
         p(sb, "    url: 'oaajax.jsp',", indent);
-        p(sb, "    success: function(data) {if (data) eval(data);},", indent);
-        p(sb, "    dataType: 'text'", indent);
-        p(sb, "  });", --indent);
+        p(sb, "    dataType: 'script'", indent);
+        p(sb, "  }).done(function(data) {if (data) eval(data);});", --indent);
         p(sb, "}", --indent);
         
         
@@ -1297,7 +1309,7 @@ public class OAForm extends OABase implements Serializable {
                 this.addErrorMessage(e.toString());
             }
 //qqqqqqqqqqqqqqqq            
-            if (true || formSubmitEvent.getSession().getCalcDebug()) {
+            if (false || formSubmitEvent.getSession().getCalcDebug()) {
                 hmNameValue.forEach( (k,v) -> 
                 System.out.println("  Key: " + k + ": Values[0]: " + ((v == null || v.length == 0) ? "" : v[0])));
             }
@@ -1351,34 +1363,45 @@ public class OAForm extends OABase implements Serializable {
         
         // set the component that submitted (if any)
         if (!formSubmitEvent.getCancel()) {
-            String id = formSubmitEvent.getRequest().getParameter("oacommand");
-            if (OAStr.isNotEmpty(id)) formSubmitEvent.setSubmitOAHtmlComponent(getComponent(id));
-            else {
+            String[] ids = hmNameValue.get("oacommand");
+            String id = ids == null || ids.length == 0 ? null : ids[0];
+            
+            if (formSubmitEvent.getSubmitOAHtmlComponent() == null && OAStr.isNotEmpty(id)) {
+                formSubmitEvent.setSubmitOAHtmlComponent(getComponent(id));
+            }
+            
+            if (formSubmitEvent.getSubmitOAHtmlComponent() == null) {
                 for (OAHtmlComponent comp : alComponent) {
-    //qqqqqqqqqq test                
-                    if (OAStr.equalsIgnoreCase(comp.getType(), OAHtmlComponent.InputType.Submit.getDisplay())) {
-                        if (formSubmitEvent.getSubmitOAHtmlComponent() == null) {
-                            String s = comp.getCalcName();
-                            if (OAStr.isEmpty(s)) s = comp.getId();
-                            if (formSubmitEvent.getRequest().getParameter(s) != null) {
-                                formSubmitEvent.setSubmitOAHtmlComponent(comp);
-                            }
+                    if (comp.getInputType() == OAHtmlComponent.InputType.Submit) {
+                        if (formSubmitEvent.getRequest().getParameter(comp.getCalcName()) != null) {
+                            formSubmitEvent.setSubmitOAHtmlComponent(comp);
+                            break;
                         }
                     }
-                    if (OAStr.equalsIgnoreCase(comp.getType(), OAHtmlComponent.InputType.Image.getDisplay())) {
-    //qqqqqqqqqq test                
-                        String s = comp.getCalcName();
-                        String val = formSubmitEvent.getRequest().getParameter(s+".x");
+                    
+                    if (comp.getInputType() == OAHtmlComponent.InputType.Image) {
+                        String val = formSubmitEvent.getRequest().getParameter(comp.getCalcName()+".x");
                         if (val != null) {
-                            formSubmitEvent.setImageClickX(OAConv.toInt(val));
-                            val = formSubmitEvent.getRequest().getParameter(s+".y");
-                            formSubmitEvent.setImageClickY(OAConv.toInt(val));
                             formSubmitEvent.setSubmitOAHtmlComponent(comp);
                             break;
                         }
                     }                
                 }
             }
+            
+            // input type=image also includes the x & y for the mouse click. 
+            if (formSubmitEvent.getSubmitOAHtmlComponent() != null) {
+                if (formSubmitEvent.getSubmitOAHtmlComponent().getInputType() == OAHtmlComponent.InputType.Image) {
+                    String s = formSubmitEvent.getSubmitOAHtmlComponent().getCalcName();
+                    String val = formSubmitEvent.getRequest().getParameter(s+".x");
+                    if (val != null) {
+                        formSubmitEvent.setImageClickX(OAConv.toInt(val));
+                        val = formSubmitEvent.getRequest().getParameter(s+".y");
+                        formSubmitEvent.setImageClickY(OAConv.toInt(val));
+                    }
+                }
+            }
+            
         }
         
         // all are called, allows components to set submit component

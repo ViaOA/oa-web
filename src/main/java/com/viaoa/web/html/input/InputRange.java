@@ -1,16 +1,21 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
-public class InputRange extends HtmlFormElement {
+/*
+<label id="lbl">Test InputRange <input id="txtRange" type="Range" name="txtRange" min=25 max=500 step=25 value="100"></label>
 
+ */
+
+public class InputRange extends InputElement {
+    
     public InputRange(String id) {
         super(id, InputType.Range);
     }
-    public InputRange(String id, InputType type) {
+    protected InputRange(String id, InputType type) {
         super(id, type);
     }
 
@@ -77,5 +82,28 @@ public class InputRange extends HtmlFormElement {
         oaHtmlComponent.setStep(val);
     }
     
+    public String getFloatLabel() {
+        return oaHtmlComponent.getFloatLabel();
+    }
 
+    public void setFloatLabel(String floatLabel) {
+        oaHtmlComponent.setFloatLabel(floatLabel);
+    }
+    
+    
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("placeholder");
+        hsSupported.add("readonly");
+        hsSupported.add("required");
+        hsSupported.add("min");
+        hsSupported.add("max");
+        hsSupported.add("step");
+        hsSupported.add("floatlabel");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
 }

@@ -10,23 +10,38 @@ import com.viaoa.web.server.OASession;
 
 /**
  * Event used to track Form submit and ajaxSubmit.
- *  
+ * <p>
+ * See: oaform.jsp, oaajax.jsp, oaforward.jsp
+ * @see OAForm#processForward(OASession, HttpServletRequest, HttpServletResponse)
+ * @see OAForm#processSubmit(OASession, HttpServletRequest, HttpServletResponse, boolean)
  */
 public class OAFormSubmitEvent {
     private final OAForm form;
     private final OASession session;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
+
+    // component that caused the submit, set by OAForm.processSubmit
     private OAHtmlComponent submitOAHtmlComponent;
+    
+    // component that caused the submit, set by HtmlElement.onSubmitPrecheck
     private HtmlElement submitHtmlElement;
-    private final Map<String, String[]> hmNameValue = new HashMap(); 
+    
+    // all name/value pairs that were submitted, including hidden.
+    private final Map<String, String[]> hmNameValue = new HashMap();
+    
+    // used to have have this event cancelled.
     private boolean bCancel;
+    
+    // forward url.
     private String forwardUrl;
+    
+    // flag to know if ajax was called to submit the form.
     private boolean bAjax;
+    
+    // x, y values used when submitted by an input type=image.
     private int imageClickX, imageClickY;
     
-    
-    private final List<String> alMessage = new ArrayList();
 
     public OAFormSubmitEvent(OAForm form, OASession session, HttpServletRequest request, HttpServletResponse response, boolean isAjax) {
         this.form = form;

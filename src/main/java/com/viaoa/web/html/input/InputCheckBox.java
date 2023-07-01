@@ -1,14 +1,16 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.util.OAStr;
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
+import java.util.*;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
 
-// <input type="checkbox" id="chk1" name="chk" value="yes" checked />
-// <input type="checkbox" id="chk2" name="chk" value="no" />
+/*
+ <input type="checkbox" id="chk1" name="chk1" value="first" checked />
+ <input type="checkbox" id="chk2" name="chk2" value="second" />
+ 
+ note:
+ only checkboxes with checked are submitted.
+ 
+ */
 
 /**
  * Input element with type checkbox.
@@ -18,8 +20,18 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * 
  * @author vince
  */
-public class InputCheckBox extends HtmlFormElement {
+public class InputCheckBox extends InputElement {
 
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("checked");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+    
     
     /**
      * A group of radio buttons need to use the same name, but each should have it's own unique Id;
@@ -55,8 +67,4 @@ public class InputCheckBox extends HtmlFormElement {
     public void setChecked(boolean b) {
         oaHtmlComponent.setChecked(b);
     }
-    
 }
-//qqqq create subclass CheckboxToggleButton
-//qqqq  create subclass that uses on/off values
-//qqqqq create subclass that allows multiple

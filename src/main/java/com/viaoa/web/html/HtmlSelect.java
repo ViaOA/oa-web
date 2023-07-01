@@ -1,20 +1,31 @@
 package com.viaoa.web.html;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.viaoa.web.html.OAHtmlComponent.ComponentType;
+import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 
 public class HtmlSelect extends HtmlFormElement {
 
-//qqqqqqqqqqqqqqqqqqq ALSO create an HtmlButton qqqqqqqqqqqq with submit/reset attributes ?? qqqqqqq    
+//qqqqqqqqqqqqqq Values[] has all of the selected items qqqqqqqqqqqqqqqqqqqqqqqqqqq    
     
-//qqqqqqqqqqqqqq Values stores all of the selected items qqqqqqqqqqqqqqqqqqqqqqqqqqq    
+//qqqqqq does not support readonly, use disabled
     
-//qqqqqq does not support readonly
-    // qqqq use disabled
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("size");
+        hsSupported.add("multiple");
+        hsSupported.add("required");
+        hsSupported.add("value");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+    
     
     public HtmlSelect(String id) {
-        super(id, null, ComponentType.Select);
+        super(id, FormElementType.Select);
     }
     
     /**

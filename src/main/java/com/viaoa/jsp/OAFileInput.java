@@ -244,7 +244,7 @@ public class OAFileInput extends OAHtmlElement implements OAJspMultipartInterfac
         
         // add js code to check for max size
         if (getMaxFileSize() > 0) {
-            sb.append("if ($('#"+id+"').files && $('#\"+id+\"').files.length > 0) {\n");
+            sb.append("if ($('#"+ id +"').files && $('#"+id+"').files.length > 0) {\n");
             sb.append("    if ($('#"+id+"').files[0].size > "+getMaxFileSize()+") {\n");
             sb.append("        errors.push('File size over limit of "+getMaxFileSize()+"');\n");
             sb.append("    }\n");

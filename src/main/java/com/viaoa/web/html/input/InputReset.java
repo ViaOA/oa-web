@@ -1,30 +1,26 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlFormElement;
-import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
-public class InputReset extends HtmlFormElement {
+/*
+
+<input id="cmd" type="reset" name="cmd" value="Reset Button">
+
+
+
+*/
+
+
+/**
+ * Resets the form components.
+ * <p>
+ * Note:<br>
+ * This does not submit the form.<br>
+ *
+ */
+public class InputReset extends InputSubmit {
 
     public InputReset(String id) {
         super(id, InputType.Reset);
     }
-
-    public String getButtonText() {
-        return oaHtmlComponent.getValue();
-    }
-    public void setButtonText(String value) {
-        oaHtmlComponent.setValue(value);
-    }
-    
-    
-    // the button text
-    public String getValue() {
-        return oaHtmlComponent.getValue();
-    }
-    public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
-    }
-    
 }

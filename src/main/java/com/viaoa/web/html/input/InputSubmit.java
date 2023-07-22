@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /* 
   <input id="cmd" type="submit" name="cmd" value="Submit Button">
@@ -30,19 +31,25 @@ public class InputSubmit extends InputElement {
     }
     
     public String getButtonText() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setButtonText(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
     
     // the button text and value that is submitted if clicked.
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
+    
+    @Override
+    protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
+        super.onSubmit(formSubmitEvent);
+    }
+    
     
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {

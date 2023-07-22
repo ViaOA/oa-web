@@ -2208,8 +2208,6 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 		                                    element.parent().append(error);
 		                                }
 		                            });
-
-
 		 */
 		sb.append("}");
 		return sb.toString();

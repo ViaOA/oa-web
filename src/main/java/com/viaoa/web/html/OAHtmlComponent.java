@@ -12,9 +12,9 @@ import java.util.*;
 import com.viaoa.web.html.form.OAFormInsertDelegate;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
+import com.viaoa.web.server.OASession;
 import com.viaoa.web.util.OAJspUtil;
 import com.viaoa.object.OAObject;
-import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 
 
@@ -28,13 +28,13 @@ import com.viaoa.util.*;
 
 
 /**
- * The main "super" class for working with any HTML element, including form and input components.
+ * The main "super" class for controlling any HTML element, including form and input components.
  * <p>
  * The HTML element design does not map cleanly to OO classes using inheritance.<br>
  * OA uses a composite design, where this class includes all of the functionality needed by all components,
- * and then each component (java class) can "have a" OAComponent to do the work for it's subset of methods.
+ * and then each component (java class) can "have a" OAHtmlComponent to do the work for it's subset of methods.
  * <p>
- * Notes: if a form component is disabled, then data is not sent to server during submit.    
+ * Notes: if a form component is disabled, then data is not sent to server during form submit.    
  *
  * 
  * @author vvia
@@ -48,13 +48,15 @@ public class OAHtmlComponent {
     protected String name;
     private boolean bDebug;
 
-    // true if the page needs reloaded (to call oaForm.getScript)
-    private boolean bNeedsReloaded; 
+    // true if the page needs refreshed (to call oaForm.getScript)
+    private boolean bNeedsRefreshed; 
     
     
     // see: onSubmitLoadValues  that loads submitted values.
     public static enum FormElementType {
         Text(EventType.OnBlur),   // value of input/text
+        TextArea(EventType.OnBlur),   // value of input/text
+        StyledTextArea(EventType.OnBlur),   // value of input/text
         Range(EventType.OnChange),  // value of input/text
         Checkbox(EventType.OnChange),  // value sent on submit
         Radio(EventType.OnChange),  // value sent on submit
@@ -76,7 +78,7 @@ public class OAHtmlComponent {
         }
         
         public boolean getUsesValue() {
-            boolean b = (this != File); 
+            boolean b = (this != File);
             return b;
         }
         public boolean getUsesChecked() {
@@ -96,7 +98,7 @@ public class OAHtmlComponent {
         return this.formElementType;
     }
     public void setFormElementType(FormElementType fet) {
-        if (this.formElementType != fet) setNeedsReloaded(true);
+        if (this.formElementType != fet) setNeedsRefreshed(true);
         this.formElementType = fet;
     }
     
@@ -191,7 +193,6 @@ public class OAHtmlComponent {
     protected String forwardUrl;
     protected boolean bSubmit, bAjaxSubmit;
     protected String toolTipText;
-    protected String toolTipTemplate;
     
     private boolean bIsPlainText;  // true if the text is not HTML
     private String autoComplete; // To disable, set to "off"
@@ -217,7 +218,6 @@ public class OAHtmlComponent {
     protected Set<String> hsClassRemove;
 
     protected String confirmMessage;
-    protected String confirmMessageTemplate;
     
     protected String height; // ex:  200px,  12em
     protected String width; // ex:  200px,  12em
@@ -450,7 +450,7 @@ public class OAHtmlComponent {
         return id;
     }
     public void setId(String id) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.id, id)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.id, id)) setNeedsRefreshed(true);
         this.id = id;
     }
     
@@ -458,7 +458,7 @@ public class OAHtmlComponent {
         return this.form;
     }
     public void setForm(OAForm form) {
-        if (this.form != form) setNeedsReloaded(true);
+        if (this.form != form) setNeedsRefreshed(true);
         this.form = form;
     }
     
@@ -466,7 +466,7 @@ public class OAHtmlComponent {
         return name;
     }
     public void setName(String name) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.name, name)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.name, name)) setNeedsRefreshed(true);
         this.name = name;
     }
 
@@ -474,7 +474,7 @@ public class OAHtmlComponent {
         return type;
     }
     public void setType(String type) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.type, type)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.type, type)) setNeedsRefreshed(true);
         this.type = type;
     }
     public void setType(InputType type) {
@@ -485,7 +485,7 @@ public class OAHtmlComponent {
         return labelId;
     }
     public void setLabelId(String id) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.labelId, id)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.labelId, id)) setNeedsRefreshed(true);
         this.labelId = id;
     }
     
@@ -499,7 +499,7 @@ public class OAHtmlComponent {
     }
     public void setFloatLabel(String floatLabel) {
         this.bFloatLabelChanged |= OAStr.isNotEqualNullEqualsBlank(this.floatLabel, floatLabel);
-        if (bFloatLabelChanged && OAStr.isNotEmpty(this.floatLabel)) setNeedsReloaded(true);
+        if (bFloatLabelChanged && OAStr.isNotEmpty(this.floatLabel)) setNeedsRefreshed(true);
         this.floatLabel = floatLabel;
     }
 
@@ -516,7 +516,7 @@ public class OAHtmlComponent {
     }
     public void setPattern(String pattern) {
         this.bPatternChanged |= OAStr.isNotEqualNullEqualsBlank(this.pattern, pattern);
-        if (bPatternChanged) bNeedsReloaded = true;
+        if (bPatternChanged) setNeedsRefreshed(true);
         this.pattern = pattern;
     }
 
@@ -612,6 +612,9 @@ public class OAHtmlComponent {
         this.value = value;
         this.bValueChangedByAjax = false;
     }
+    public boolean getValueChangedByAjax() {
+        return this.bValueChangedByAjax;
+    }
 
     public String[] getValues() {
         return this.values;
@@ -628,7 +631,7 @@ public class OAHtmlComponent {
         return this.forwardUrl;
     }
     public void setForwardUrl(String forwardUrl) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.forwardUrl, forwardUrl)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.forwardUrl, forwardUrl)) setNeedsRefreshed(true);
         this.forwardUrl = forwardUrl;
     }
 
@@ -636,7 +639,7 @@ public class OAHtmlComponent {
         return bSubmit;
     }
     public void setSubmit(boolean b) {
-        if (this.bSubmit != b) setNeedsReloaded(true);
+        if (this.bSubmit != b) setNeedsRefreshed(true);
         bSubmit = b;
     }
 
@@ -644,7 +647,7 @@ public class OAHtmlComponent {
         return bAjaxSubmit;
     }
     public void setAjaxSubmit(boolean b) {
-        if (this.bAjaxSubmit != b) setNeedsReloaded(true);
+        if (this.bAjaxSubmit != b) setNeedsRefreshed(true);
         bAjaxSubmit = b;
     }
 
@@ -663,33 +666,12 @@ public class OAHtmlComponent {
     }
 
     public String getToolTipText() {
-        return this.toolTipText;
+        return getToolTip();
     }
     public void setToolTipText(String toolTip) {
         setToolTip(toolTip);
     }
 
-    public String getToolTipTemplate() {
-        return this.toolTipTemplate;
-    }
-    public void setToolTipTemplate(String toolTipTemplate) {
-        this.toolTipTemplate = toolTipTemplate;
-    }
-    public String getToolTipTextTemplate() {
-        return this.toolTipTemplate;
-    }
-    public void setToolTipTextTemplate(String toolTipTemplate) {
-        this.toolTipTemplate = toolTipTemplate;
-    }
-    
-    public String getCalcToolTipText() {
-        if (OAStr.isNotEmpty(getToolTipTemplate())) {
-            //qqqqqqqqqqqq todo:  this will need to be overwritten, so that the Template's Hub,OAObject can be set
-            return getToolTipTemplate();            
-        }
-        return getToolTipText();
-    }
-    
     public void reset() {
         value = null;
         lastAjaxSent = null;
@@ -705,21 +687,29 @@ public class OAHtmlComponent {
      * @param contentLength is the total length of the submit, not just the file being uploaded. 
      * @return null to ignore.
      */
-    public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fname, long contentLength) {
+    public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fileName, String contentType) {
         bFileUploaded = true;
         return null;
     }
     
-    // allows components to do prechecks
+    // calls all components
     public void onSubmitPrecheck(final OAFormSubmitEvent formSubmitEvent) {
+        this.bValueChangedByAjax = formSubmitEvent.getAjax();
     }
 
-    // allows components to cancel
+    // calls enabled components
     public void onSubmitBeforeLoadValues(final OAFormSubmitEvent formSubmitEvent) {
     }
 
-    // allows components to cancel
+    // calls enabled components
     public void onSubmitAfterLoadValues(final OAFormSubmitEvent formSubmitEvent) {
+    }
+    
+    /** 
+     * Called by OAForm.processComponentRequest to have a Component respond to a http or ajax request.
+     */
+    public String onGetJson(OASession session) {
+        return "";
     }
     
     public String getCalcName() {
@@ -728,7 +718,7 @@ public class OAHtmlComponent {
         return s;
     }
     
-    // all are called, only run if not cancelled and not the submit command
+    // all enabled components called
     public void onSubmitLoadValues(final OAFormSubmitEvent formSubmitEvent) {
         if (formSubmitEvent.getCancel()) return;
         if (!getEnabled()) return; // disabled components do not get submitted.  Note: readony do
@@ -784,6 +774,8 @@ public class OAHtmlComponent {
                 // value not used, multipart-form processes the uploaded file(s) 
                 break;
             case Text:
+            case TextArea:
+            case StyledTextArea:
             case Range:
             default:
                 setValue(ss == null ? null : ss.length==0 ? null : ss[0]);
@@ -981,7 +973,6 @@ public class OAHtmlComponent {
     }
     public void setMinLength(int val) {
         bLengthsChanged |= (this.minLength != val);
-        if (bLengthsChanged) bNeedsReloaded = true;
         this.minLength = val;
     }
     public int getMaxLength() {
@@ -989,7 +980,6 @@ public class OAHtmlComponent {
     }
     public void setMaxLength(int val) {
         bLengthsChanged |= (this.maxLength != val);
-        if (bLengthsChanged) bNeedsReloaded = true;
         this.maxLength = val;
     }
     public int getSize() {
@@ -1000,20 +990,20 @@ public class OAHtmlComponent {
         this.size = val;
     }
 
-    public int getCols() {
-        return this.cols;
-    }
-    public void setCols(int val) {
-        bLengthsChanged |= (this.cols != val);
-        this.cols = val;
-    }
-
     public int getRows() {
         return this.rows;
     }
     public void setRows(int val) {
         bLengthsChanged |= (this.rows != val);
         this.rows = val;
+    }
+
+    public int getCols() {
+        return this.cols;
+    }
+    public void setCols(int val) {
+        bLengthsChanged |= (this.cols != val);
+        this.cols = val;
     }
     
     public String getMin() {
@@ -1036,7 +1026,7 @@ public class OAHtmlComponent {
         return this.maxFileSize;
     }
     public void setMaxFileSize(int val) {
-        bNeedsReloaded |= val != this.maxFileSize;
+        bNeedsRefreshed |= val != this.maxFileSize;
         this.maxFileSize = val;
     }
     
@@ -1165,7 +1155,7 @@ public class OAHtmlComponent {
         return inputMode;
     }
     public void setInputMode(String mode) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.inputMode, mode)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.inputMode, mode)) setNeedsRefreshed(true);
         this.inputMode = mode;
     }
     public void setInputMode(InputModeType type) {
@@ -1180,22 +1170,8 @@ public class OAHtmlComponent {
         return this.confirmMessage;
     }
     public void setConfirmMessage(String msg) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.confirmMessage, msg)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.confirmMessage, msg)) setNeedsRefreshed(true);
         confirmMessage = msg;
-    }
-    public String getConfirmMessageTemplate() {
-        return this.confirmMessageTemplate;
-    }
-    public void setConfirmMessageTemplate(String msg) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.confirmMessageTemplate, msg)) setNeedsReloaded(true);
-        this.confirmMessageTemplate = msg;
-    }
-    public String getCalcConfirmMessage() {
-        if (OAStr.isNotEmpty(confirmMessageTemplate)) {
-            //qqqqqqqqqqqq todo:  this will need to be overwritten, so that the confirmMessageTemplate Hub,OAObject can be set
-            return confirmMessageTemplate;            
-        }
-        return getConfirmMessage();
     }
 
     public String getCursor() {
@@ -1233,7 +1209,7 @@ public class OAHtmlComponent {
         return eventName;
     }
     public void setEventName(String name) {
-        if (OAStr.isNotEqualNullEqualsBlank(this.eventName, name)) setNeedsReloaded(true);
+        if (OAStr.isNotEqualNullEqualsBlank(this.eventName, name)) setNeedsRefreshed(true);
         this.eventName = name;
     }
     public void setEventType(EventType eventType) {
@@ -1247,7 +1223,7 @@ public class OAHtmlComponent {
         return bIsPlainText;
     }
     public void setPlainText(boolean b) {
-        if (this.bIsPlainText != b) setNeedsReloaded(true);
+        if (this.bIsPlainText != b) setNeedsRefreshed(true);
         bIsPlainText = b;
     }
 
@@ -1300,8 +1276,15 @@ public class OAHtmlComponent {
         return this.bMultiple;
     }
     public void setMultiple(boolean b) {
-        if (this.bMultiple != b) setNeedsReloaded(true);
+        if (this.bMultiple != b) setNeedsRefreshed(true);
         this.bMultiple = b;
+    }
+    
+    
+    /**
+     * Called by OAForm.
+     */
+    public void beforeGetScript() {
     }
     
     /**
@@ -1315,15 +1298,15 @@ public class OAHtmlComponent {
     public void afterPageLoad() {
     }
     
-    public String getScript() {
+    public String getInitializeScript() {
         lastAjaxSent = null;
-        String s = _getScript();
-        setNeedsReloaded(false);
+        String s = _getInitializeScript();
+        setNeedsRefreshed(false);
         return s;
     }
 
-    protected String _getScript() {
-        StringBuilder sb = new StringBuilder(1024);
+    protected String _getInitializeScript() {
+        final StringBuilder sb = new StringBuilder(1024);
 
         final FormElementType formElementType = getFormElementType();        
         
@@ -1375,19 +1358,13 @@ public class OAHtmlComponent {
 
         String eventName = getCalcEventName();
         if (OAStr.isNotEmpty(eventName)) {
-            if (eventName.startsWith("on")) eventName = eventName.substring(2);
+            if (eventName.startsWith("on")) eventName = eventName.substring(2);  // ex: onclick -> click
         
             if (getSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName + "(function() {\n");
                 
                 if (formElementType != null && formElementType.getUsesValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
                     sb.append("if (this.value === this.oaPrevValue) return false;\n");
-                    /*was:
-                    sb.append("if (typeof this.oaPrevValue === \"undefined\") {\n");
-                    sb.append("    if (this.value === this.getAttribute(\"value\")) return false;\n");
-                    sb.append("}\n");
-                    sb.append("else if (this.value === this.oaPrevValue) return false;\n");
-                    */
                     sb.append("this.oaPrevValue = this.value;\n");
                 }
                 
@@ -1430,15 +1407,12 @@ public class OAHtmlComponent {
                 sb.append("$('#"+id+"')."+eventName+"(function() {"+confirm+"window.location = 'oaforward.jsp?oaform="+getForm().getId()+"&oacommand="+id+"';return false;});\n");
             }
         }
-        
-        sb.append(getAjaxScript(true));
 
         s = getInputMode();
         if (OAStr.isNotEmpty(s)) {
             sb.append("$('#" + id + "').attr('inputmode', '"+s+"');\n");
         }
-        
-        
+
         String js = sb.toString();
         return js;
     }
@@ -1447,13 +1421,8 @@ public class OAHtmlComponent {
         return null;
     }
 
-    public String getAjaxScript() {
-        return getAjaxScript(false);
-    }
-
-    
     public String getAjaxScript(final boolean bIsInitializing) {
-        StringBuilder sb = new StringBuilder(1024);
+        final StringBuilder sb = new StringBuilder(1024);
 
         String s = getValue();
         if (s == null) s = "";
@@ -1462,9 +1431,12 @@ public class OAHtmlComponent {
 
         if (fet == null || fet.getUsesValue()) {
             if (!this.bValueChangedByAjax) {
-                s = OAJspUtil.createJsString(s, '\'');
-                sb.append("$('#" + id + "').val('"+s+"');\n");
-                sb.append("$('#" + id + "')[0].oaPrevValue = $('#" + id + "').val();\n");
+                if (fet != FormElementType.StyledTextArea) {
+                    s = OAJspUtil.createJsString(s, '\'');
+                    sb.append("$('#" + id + "').val('"+s+"');\n");
+                    sb.append("$('#" + id + "')[0].oaPrevValue = $('#" + id + "').val();\n");
+                    lastAjaxSent = null;
+                }
             }
         }
         
@@ -1659,7 +1631,7 @@ public class OAHtmlComponent {
         if (bToolTipChanged || (bIsInitializing && OAStr.isNotEmpty(getToolTipText()))) {
             bToolTipChanged = false;
             String prefix = null;
-            String tt = getCalcToolTipText();
+            String tt = getToolTipText();
             if (OAString.isNotEmpty(tt)) {
                 if (bIsInitializing || !bToolTipChangedInit) {
                     bToolTipChangedInit = true;
@@ -1822,7 +1794,7 @@ public class OAHtmlComponent {
         if (bIsInitializing || bOptionsChanged) {
             bOptionsChanged = false;
             List<HtmlOption> al = getOptions();
-            if (al != null) {
+            if (al != null && al.size() > 0) {
                 String list = "";
                 boolean bInOptGroup = false;
                 for (HtmlOption ho : al) {
@@ -1944,23 +1916,15 @@ public class OAHtmlComponent {
         return null;
     }
     
-    public String[] getRequiredJsNames() {
-        ArrayList<String> al = new ArrayList<>();
-
-        al.add(OAFormInsertDelegate.JS_jquery);
-        al.add(OAFormInsertDelegate.JS_jquery_ui);
-        al.add(OAFormInsertDelegate.JS_bootstrap);
-        String[] ss = new String[al.size()];
-        return al.toArray(ss);
+    public void getRequiredJsNames(final Set<String> hsJsName) {
+        hsJsName.add(OAFormInsertDelegate.JS_jquery);
+        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
+        hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
     }
 
-    public String[] getRequiredCssNames() {
-        ArrayList<String> al = new ArrayList<>();
-        al.add(OAFormInsertDelegate.CSS_jquery_ui);
-        al.add(OAFormInsertDelegate.CSS_bootstrap);
-
-        String[] ss = new String[al.size()];
-        return al.toArray(ss);
+    public void getRequiredCssNames(final Set<String> hsCssName) {
+        hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
+        hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
     }
 
     public String getAlt() {
@@ -2004,11 +1968,19 @@ public class OAHtmlComponent {
     }
     
     public List<HtmlOption> getOptions() {
+        if (alOptions == null) alOptions = new ArrayList();
         return alOptions;
     }
     public void add(HtmlOption option) {
-        if (alOptions == null) alOptions = new ArrayList();
+        bOptionsChanged = true;
         getOptions().add(option);
+    }
+    public void addOption(HtmlOption option) {
+        add(option);
+    }
+    public void clearOptions() {
+        bOptionsChanged = true;
+        getOptions().clear();
     }
 
     public String getWrap() {
@@ -2022,12 +1994,12 @@ public class OAHtmlComponent {
         setWrap(wrapType == null ? WrapType.Default.getDisplay() : wrapType.getDisplay());
     }
     
-    public boolean getNeedsReloaded() {
-        return bNeedsReloaded;
+    public boolean getNeedsRefreshed() {
+        return bNeedsRefreshed;
     }
 
-    protected void setNeedsReloaded(boolean b) {
-        this.bNeedsReloaded = b;
+    public void setNeedsRefreshed(boolean b) {
+        this.bNeedsRefreshed = b;
     }
     
     public boolean getDebug() {
@@ -2060,7 +2032,7 @@ public class OAHtmlComponent {
      * Note, this will call setUsesTabIndex(true)
      */
     public void setTabIndex(int val) {
-        bNeedsReloaded |= this.tabIndex != val; 
+        bNeedsRefreshed |= this.tabIndex != val; 
         this.tabIndex = val;
         bUseTabIndex = true;
     }
@@ -2068,7 +2040,7 @@ public class OAHtmlComponent {
         return bUseTabIndex;
     }
     public void setUseTabIndex(boolean b) {
-        bNeedsReloaded |= this.bUseTabIndex != b; 
+        bNeedsRefreshed |= this.bUseTabIndex != b; 
         this.bUseTabIndex = b;
     }
 

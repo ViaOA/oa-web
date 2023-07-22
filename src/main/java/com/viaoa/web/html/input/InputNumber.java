@@ -16,6 +16,6 @@ public class InputNumber extends InputRange {
 
     public InputNumber(String id) {
         super(id, InputType.Number);
-        oaHtmlComponent.setInputMode(InputModeType.Numeric);
+        htmlComponent.setInputMode(InputModeType.Numeric);
     }
 }

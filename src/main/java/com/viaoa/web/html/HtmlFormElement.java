@@ -22,56 +22,56 @@ public class HtmlFormElement extends HtmlElement {
 
     public HtmlFormElement(final String id, final FormElementType formElementType) {
         super(id);
-        oaHtmlComponent.setFormElementType(formElementType);
+        htmlComponent.setFormElementType(formElementType);
     }
     
     public String getName() {
-        return oaHtmlComponent.getName();
+        return htmlComponent.getName();
     }
 
     public void setName(String name) {
-        oaHtmlComponent.setName(name);
+        htmlComponent.setName(name);
     }
     
     public String getLabelId() {
-        return oaHtmlComponent.getLabelId();
+        return htmlComponent.getLabelId();
     }
 
     public void setLabelId(String id) {
-        oaHtmlComponent.setLabelId(id);
+        htmlComponent.setLabelId(id);
     }
 
 
     public boolean getEnabled() {
-        return oaHtmlComponent.getEnabled();
+        return htmlComponent.getEnabled();
     }
 
     public boolean isEnabled() {
-        return oaHtmlComponent.getEnabled();
+        return htmlComponent.getEnabled();
     }
 
     public void setEnabled(boolean b) {
-        oaHtmlComponent.setEnabled(b);
+        htmlComponent.setEnabled(b);
     }
 
     public void setFocus(boolean b) {
-        oaHtmlComponent.setFocus(b);
+        htmlComponent.setFocus(b);
     }
 
     public void setFocus() {
-        oaHtmlComponent.setFocus();
+        htmlComponent.setFocus();
     }
     
     public void reset() {
-        oaHtmlComponent.reset();
+        htmlComponent.reset();
     }
 
     public String getEditorHtml(OAObject obj) {
-        return oaHtmlComponent.getEditorHtml(obj);
+        return htmlComponent.getEditorHtml(obj);
     }
     
     public String getTableEditorHtml() {
-        return oaHtmlComponent.getTableEditorHtml();
+        return htmlComponent.getTableEditorHtml();
     }
 
     public String getCalcDisplayName() {

@@ -12,9 +12,36 @@ import java.util.Set;
  */
 public class HtmlLink extends HtmlElement {
 
+    public HtmlLink(String id) {
+        super(id);
+    }
+
+    public boolean getEnabled() {
+        return htmlComponent.getEnabled();
+    }
+
+    public boolean isEnabled() {
+        return htmlComponent.getEnabled();
+    }
+
+    public String getHref() {
+        return htmlComponent.getHref();
+    }
+    public void setHref(String href) {
+        htmlComponent.setHref(href);
+    }
+    
+    public String getTarget() {
+        return htmlComponent.getTarget();
+    }
+    public void setTarget(String target) {
+        htmlComponent.setTarget(target);
+    }
+
+
     private static Set<String> hsSupported = new HashSet();  // lowercase
     static {
-        // hsSupported.add("disabled");  qqqqq not an attribute, but can be done in JS
+        hsSupported.add("enabled");
         hsSupported.add("href");
         hsSupported.add("target");
     }
@@ -23,29 +50,4 @@ public class HtmlLink extends HtmlElement {
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
     
-    public HtmlLink(String id) {
-        super(id);
-    }
-
-    public boolean getEnabled() {
-        return oaHtmlComponent.getEnabled();
-    }
-
-    public boolean isEnabled() {
-        return oaHtmlComponent.getEnabled();
-    }
-
-    public String getHref() {
-        return oaHtmlComponent.getHref();
-    }
-    public void setHref(String href) {
-        oaHtmlComponent.setHref(href);
-    }
-    
-    public String getTarget() {
-        return oaHtmlComponent.getTarget();
-    }
-    public void setTarget(String target) {
-        oaHtmlComponent.setTarget(target);
-    }
 }

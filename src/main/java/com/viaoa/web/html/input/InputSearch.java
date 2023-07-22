@@ -7,7 +7,7 @@ public class InputSearch extends InputText {
     
     public InputSearch(String id) {
         super(id, InputType.Search);
-        oaHtmlComponent.setInputMode(InputModeType.Search);
+        htmlComponent.setInputMode(InputModeType.Search);
     }
 
 }

@@ -7,7 +7,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
+import com.viaoa.template.OATemplate;
+import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
+import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.oldversion.OAWebComponent;
 import com.viaoa.web.server.OASession;
 
@@ -220,6 +225,32 @@ public class OAWebUtil {
         // TODO Auto-generated method stub
         return null;
     }
+
+
+    /*qqq
+    public static String getCalcToolTipText(OAHtmlComponent comp, Hub h) {
+        if (comp == null) return null;
+        if (h == null) {
+            return comp.getCalcToolTipText();
+        }
+        Object obj = h.getAO();
+        if (!(obj instanceof OAObject)) {
+            return comp.getCalcToolTipText();
+        }
+
+        String tt = comp.getToolTipTemplate();
+        if (OAStr.isEmpty(tt)) {
+            return comp.getCalcToolTipText();
+        }
+        
+        OATemplate oat = new OATemplate(tt);
+        String ttp = oat.process((OAObject) obj);
+        
+        return ttp;
+    }
+    */
+
+
 }  
 /*
 if (ch == '&') {

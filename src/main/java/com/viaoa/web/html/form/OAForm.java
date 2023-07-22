@@ -22,12 +22,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.process.OAProcess;
+import com.viaoa.util.OAArray;
 import com.viaoa.util.OAConv;
 import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlElement;
 import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+import com.viaoa.web.html.oa.OAInputText;
 import com.viaoa.web.server.OAApplication;
 import com.viaoa.web.server.OABase;
 import com.viaoa.web.server.OASession;
@@ -80,9 +82,12 @@ public class OAForm extends OABase implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    protected final List<OAHtmlComponent> alComponent = new ArrayList();
-    protected final List<OAHtmlComponent> alNewAddComponent = new ArrayList();
-
+    protected final List<OAHtmlComponent> alOAHtmlComponent = new ArrayList();
+    protected final List<OAHtmlComponent> alAddOAHtmlComponent = new ArrayList();
+    
+    // map OAHtmlComponent to HtmlElement
+    protected final Map<OAHtmlComponent, HtmlElement> hsComponment = new HashMap<>();
+    
     protected OASession session;
     protected String id;
     protected String url;
@@ -114,6 +119,8 @@ public class OAForm extends OABase implements Serializable {
     
     protected boolean bLastDebug;
     
+    //qqqqqq temp
+    public boolean addValidation=false;
     
     public OAForm() {
     }
@@ -189,8 +196,8 @@ public class OAForm extends OABase implements Serializable {
     /** resets the form, takes off any edits not saved */
     public void reset() {
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
             comp.reset();
         }
     }
@@ -329,8 +336,8 @@ public class OAForm extends OABase implements Serializable {
     /** finds out if any of the values have changed */
     public boolean isChanged() {
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
             if (comp.isChanged()) return true;
         }
         return false;
@@ -341,8 +348,8 @@ public class OAForm extends OABase implements Serializable {
         List<OAHtmlComponent> al = new ArrayList();
 
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
             if (comp.isChanged()) al.add(comp);
         }
 
@@ -351,39 +358,74 @@ public class OAForm extends OABase implements Serializable {
         return ss;
     }
 
-
+    
+    /*
+        getScript
+            beforeGetScript
+            beforePageLoad
+            afterPageLoad
+    */
+    
     public String getScript() {
-        beforePageLoad();
-        String js = getInitScript();
-        String s = getAjaxCallbackScript();
-        if (s != null) js += s;
-        afterPageLoad();
+        beforeGetScript();
         
+        beforePageLoad();
+
+        final StringBuilder sb = new StringBuilder(2048);
+
+        
+        p(sb, "<script>", 0);
+        
+        getInitializeScript(sb);
+
+        String s = getAjaxCallbackScript();
+        if (OAStr.isNotEmpty(s)) {
+            sb.append(s);
+        }
+
+        s = getAjaxScript(true);
+        if (OAStr.isNotEmpty(s)) {
+            sb.append(s);
+        }
+        
+        // ======== end JQuery document ready 
+        p(sb, "});", 0); 
+        
+        p(sb, "</script>", 0);
+        
+        afterPageLoad();
+
+        String js = sb.toString();
         return js;
     }
 
+    protected void beforeGetScript() {
+        for (OAHtmlComponent comp : alOAHtmlComponent) {
+            comp.beforeGetScript();
+        }
+    }
+    
+    
     protected void beforePageLoad() {
-        for (OAHtmlComponent comp : alComponent) {
+        for (OAHtmlComponent comp : alOAHtmlComponent) {
             comp.beforePageLoad();
         }
     }
     protected void afterPageLoad() {
-        for (OAHtmlComponent comp : alComponent) {
+        for (OAHtmlComponent comp : alOAHtmlComponent) {
             comp.afterPageLoad();
         }
     }
     
     
     // javascript code to initialize client/browser
-    protected String getInitScript() {
-        alNewAddComponent.clear();
-        
-        if (!getEnabled()) return "";
-        final StringBuilder sb = new StringBuilder(2048);
+    protected void getInitializeScript(StringBuilder sb) {
+        alAddOAHtmlComponent.clear();
 
+        // ======== outside method definitions 
+        
         int indent = 0;
         p(sb, "", indent);
-        p(sb, "<script>", indent++);
         p(sb, "var oaShowMessage;", indent);
         p(sb, "if ($().modal) {", indent);
         // bootstrap
@@ -417,6 +459,8 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "    }, 2000);", --indent);
         p(sb, "  }", --indent);
 
+        
+        // ======== JQuery document ready 
         
         p(sb, "$(document).ready(function() {", indent);
         indent++;
@@ -542,8 +586,8 @@ public class OAForm extends OABase implements Serializable {
         }
 
         boolean b = true;
-        for (OAHtmlComponent comp : alComponent) {
-            String s = comp.getScript();
+        for (OAHtmlComponent comp : alOAHtmlComponent) {
+            String s = comp.getInitializeScript();
 
             if (debugNow) p(sb, "$('#"+comp.getId()+"').addClass('oaDebug');", indent);
             // else p(sb, "$('#"+comp.getId()+"').removeClass('oaDebug');", indent);
@@ -558,6 +602,8 @@ public class OAForm extends OABase implements Serializable {
                 }
             }
         }
+        
+        
         getMessages(sb, indent);
         p(sb, "", indent);
 
@@ -570,9 +616,9 @@ public class OAForm extends OABase implements Serializable {
             
             b = false;
             for (int i=0; ;i++) {
-                if (i >= alComponent.size()) break;
-                OAHtmlComponent comp = alComponent.get(i);
-                String s = comp.getScript();
+                if (i >= alOAHtmlComponent.size()) break;
+                OAHtmlComponent comp = alOAHtmlComponent.get(i);
+                String s = comp.getVerifyScript();
     
                 s = comp.getValidationRules();
                 if (OAString.isNotEmpty(s)) {
@@ -590,9 +636,9 @@ public class OAForm extends OABase implements Serializable {
             
             b = false;
             for (int i=0; ;i++) {
-                if (i >= alComponent.size()) break;
-                OAHtmlComponent comp = alComponent.get(i);
-                String s = comp.getScript();
+                if (i >= alOAHtmlComponent.size()) break;
+                OAHtmlComponent comp = alOAHtmlComponent.get(i);
+                String s = comp.getVerifyScript();
     
                 s = comp.getValidationMessages();
                 if (OAString.isNotEmpty(s)) {
@@ -625,6 +671,7 @@ public class OAForm extends OABase implements Serializable {
         }        
         
         
+        
         // add form submit, to verify components
         p(sb, "$('#"+id+"').on('submit', oaSubmit);", indent);
         p(sb, "var oaSubmitCancelled;", indent);
@@ -636,8 +683,8 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "  var val;", indent);
 
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
             String s = comp.getVerifyScript();
             if (!OAString.isEmpty(s)) p(sb, "  " + s, indent);
         }
@@ -768,32 +815,19 @@ public class OAForm extends OABase implements Serializable {
             p(sb, "window.location = '"+s+"';", indent);            
         }
         
-        p(sb, "});", --indent); // end jquery.ready ****
-
-
-        p(sb, "</script>", --indent);
-        js = sb.toString();
-
-        return js;
+        // ======== JQuery document ready 
+        // p(sb, "});", --indent); // end jquery.ready ****
     }
 
-    /**
-     * Use to get any changes since the last time getScript was called.
-     */
-    public String getUpdateScript() {
-        String s = getAjaxScript();
-        /*
-        if (OAString.isNotEmpty(s)) {
-            s = "<script>" + s + "</script>";
-        }
-        */
-        return s;
-    }    
     
-    /**
-     * same as calling {@link #getUpdateScript()}
-     */
     public String getAjaxScript() {
+        return getAjaxScript(false);
+    }
+
+    public String getAjaxScript(final boolean bIsInitializing) {
+        
+        if (!bIsInitializing) beforeGetScript();        
+        
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
 
@@ -812,16 +846,17 @@ public class OAForm extends OABase implements Serializable {
         }
 
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
             
             String s;
-            if (alNewAddComponent.contains(comp)) {
-                s = comp.getScript();
+            if (alAddOAHtmlComponent.contains(comp)) {
+                s = comp.getInitializeScript();
+                if (!OAString.isEmpty(s)) p(sb, s + "", 1);
+                s = comp.getVerifyScript();
+                if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             }
-            else {
-                s = comp.getAjaxScript();
-            }
+            s = comp.getAjaxScript(bIsInitializing);
             
             if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             if (debugNow != bLastDebug) {
@@ -829,7 +864,7 @@ public class OAForm extends OABase implements Serializable {
                 else p(sb, "    $('#"+comp.getId()+"').removeClass('oaDebug');", indent);
             }
         }
-        alNewAddComponent.clear();
+        alAddOAHtmlComponent.clear();
 
         /* added to js code 
         p(sb, "$('#oacommand').val('');", indent); // set back to blank
@@ -1042,7 +1077,7 @@ public class OAForm extends OABase implements Serializable {
         alConsole.clear();
     }
 
-    protected transient ArrayList<String> alConsole = new ArrayList<String>(5);
+    protected final transient ArrayList<String> alConsole = new ArrayList<String>(5);
     public void addConsoleMessage(String msg) {
         alConsole.add(msg);
     }
@@ -1133,51 +1168,26 @@ public class OAForm extends OABase implements Serializable {
     }
     
     public List<OAHtmlComponent> getComponents() {
-        return alComponent;
+        return alOAHtmlComponent;
     }
 
     public OAHtmlComponent getComponent(String id) {
-        return getComponent(id, null);
-    }
-    public OAHtmlComponent getComponent(String id, Class c) {
         if (id == null) return null;
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
             if (id.equalsIgnoreCase(comp.getId())) {
-                if (c == null || c.isAssignableFrom(comp.getClass())) {
-                    return comp;
-                }
+                return comp;
             }
         }
         return null;
     }
-    public OAHtmlComponent[] getComponents(String id) {
-        if (id == null) return null;
-        ArrayList<OAHtmlComponent> al = new ArrayList<>();
-        for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
-            if (id.equalsIgnoreCase(comp.getId())) {
-                al.add(comp);
-            }
-        }
-        OAHtmlComponent[] jcs = al.toArray(new OAHtmlComponent[0]);
-        return jcs;
-    }
 
-    public void remove(String name) {
-        OAHtmlComponent comp = getComponent(name);
-        if (comp != null) alComponent.remove(comp);
-        super.remove(name);
-    }
+    
+
     public void add(OAHtmlComponent comp) {
         if (comp == null) return;
         add(null, comp);
-    }
-    public void add(HtmlElement he) {
-        if (he == null) return;
-        add(he.getOAHtmlComponent());
     }
     public void add(String id, OAHtmlComponent comp) {
         if (comp == null) return;
@@ -1193,19 +1203,35 @@ public class OAForm extends OABase implements Serializable {
                 }
             }
         }
-        if (!alComponent.contains(comp)) {
-            alComponent.add(comp);
+        if (!alOAHtmlComponent.contains(comp)) {
+            alOAHtmlComponent.add(comp);
         }
-        if (!alNewAddComponent.contains(comp)) {
-            alNewAddComponent.add(comp);
+        if (!alAddOAHtmlComponent.contains(comp)) {
+            alAddOAHtmlComponent.add(comp);
         }
         comp.setForm(this);
+    }
+
+    
+    public void add(HtmlElement he) {
+        if (he == null) return;
+        add(he.getOAHtmlComponent());
+        hsComponment.put(he.getOAHtmlComponent(), he);
     }
     public void add(String id, HtmlElement he) {
         if (he == null) return;
         add(id, he.getOAHtmlComponent());
+        hsComponment.put(he.getOAHtmlComponent(), he);
     }
-
+    
+    public void remove(String name) {
+        OAHtmlComponent comp = getComponent(name);
+        if (comp != null) {
+            alOAHtmlComponent.remove(comp);
+            hsComponment.remove(comp);
+        }
+        super.remove(name);
+    }
     
 
     /** used to manage ajax callbacks from the browser, so that not too many will be created on the browser. */
@@ -1305,11 +1331,12 @@ public class OAForm extends OABase implements Serializable {
             try {
                 processMultipart(formSubmitEvent, hmNameValue);
             }
-            catch (Exception e){
+            catch (Exception e) {
+                LOG.log(Level.WARNING, "Exception while processing Multipart, oaform.Id="+getId(), e);
                 this.addErrorMessage(e.toString());
             }
-//qqqqqqqqqqqqqqqq            
-            if (false || formSubmitEvent.getSession().getCalcDebug()) {
+            
+            if (formSubmitEvent.getForm().getCalcDebug()) {
                 hmNameValue.forEach( (k,v) -> 
                 System.out.println("  Key: " + k + ": Values[0]: " + ((v == null || v.length == 0) ? "" : v[0])));
             }
@@ -1361,6 +1388,17 @@ public class OAForm extends OABase implements Serializable {
             LOG.log(Level.WARNING, "error setting browser info, jsDate="+jsDate+", jsTzRawOffset="+jsTzRawOffset+", jsDateSupportsDST="+jsDateSupportsDST, e);
         }
         
+
+//qqqqqqqqq have OAHtmlTable use command=table.Id, and subcommand=TD.id  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq        
+        
+        final List<OAHtmlComponent> alOAHtmlComponentAll = new ArrayList();
+        
+        for (OAHtmlComponent comp : alOAHtmlComponent) {
+            alOAHtmlComponentAll.add(comp);
+            comp.geten
+        }
+        
+        
         // set the component that submitted (if any)
         if (!formSubmitEvent.getCancel()) {
             String[] ids = hmNameValue.get("oacommand");
@@ -1369,9 +1407,9 @@ public class OAForm extends OABase implements Serializable {
             if (formSubmitEvent.getSubmitOAHtmlComponent() == null && OAStr.isNotEmpty(id)) {
                 formSubmitEvent.setSubmitOAHtmlComponent(getComponent(id));
             }
-            
+
             if (formSubmitEvent.getSubmitOAHtmlComponent() == null) {
-                for (OAHtmlComponent comp : alComponent) {
+                for (OAHtmlComponent comp : alOAHtmlComponent) {
                     if (comp.getInputType() == OAHtmlComponent.InputType.Submit) {
                         if (formSubmitEvent.getRequest().getParameter(comp.getCalcName()) != null) {
                             formSubmitEvent.setSubmitOAHtmlComponent(comp);
@@ -1404,10 +1442,8 @@ public class OAForm extends OABase implements Serializable {
             
         }
         
-        // all are called, allows components to set submit component
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alComponent) {
-                if (!comp.getEnabled()) continue;
+            for (OAHtmlComponent comp : alOAHtmlComponent) {
                 comp.onSubmitPrecheck(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
             }
@@ -1415,7 +1451,7 @@ public class OAForm extends OABase implements Serializable {
         
         if (!formSubmitEvent.getCancel()) {
             // all are called, allows components to cancel
-            for (OAHtmlComponent comp : alComponent) {
+            for (OAHtmlComponent comp : alOAHtmlComponent) {
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitBeforeLoadValues(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
@@ -1423,22 +1459,19 @@ public class OAForm extends OABase implements Serializable {
         }
         
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alComponent) {
+            for (OAHtmlComponent comp : alOAHtmlComponent) {
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitLoadValues(formSubmitEvent);
             }
         }
 
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alComponent) {
+            for (OAHtmlComponent comp : alOAHtmlComponent) {
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitAfterLoadValues(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
             }
         }
-        
-        
-        // all are called, only run if not cancelled and it is the submit command
         
         if (!formSubmitEvent.getCancel()) {
             OAHtmlComponent he = formSubmitEvent.getSubmitOAHtmlComponent();
@@ -1450,228 +1483,161 @@ public class OAForm extends OABase implements Serializable {
         }
 
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alComponent) {
+            for (OAHtmlComponent comp : alOAHtmlComponent) {
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitCompleted(formSubmitEvent);
             }
         }
     }
     
-
-    // Parse Multipart posted forms ============================================================
+    
+    /* Parse Multipart posted forms
+        POST / HTTP/1.1
+        Host: localhost:8000
+        User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0
+        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,* / *;q=0.8
+        Accept-Language: en-US,en;q=0.5
+        Accept-Encoding: gzip, deflate
+        Cookie: __atuvc=34%7C7; permanent=0; _gitlab_session=226ad8a0be43681acf38c2fab9497240; __profilin=p%3Dt; request_method=GET
+        Connection: keep-alive
+        Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
+        Content-Length: 554
+        
+        -----------------------------9051914041544843365972754266
+        Content-Disposition: form-data; name="text"
+        
+        text default
+        -----------------------------9051914041544843365972754266
+        Content-Disposition: form-data; name="file1"; filename="a.txt"
+        Content-Type: text/plain
+        
+        Content of a.txt.
+        
+        -----------------------------9051914041544843365972754266
+        Content-Disposition: form-data; name="file2"; filename="a.html"
+        Content-Type: text/html
+        
+        <!DOCTYPE html><title>Content of a.html.</title>
+        
+        -----------------------------9051914041544843365972754266--       
+    */
+    
     protected void processMultipart(OAFormSubmitEvent formSubmitEvent, Map<String, String[]> hmNameValue) throws Exception {
         final ServletRequest request = formSubmitEvent.getRequest();
-        int contentLength = request.getContentLength();
-        if (contentLength <= 1) return;
-        String contentType = request.getContentType();
+        final String contentType = request.getContentType();
+        final String boundary = "--" + contentType.substring(contentType.indexOf("boundary=")+9);
+        final BufferedInputStream bisx = new BufferedInputStream(request.getInputStream());
+        final BufferedReader inputReader = new BufferedReader(new InputStreamReader(bisx));
+
+        boolean bHasMore = readNextMultiPartValue(inputReader, null, boundary);
         
-        
-        /* example: 
+        for (int i=0; bHasMore ;i++) {
+            String line = inputReader.readLine();
+            String s = "Content-Disposition: form-data; name=";
+            int pos = line.indexOf(s);
 
-POST / HTTP/1.1
-Host: localhost:8000
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,* / *;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate
-Cookie: __atuvc=34%7C7; permanent=0; _gitlab_session=226ad8a0be43681acf38c2fab9497240; __profilin=p%3Dt; request_method=GET
-Connection: keep-alive
-Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
-Content-Length: 554
+            String name = OAStr.field(line, ";", 2);
+            name = OAStr.field(name, "=", 2);
+            name = name.replace('"', ' ');
+            name = name.trim();
+            
+            final OAHtmlComponent comp = getComponent(name);
+            final boolean bIsFile = (comp != null) && (comp.getInputType() == InputType.File);
+            
+            String value = null;
+            OutputStream os;
+            
+            if (bIsFile) {
+                String fn = OAStr.field(line, ";", 3);
+                fn = OAStr.field(fn, "=", 2);
+                fn = fn.replace('"', ' ');
+                fn = fn.trim();
+                value = fn;
 
------------------------------9051914041544843365972754266
-Content-Disposition: form-data; name="text"
-
-text default
------------------------------9051914041544843365972754266
-Content-Disposition: form-data; name="file1"; filename="a.txt"
-Content-Type: text/plain
-
-Content of a.txt.
-
------------------------------9051914041544843365972754266
-Content-Disposition: form-data; name="file2"; filename="a.html"
-Content-Type: text/html
-
-<!DOCTYPE html><title>Content of a.html.</title>
-
------------------------------9051914041544843365972754266--       
-        */
-        
-        String sep = "--" + contentType.substring(contentType.indexOf("boundary=")+9);
-        sep += "\r\n";
-
-        final BufferedInputStream bis = new BufferedInputStream(request.getInputStream());
-
-        for (int i=0;;i++) {
-            String s = getNextMultipart(bis, null, sep);
-            if (s == null) break;
-
-            /*
-                Content-Disposition: form-data; name="txtCreate"\r\n10/21/2008\r\n
-                Content-Disposition: form-data; name="fiFile"; filename=""
-                 ; filename=""
-            */
-            String[] nameValue = processMultipart(s);
-            /*
-                [0]=txtCreate [1]=10/21/2008
-                [0]=fiFile [1]=; filename="budget.txt"
-            */
-
-            if (nameValue == null) continue;
-            String name = nameValue[0];
-            String[] values = (String[]) hmNameValue.get(name);
-            if (values == null) hmNameValue.put(name, new String[] { nameValue[1] });
+                line = inputReader.readLine();
+                String fileContentType = OAStr.field(line, "Content-Type:", 2);
+                if (fileContentType == null) fileContentType = "";
+                else fileContentType = fileContentType.trim();
+                
+                os = comp.onSubmitGetFileOutputStream(formSubmitEvent, fn, fileContentType);
+                if (formSubmitEvent.getCancel()) break;
+            }
             else {
-                String[] newValues = new String[values.length+1];
-                System.arraycopy(values,0,newValues ,0, values.length);
-                newValues[values.length] = nameValue[1];
-                hmNameValue.put(name, newValues);
+                line = inputReader.readLine();  // empty line
+                os = new ByteArrayOutputStream();
             }
 
-            // see if this was an OAFileInput component
-            OAHtmlComponent comp = getComponent(name);
-            if (comp == null) continue;
+            BufferedOutputStream bos = os == null ? null : new BufferedOutputStream(os); 
+            bHasMore = readNextMultiPartValue(inputReader, bos, "\r\n"+boundary);
+            if (bos != null) {
+                bos.flush();
+                bos.close();
+            }
+
+            if (!bIsFile) {
+                value = os.toString();
+            }
             
-            if (comp.getInputType() != InputType.File) continue; 
-
-            if (nameValue.length < 2) continue; 
-            String fname = nameValue[1];   // ; filename="Power_Bill_2023-06-15.pdf"
-            int x = fname.indexOf('\"');
-            if (x >= 0) fname = fname.substring(x+1);
-            fname = OAStr.convert(fname, "\"", null);
-            if (OAString.isEmpty(fname)) continue;
-
-            OutputStream os = comp.onSubmitGetFileOutputStream(formSubmitEvent, fname, contentLength);
-            if (formSubmitEvent.getCancel()) break;
-            
-            if (os == null) {
-                os = new OutputStream() {
-                    @Override
-                    public void write(int b) throws IOException {
-                        // no op
-                    }
-                };
-            }
-            BufferedOutputStream bos = new BufferedOutputStream(os);
-            getNextMultipart(bis, bos, "\r\n"+sep);  // this will write to bos
-            bos.flush();
-            bos.close();
+            String[] ss = hmNameValue.get(name);
+            if (ss == null) ss = new String[] {value};
+            else ss = OAArray.add(ss, value);
+            hmNameValue.put(name, ss);
         }
-        bis.close();
-    }
-
-    protected String[] processMultipart(String line) {
-        String s = "Content-Disposition: form-data; name=";
-        int pos = line.indexOf(s);
-
-        // Content-Disposition: form-data; name="txtText"[13][10][13][10]test[13][10]
-
-        if (pos < 0) return null;
-
-        line = line.substring(pos + s.length());
-        // "txtText"[13][10][13][10]test[13][10]
-
-        pos = line.indexOf('\r');
-        if (pos < 0) {
-            pos = line.indexOf('\n');
-            if (pos < 0) {
-                pos = line.indexOf("; ");
-                if (pos < 0) return null;
-            }
-        }
-
-        String name = line.substring(0,pos);
-        // "txtText"
-
-        name = name.replace('"',' ');
-        name = name.trim();  // txtText
-
-
-        String value = line.substring(pos);
-        // [13][10][13][10]test[13][10]
-
-
-        // skip 2 CRLF
-        for (int j=0;j < 4 && value.length() > 0;) {
-            char c = value.charAt(0);
-            if (c == '\n' || c == '\r') {
-                value = value.substring(1);
-                j++;
-            }
-            else break;
-        }
-        // test[13][10]
-
-
-        pos = value.indexOf('\r');
-        if (pos >= 0) value = value.substring(0,pos);
-        // test
-
-        return new String[] { name, value };
     }
 
 
-    /* returns all data up to sep and "eats" the sep */
-    protected String getNextMultipart(BufferedInputStream bis, BufferedOutputStream bos, String sep) throws IOException {
-        if (sep == null) return null;
-        StringBuffer sb = new StringBuffer(1024);
-        int c=0;
-        boolean eof = false;
-
-        String sep2 = null;
-        if (bos == null) sep2 = "\r\nContent-Type:";  // this marks the beginning of a file
-
-        int sepLen = sep.length();
-        int sep2Len = (sep2!=null)?sep2.length():0;
+    /**
+     * Writes all data to bos, up to the boundary, and then skips to the end of the boundry,
+     * and reads 2 chars to determine if there are addition parts.
+     * 
+     * @return true if there are more parts read, false if this was the last part. 
+     */
+    protected boolean readNextMultiPartValue(final BufferedReader br, final BufferedOutputStream bos, final String boundary) throws IOException {
+        int boundaryLen = boundary.length();
 
         for (;;) {
-            c = bis.read();
+            int c = br.read();
             if (c < 0) {
-                eof = true;
-                break;
+                break; // should not happen
             }
 
-            if (sep2 != null && c == sep2.charAt(0)) {
-                int hold = c;
-                bis.mark(sep2Len+1);
+            if (c == boundary.charAt(0)) {
+                final int hold = c;
+                br.mark(boundaryLen+1);
                 int j=1;
-                for (;j<sep2Len ; j++) {
-                    c = bis.read();
-                    if (c != sep2.charAt(j)) break;
+                for ( ; j<boundaryLen; j++) {
+                    c = br.read();
+                    if (c != boundary.charAt(j)) break;
                 }
-                if (j == sep2Len) {
-                    // goto end of 2nd LF
-                    for (j=0; j<2;) {
-                        c = bis.read();
-                        if (c == '\n') j++;
-                    }
-                    break;
-                }
-                bis.reset();
+                if (j == boundaryLen) break;
+                br.reset();
                 c = hold;
             }
-
-            if (c == sep.charAt(0)) {
-                int hold = c;
-                bis.mark(sepLen+1);
-                int j=1;
-                for ( ; j<sepLen; j++) {
-                    c = bis.read();
-                    if (c != sep.charAt(j)) break;
-                }
-                if (j == sepLen) break;
-                bis.reset();
-                c = hold;
-            }
-
             if (bos != null) bos.write(c);
-            else sb.append((char)c);
         }
-        if (eof && sb.length() == 0) return null;
-        return new String(sb);
+
+        // ends in CR+LF if there is more data
+        // ends in "--" if there is not more data after this
+        int c = br.read();
+        c = br.read();
+        
+        if (c == '-') return false;
+        return true;
     }
 
+    /**
+     * This is used to for a http (or ajax) request go directly to a component for processing. 
+     */
+    public String processGetJson(OASession session) throws Exception {
+        if (this.session == null) this.session = session;
+
+        String id = session.getRequest().getParameter("id");
+        OAHtmlComponent comp = getComponent(id);
+        String json = comp.onGetJson(session);
+        if (json == null) json = "";
+        return json;
+    }
+    
     /**
      * Called by oaforward.jsp to be able to have a component submit method called,
      * without doing a form submit.
@@ -1699,7 +1665,7 @@ Content-Type: text/html
         
         return forward;
     }
-
+    
     protected void _processForward(final OAFormSubmitEvent formSubmitEvent) {
         try {
             formSubmitEvent.getRequest().setCharacterEncoding("UTF-8");
@@ -1720,9 +1686,6 @@ Content-Type: text/html
         comp.onSubmitCompleted(formSubmitEvent);
     }
 
-
-
-    
     /**
      * filepath to include on CSS files on the page
      * @param filePath full path of page (relative to webcontent)
@@ -1746,7 +1709,7 @@ Content-Type: text/html
     /**
      * add names of CSS to include on page
      * @param name of css to include,  
-     * @see OAJspDelegate#registerRequiredCssName(String, String) 
+     * @see OAFormInsertDelegate#registerRequiredCssName(String, String) 
      */
     public void addRequiredCssName(String name) {
         if (name == null) return;
@@ -1757,7 +1720,7 @@ Content-Type: text/html
     /**
      * add names of JS to include on page
      * @param name of js to include,  
-     * @see OAJspDelegate#registerRequiredJsName(String, String) 
+     * @see OAFormInsertDelegate#registerRequiredJsName(String, String) 
      */
     public void addRequiredJsName(String name) {
         if (name == null) return;
@@ -1767,31 +1730,28 @@ Content-Type: text/html
     
     
     public String getCssInsert() {
-        ArrayList<String> alName = new ArrayList<>();
+        final Set<String> hsCssName = new LinkedHashSet<>();
+
+        // note: order matters
+        hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
+        
+        //qqqqqqqqqqq might want to add *theme css files        
         
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
-            String[] ss = comp.getRequiredCssNames();
-            if (ss == null) continue;
-
-            for (String s : ss) {
-                if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
-            }
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+            comp.getRequiredCssNames(hsCssName);
         }
         
         // include oajsp.css after components
-        if (!alName.contains(OAFormInsertDelegate.CSS_oajsp.toUpperCase())) alName.add(OAFormInsertDelegate.CSS_oajsp.toUpperCase());
+        hsCssName.add(OAFormInsertDelegate.CSS_oajsp);
 
-        for (String s : alRequiredCssName) {
-            if (!alName.contains(s.toUpperCase())) alName.add(s.toUpperCase());
-        }
-        
         ArrayList<String> alFilePath = new ArrayList<>();
 
-        for (String s : alName) {
-            s = OAFormInsertDelegate.getCssFilePath(s);
-            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
+        for (String name : hsCssName) {
+            String s = OAFormInsertDelegate.getCssFilePath(name);
+            if (s == null) alFilePath.add("ERROR: CSS name="+name+" does not have a filePath mapped to it.");
+            else if (!alFilePath.contains(s)) alFilePath.add(s);
         }
         
         for (String s : alCss) {
@@ -1808,41 +1768,32 @@ Content-Type: text/html
     }
 
     public String getJsInsert() {
-        ArrayList<String> alName = new ArrayList<>();
+        final Set<String> hsJsName = new LinkedHashSet<>();
         
-        if (!alName.contains(OAFormInsertDelegate.JS_jquery)) alName.add(OAFormInsertDelegate.JS_jquery);
-        if (!alName.contains(OAFormInsertDelegate.JS_jquery_ui)) alName.add(OAFormInsertDelegate.JS_jquery_ui);
+        // note: order matters
+        hsJsName.add(OAFormInsertDelegate.JS_jquery); 
+        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
 
-        if (addValidation) {
-            if (!alName.contains(OAFormInsertDelegate.JS_jquery_validation)) alName.add(OAFormInsertDelegate.JS_jquery_validation);
-        }
         
-        for (String s : alRequiredJsName) {
-            s = s.toUpperCase();
-            if (!alName.contains(s)) alName.add(s);
+        if (addValidation) {
+            hsJsName.add(OAFormInsertDelegate.JS_jquery_validation);
+        }
+
+        for (String name : alRequiredJsName) {
+            hsJsName.add(name);
         }
         
         for (int i=0; ;i++) {
-            if (i >= alComponent.size()) break;
-            OAHtmlComponent comp = alComponent.get(i);
-            String[] ss = comp.getRequiredJsNames();
-            if (ss == null) continue;
-
-            for (String s : ss) {
-                s = s.toUpperCase();
-                if (!alName.contains(s)) alName.add(s);
-            }
+            if (i >= alOAHtmlComponent.size()) break;
+            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+            comp.getRequiredJsNames(hsJsName);
         }        
-        
+       
         ArrayList<String> alFilePath = new ArrayList<>();
-
-        for (String s : alName) {
-            s = OAFormInsertDelegate.getJsFilePath(s);
-            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
-        }
-        
-        for (String s : alJs) {
-            if (s != null && !alFilePath.contains(s)) alFilePath.add(s);
+        for (String name : hsJsName) {
+            String s = OAFormInsertDelegate.getJsFilePath(name);
+            if (s == null) alFilePath.add("ERROR: JS name="+name+" does not have a filePath mapped to it."); 
+            else if (!alFilePath.contains(s)) alFilePath.add(s);
         }
 
         StringBuilder sb = new StringBuilder(1024); 
@@ -1867,117 +1818,19 @@ Content-Type: text/html
         return urlRedirect;
     }
     
+    public HtmlElement getHtmlElement(String id) {
+        OAHtmlComponent comp = getComponent(id);
+        if (comp == null) return null;
+        HtmlElement he = hsComponment.get(comp);
+        return he;
+    }
+    
+    public OAInputText getOAInputText(String id) {
+        HtmlElement he = getHtmlElement(id);
+        if (he instanceof OAInputText) return (OAInputText) he;
+        return null;
+    }
+    
+    //qqqqqqqqq add others get* methods qqqqqqqqqqqqqqq
 
-    //qqqqqq 20171105 temp
-    public boolean addValidation=false;
-    
-    /*qqqqqqqqqqqqqqq    
-    public OALabel getLabel(String id) {
-        BaseComponent comp = getComponent(id, OALabel.class);
-        if (comp instanceof OALabel) return (OALabel) comp;
-        return null;
-    }
-    public OATextField getTextField(String id) {
-        BaseComponent comp = getComponent(id, OATextField.class);
-        if (comp instanceof OATextField) return (OATextField) comp;
-        return null;
-    }
-    public OAPassword getPassword(String id) {
-        BaseComponent comp = getComponent(id, OAPassword.class);
-        if (comp instanceof OAPassword) return (OAPassword) comp;
-        return null;
-    }
-    public OAButton getButton(String id) {
-        BaseComponent comp = getComponent(id, OAButton.class);
-        if (comp instanceof OAButton) return (OAButton) comp;
-        return null;
-    }
-    public OAFileInput getFileInput(String id) {
-        BaseComponent comp = getComponent(id, OAButton.class);
-        if (comp instanceof OAFileInput) return (OAFileInput) comp;
-        return null;
-    }
-    
-    public OAButtonList getButtonList(String id) {
-        BaseComponent comp = getComponent(id, OAButtonList.class);
-        if (comp instanceof OAButtonList) return (OAButtonList) comp;
-        return null;
-    }
-    public OAHtmlElement getHtmlElement(String id) {
-        BaseComponent comp = getComponent(id, OAHtmlElement.class);
-        if (comp instanceof OAHtmlElement) return (OAHtmlElement) comp;
-        return null;
-    }
-    public OATextArea getTextArea(String id) {
-        BaseComponent comp = getComponent(id, OATextArea.class);
-        if (comp instanceof OATextArea) return (OATextArea) comp;
-        return null;
-    }
-    public OACombo getCombo(String id) {
-        BaseComponent comp = getComponent(id, OACombo.class);
-        if (comp instanceof OACombo) return (OACombo) comp;
-        return null;
-    }
-    public OATable getTable(String id) {
-        BaseComponent comp = getComponent(id, OATable.class);
-        if (comp instanceof OATable) return (OATable) comp;
-        return null;
-    }
-    public OALink getLink(String id) {
-        BaseComponent comp = getComponent(id, OALink.class);
-        if (comp instanceof OALink) return (OALink) comp;
-        return null;
-    }
-    public OACheckBox getCheckBox(String id) {
-        BaseComponent comp = getComponent(id, OACheckBox.class);
-        if (comp instanceof OACheckBox) return (OACheckBox) comp;
-        return null;
-    }
-    public OAGrid getGrid(String id) {
-        BaseComponent comp = getComponent(id, OAGrid.class);
-        if (comp instanceof OAGrid) return (OAGrid) comp;
-        return null;
-    }
-    public OAHtmlSelect getSelect(String id) {
-        BaseComponent comp = getComponent(id, OAHtmlSelect.class);
-        if (comp instanceof OAHtmlSelect) return (OAHtmlSelect) comp;
-        return null;
-    }
-    public OAImage getImage(String id) {
-        BaseComponent comp = getComponent(id, OAImage.class);
-        if (comp instanceof OAImage) return (OAImage) comp;
-        return null;
-    }
-    public OARadio getRadio(String id) {
-        BaseComponent comp = getComponent(id, OARadio.class);
-        if (comp instanceof OARadio) return (OARadio) comp;
-        return null;
-    }
-    public OAServletImage getServletImage(String id) {
-        BaseComponent comp = getComponent(id, OAServletImage.class);
-        if (comp instanceof OAServletImage) return (OAServletImage) comp;
-        return null;
-    }
-    public OAList getList(String id) {
-        BaseComponent comp = getComponent(id, OAList.class);
-        if (comp instanceof OAList) return (OAList) comp;
-        return null;
-    }
-    public OADialog getDialog(String id) {
-        BaseComponent comp = getComponent(id, OADialog.class);
-        if (comp instanceof OADialog) return (OADialog) comp;
-        return null;
-    }
-    public OAPopup getPopup(String id) {
-        BaseComponent comp = getComponent(id, OAPopup.class);
-        if (comp instanceof OAPopup) return (OAPopup) comp;
-        return null;
-    }
-    public OAPopupList getPopupList(String id) {
-        BaseComponent comp = getComponent(id, OAPopupList.class);
-        if (comp instanceof OAPopupList) return (OAPopupList) comp;
-        return null;
-    }
-*/    
-    
 }

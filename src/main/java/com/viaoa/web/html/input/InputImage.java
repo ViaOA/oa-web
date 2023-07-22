@@ -28,40 +28,40 @@ public class InputImage extends InputElement {
         super(id, InputType.Image);
     }
     public String getSource() {
-        return oaHtmlComponent.getSource();
+        return htmlComponent.getSource();
     }
     public void setSource(String src) {
-        oaHtmlComponent.setSource(src);
+        htmlComponent.setSource(src);
     }
 
     public String getSrc() {
-        return oaHtmlComponent.getSrc();
+        return htmlComponent.getSrc();
     }
     public void setSrc(String src) {
-        oaHtmlComponent.setSrc(src);
+        htmlComponent.setSrc(src);
     }
     
     public String getAlt() {
-        return oaHtmlComponent.getAlt();
+        return htmlComponent.getAlt();
     }
     public void setAlt(String alt) {
-        oaHtmlComponent.setAlt(alt);
+        htmlComponent.setAlt(alt);
     }
     
     public int getImageHeight() {
-        return oaHtmlComponent.getImageHeight();
+        return htmlComponent.getImageHeight();
     }
 
     public void setImageHeight(int val) {
-        oaHtmlComponent.setImageHeight(val);
+        htmlComponent.setImageHeight(val);
     }
 
     public int getImageWidth() {
-        return oaHtmlComponent.getImageWidth();
+        return htmlComponent.getImageWidth();
     }
 
     public void setWidth(int val) {
-        oaHtmlComponent.setImageWidth(val);
+        htmlComponent.setImageWidth(val);
     }
 
     private static Set<String> hsSupported = new HashSet<>();  // lowercase

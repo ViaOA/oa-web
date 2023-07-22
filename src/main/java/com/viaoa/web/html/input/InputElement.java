@@ -21,11 +21,11 @@ public class InputElement extends HtmlFormElement {
 
     public InputElement(String id, InputType type) {
         super(id, type == null ? null : type.getFormElementType());
-        oaHtmlComponent.setType(type);
+        htmlComponent.setType(type);
     }
     
     public String getType() {
-        return oaHtmlComponent.getType();
+        return htmlComponent.getType();
     }
 
     

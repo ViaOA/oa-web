@@ -1,6 +1,7 @@
 package com.viaoa.web.html.input;
 import java.util.*;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 
 /*
@@ -40,19 +41,24 @@ public class InputButton extends InputElement {
     }
 
     public String getButtonText() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setButtonText(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
     
     
     // the button text and value that is submitted if clicked.
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
+    }
+    
+    @Override
+    protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
+        super.onSubmit(formSubmitEvent);
     }
     
 /*    

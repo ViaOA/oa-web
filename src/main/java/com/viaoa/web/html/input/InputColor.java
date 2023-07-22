@@ -17,37 +17,37 @@ public class InputColor extends InputElement {
     }
 
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
 
     /**
      * Id of datalist element, of "#AA00BB" colors.    
      */
     public String getList() {
-        return oaHtmlComponent.getList();
+        return htmlComponent.getList();
     }
 
     public void setList(String listId) {
-        oaHtmlComponent.setList(listId);
+        htmlComponent.setList(listId);
     }
     
     public List<String> getDataList() {
-        return oaHtmlComponent.getDataList();
+        return htmlComponent.getDataList();
     }
 
     public void setDataList(List<String> lst) {
-        oaHtmlComponent.setDataList(lst);
+        htmlComponent.setDataList(lst);
     }
 
     public String getFloatLabel() {
-        return oaHtmlComponent.getFloatLabel();
+        return htmlComponent.getFloatLabel();
     }
 
     public void setFloatLabel(String floatLabel) {
-        oaHtmlComponent.setFloatLabel(floatLabel);
+        htmlComponent.setFloatLabel(floatLabel);
     }
     
 

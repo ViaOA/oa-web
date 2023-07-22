@@ -12,18 +12,6 @@ Button that is similar to InputButton.
 
 */
 public class HtmlButton extends HtmlFormElement {
-
-    private static Set<String> hsSupported = new HashSet();  // lowercase
-    static {
-        hsSupported.add("type");
-        hsSupported.add("value");
-        hsSupported.add("buttontext");
-    }
-    public boolean isSupported(String name) {
-        if (name == null) return false;
-        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
-    }
-    
     public static enum Type {
         Button,
         Submit,
@@ -37,18 +25,31 @@ public class HtmlButton extends HtmlFormElement {
         else if (type == Type.Button) it = OAHtmlComponent.InputType.Button;
         else if (type == Type.Submit) it = OAHtmlComponent.InputType.Submit;
         else it = OAHtmlComponent.InputType.Reset;
-        oaHtmlComponent.setType(it);
+        htmlComponent.setType(it);
     }
 
     public String getButtonText() {
-        return oaHtmlComponent.getInnerHtml();
+        return htmlComponent.getInnerHtml();
     }
     public void setButtonText(String value) {
-        oaHtmlComponent.setInnerHtml(value);
+        htmlComponent.setInnerHtml(value);
     }
     
     public String getType() {
-        return oaHtmlComponent.getType();
+        return htmlComponent.getType();
     }
+    
+    
+    private static Set<String> hsSupported = new HashSet();  // lowercase
+    static {
+        hsSupported.add("type");
+        hsSupported.add("value");
+        hsSupported.add("buttontext");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+    
     
 }

@@ -20,74 +20,74 @@ public class InputRange extends InputElement {
     }
 
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
 
     public String getPlaceHolder() {
-        return oaHtmlComponent.getPlaceHolder();
+        return htmlComponent.getPlaceHolder();
     }
     public void setPlaceHolder(String placeHolder) {
-        oaHtmlComponent.setPlaceHolder(placeHolder);
+        htmlComponent.setPlaceHolder(placeHolder);
     }
     
     public boolean getReadOnly() {
-        return oaHtmlComponent.getReadOnly();
+        return htmlComponent.getReadOnly();
     }
 
     public boolean isReadOnly() {
-        return oaHtmlComponent.getReadOnly();
+        return htmlComponent.getReadOnly();
     }
     public void setReadOnly(boolean b) {
-        oaHtmlComponent.setReadOnly(b);
+        htmlComponent.setReadOnly(b);
     }
     
     public boolean getRequired() {
-        return oaHtmlComponent.getRequired();
+        return htmlComponent.getRequired();
     }
 
     public boolean isRequired() {
-        return oaHtmlComponent.getRequired();
+        return htmlComponent.getRequired();
     }
 
     public void setRequired(boolean req) {
-        oaHtmlComponent.setRequired(req);
+        htmlComponent.setRequired(req);
     }
     
     
     public String getMin() {
-        return oaHtmlComponent.getMin();
+        return htmlComponent.getMin();
     }
 
     public void setMin(String val) {
-        oaHtmlComponent.setMin(val);
+        htmlComponent.setMin(val);
     }
     
     public String getMax() {
-        return oaHtmlComponent.getMax();
+        return htmlComponent.getMax();
     }
 
     public void setMax(String val) {
-        oaHtmlComponent.setMax(val);
+        htmlComponent.setMax(val);
     }
     
 
     public String getStep() {
-        return oaHtmlComponent.getStep();
+        return htmlComponent.getStep();
     }
 
     public void setStep(String val) {
-        oaHtmlComponent.setStep(val);
+        htmlComponent.setStep(val);
     }
     
     public String getFloatLabel() {
-        return oaHtmlComponent.getFloatLabel();
+        return htmlComponent.getFloatLabel();
     }
 
     public void setFloatLabel(String floatLabel) {
-        oaHtmlComponent.setFloatLabel(floatLabel);
+        htmlComponent.setFloatLabel(floatLabel);
     }
     
     

@@ -26,14 +26,14 @@ public class InputEmail extends InputText {
     
     public InputEmail(String id) {
         super(id, InputType.Email);
-        oaHtmlComponent.setInputMode(InputModeType.Email);
+        htmlComponent.setInputMode(InputModeType.Email);
     }
 
     public boolean getMultiple() {
-        return oaHtmlComponent.getMultiple();
+        return htmlComponent.getMultiple();
     }
     public void setMultiple(boolean b) {
-        oaHtmlComponent.setMultiple(b);
+        htmlComponent.setMultiple(b);
     }
     
 }

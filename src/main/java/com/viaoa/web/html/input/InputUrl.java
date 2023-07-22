@@ -7,6 +7,6 @@ public class InputUrl extends InputText {
 
     public InputUrl(String id) {
         super(id, InputType.Url);
-        oaHtmlComponent.setInputMode(InputModeType.Url);
+        htmlComponent.setInputMode(InputModeType.Url);
     }
 }

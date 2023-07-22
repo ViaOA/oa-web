@@ -23,66 +23,66 @@ public class InputText extends InputElement {
     
     
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
 
     public String getPlaceHolder() {
-        return oaHtmlComponent.getPlaceHolder();
+        return htmlComponent.getPlaceHolder();
     }
     public void setPlaceHolder(String placeHolder) {
-        oaHtmlComponent.setPlaceHolder(placeHolder);
+        htmlComponent.setPlaceHolder(placeHolder);
     }
 
     public String getPattern() {
-        return oaHtmlComponent.getPattern();
+        return htmlComponent.getPattern();
     }
 
     public void setPattern(String pattern) {
-        oaHtmlComponent.setPattern(pattern);
+        htmlComponent.setPattern(pattern);
     }
     
     public boolean getReadOnly() {
-        return oaHtmlComponent.getReadOnly();
+        return htmlComponent.getReadOnly();
     }
 
     public boolean isReadOnly() {
-        return oaHtmlComponent.getReadOnly();
+        return htmlComponent.getReadOnly();
     }
     public void setReadOnly(boolean b) {
-        oaHtmlComponent.setReadOnly(b);
+        htmlComponent.setReadOnly(b);
     }
     
     public boolean getRequired() {
-        return oaHtmlComponent.getRequired();
+        return htmlComponent.getRequired();
     }
 
     public boolean isRequired() {
-        return oaHtmlComponent.getRequired();
+        return htmlComponent.getRequired();
     }
 
     public void setRequired(boolean req) {
-        oaHtmlComponent.setRequired(req);
+        htmlComponent.setRequired(req);
     }
     
 
     // Id of datalist element
     public String getList() {
-        return oaHtmlComponent.getList();
+        return htmlComponent.getList();
     }
 
     public void setList(String listId) {
-        oaHtmlComponent.setList(listId);
+        htmlComponent.setList(listId);
     }
     
     public List<String> getDataList() {
-        return oaHtmlComponent.getDataList();
+        return htmlComponent.getDataList();
     }
 
     public void setDataList(List<String> lst) {
-        oaHtmlComponent.setDataList(lst);
+        htmlComponent.setDataList(lst);
     }
     
 
@@ -91,65 +91,65 @@ public class InputText extends InputElement {
      * The display width of the text field, number of characters wide.
      */
     public int getSize() {
-        return oaHtmlComponent.getSize();
+        return htmlComponent.getSize();
     }
 
     public void setSize(int val) {
-        oaHtmlComponent.setSize(val);
+        htmlComponent.setSize(val);
     }
     
     public int getMinLength() {
-        return oaHtmlComponent.getMinLength();
+        return htmlComponent.getMinLength();
     }
 
     public void setMinLength(int val) {
-        oaHtmlComponent.setMinLength(val);
+        htmlComponent.setMinLength(val);
     }
 
     public int getMaxLength() {
-        return oaHtmlComponent.getMaxLength();
+        return htmlComponent.getMaxLength();
     }
 
     public void setMaxLength(int val) {
-        oaHtmlComponent.setMaxLength(val);
+        htmlComponent.setMaxLength(val);
     }
 
     public String getAutoComplete() {
-        return oaHtmlComponent.getAutoComplete();
+        return htmlComponent.getAutoComplete();
     }
     public void setAutoComplete(String val) {
-        oaHtmlComponent.setAutoComplete(val);
+        htmlComponent.setAutoComplete(val);
     }
     
     public String getInputMode() {
-        return oaHtmlComponent.getInputMode();
+        return htmlComponent.getInputMode();
     }
 
     public void setInputMode(String mode) {
-        oaHtmlComponent.setInputMode(mode);
+        htmlComponent.setInputMode(mode);
     }
 
     public void setInputMode(InputModeType type) {
-        oaHtmlComponent.setInputMode(type);
+        htmlComponent.setInputMode(type);
     }
 
 
     public boolean getSpellCheck() {
-        return oaHtmlComponent.getSpellCheck();
+        return htmlComponent.getSpellCheck();
     }
     public boolean isSpellCheck() {
         return getSpellCheck();
     }
     public void setSpellCheck(boolean b) {
-        oaHtmlComponent.setSpellCheck(b);
+        htmlComponent.setSpellCheck(b);
     }
     
     public String getFloatLabel() {
-        return oaHtmlComponent.getFloatLabel();
+        return htmlComponent.getFloatLabel();
     }
 
     public void setFloatLabel(String floatLabel) {
-        oaHtmlComponent.setFloatLabel(floatLabel);
+        htmlComponent.setFloatLabel(floatLabel);
     }
 
     public String getCalcDisplayName() {
@@ -165,12 +165,11 @@ public class InputText extends InputElement {
     
     
     @Override
-    protected String getVerifyScript(final String js) {
+    protected String getVerifyScript() {
         StringBuilder sb = null;
         if (isRequired()) {
             if (sb == null) {
                 sb = new StringBuilder();
-                if (OAStr.isNotEmpty(js)) sb.append(js);
             }
 
             String s = "Field " + getCalcDisplayName() + " is required";
@@ -184,7 +183,6 @@ public class InputText extends InputElement {
         if (max > 0) {
             if (sb == null) {
                 sb = new StringBuilder();
-                if (OAStr.isNotEmpty(js)) sb.append(js);
             }
             sb.append("if ($('#" + getId() + "').val().length > " + max + ") {");
             sb.append("    errors.push('Field "+getCalcDisplayName()+" can not be longer than " + max + " characters');");
@@ -196,7 +194,6 @@ public class InputText extends InputElement {
         if (min > 0) {
             if (sb == null) {
                 sb = new StringBuilder();
-                if (OAStr.isNotEmpty(js)) sb.append(js);
             }
             sb.append("if ($('#" + getId() + "').val().length < " + min + ") {");
             sb.append("    errors.push('Field "+getCalcDisplayName()+" must be at least " + min + " characters');");
@@ -208,7 +205,6 @@ public class InputText extends InputElement {
         if (OAStr.isNotEmpty(getPattern())) {
             if (sb == null) {
                 sb = new StringBuilder();
-                if (OAStr.isNotEmpty(js)) sb.append(js);
             }
 
             sb.append("regex = new RegExp(/" + OAJspUtil.createEmbeddedJsString(getPattern(),'/') + "/);");
@@ -219,7 +215,7 @@ public class InputText extends InputElement {
             sb.append("}\n");
         }
         
-        if (sb == null) return js;
+        if (sb == null) return null;
         return sb.toString();
     }
 

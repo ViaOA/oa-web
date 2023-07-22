@@ -31,20 +31,20 @@ public class InputRadio extends InputElement {
     }
     
     public String getValue(String value) {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
 
     public boolean getChecked() {
-        return oaHtmlComponent.getChecked();
+        return htmlComponent.getChecked();
     }
     public boolean isChecked() {
         return getChecked();
     }
     public void setChecked(boolean b) {
-        oaHtmlComponent.setChecked(b);
+        htmlComponent.setChecked(b);
     }
 
 

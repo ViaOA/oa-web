@@ -22,17 +22,6 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  */
 public class InputCheckBox extends InputElement {
 
-    private static Set<String> hsSupported = new HashSet<>();  // lowercase
-    static {
-        hsSupported.add("value");
-        hsSupported.add("checked");
-    }
-    public boolean isSupported(String name) {
-        if (name == null) return false;
-        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
-    }
-    
-    
     /**
      * A group of radio buttons need to use the same name, but each should have it's own unique Id;
      * @param id
@@ -52,19 +41,29 @@ public class InputCheckBox extends InputElement {
     
     
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
 
     public boolean getChecked() {
-        return oaHtmlComponent.getChecked();
+        return htmlComponent.getChecked();
     }
     public boolean isChecked() {
         return getChecked();
     }
     public void setChecked(boolean b) {
-        oaHtmlComponent.setChecked(b);
+        htmlComponent.setChecked(b);
+    }
+
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("value");
+        hsSupported.add("checked");
+    }
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
 }

@@ -7,6 +7,7 @@ import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.*;
+import com.viaoa.web.html.oa.OAHtmlComponentInterface;
 
 /**
  * OAWeb components to control htmlElementPropertyEditor.jsp
@@ -22,13 +23,14 @@ public class HtmlElementPropertyEditor {
         this.form = form;
         this.htmlComp = he;
         this.oahtmlComp = he.getOAHtmlComponent();
+//        this.bIsOA = he instanceof OA
         setup();
     }
 
         
     /* list of components:
-        txtId
-        txtValue
+        heId
+        heValue
         txtLabelId
         txtFloatLabel
         txtPlaceHolder
@@ -80,7 +82,7 @@ public class HtmlElementPropertyEditor {
                 setVisible(false);
             }
             public void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
-                setVisible(oahtmlComp.getNeedsReloaded());
+                setVisible(oahtmlComp.getNeedsRefreshed());
             }
         };
         he.addStyle("background-color", "yellow");
@@ -96,62 +98,42 @@ public class HtmlElementPropertyEditor {
         cmdAjaxSubmit.setAjaxSubmit(true);
         form.add(cmdAjaxSubmit);
 
-        txt = new InputText("txtId") {
+        he = new HtmlElement("eleId") {
             @Override
-            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
-                oahtmlComp.setId(getValue());
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setInnerHtml(oahtmlComp.getId());
+                return super.getAjaxScript(bIsInitializing);
             }
         };
-        txt.setHidden(!htmlComp.isSupported("id"));
-        txt.setEnabled(htmlComp.isSupported("id"));
-        txt.setLabelId("lblId");
-        txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getId());
-        form.add(txt);
+        he.setHidden(!htmlComp.isSupported("id"));
+        he.setAjaxSubmit(true);
+        form.add(he);
         
-        
-        txt = new InputText("txtValue") {
-            String hold1;
-            String hold2;
+        he = new HtmlElement("eleValue") {
             @Override
-            public void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
-                hold1 = getValue();
-                hold2 = oahtmlComp.getValue();
-            }
-            @Override
-            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
-                boolean b = false;
-                if (OAStr.isNotEqual(hold1, getValue())) {
-                    if (OAStr.isEqualIgnoreCase(hold2, oahtmlComp.getValue())) {
-                        b = true;
-                        oahtmlComp.setValue(getValue());
-                    }
-                }
-                if (!b) setValue(oahtmlComp.getValue());
-            }
-            @Override
-            public void beforePageLoad() {
-                setValue(oahtmlComp.getValue());
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setInnerHtml(oahtmlComp.getValue());
+                return super.getAjaxScript(bIsInitializing);
             }
         };
-        txt.setLabelId("lblValue");
-        txt.setHidden(!htmlComp.isSupported("value"));
-        txt.setEnabled(htmlComp.isSupported("value"));
-        txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getValue());
-        form.add(txt);
+        he.setHidden(!htmlComp.isSupported("value"));
+        form.add(he);
         
         txt = new InputText("txtLabelId") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setLabelId(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getLabelId());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblLabelId");
         txt.setHidden(!htmlComp.isSupported("labelId"));
         txt.setEnabled(htmlComp.isSupported("labelId"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getLabelId());
         form.add(txt);
 
         txt = new InputText("txtFloatLabel") {
@@ -159,12 +141,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setFloatLabel(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getFloatLabel());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblFloatLabel");
         txt.setHidden(!htmlComp.isSupported("floatLabel"));
         txt.setEnabled(htmlComp.isSupported("floatLabel"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getFloatLabel());
         form.add(txt);
 
         txt = new InputText("txtPlaceHolder") {
@@ -172,12 +158,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setPlaceHolder(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getPlaceHolder());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblPlaceHolder");
         txt.setHidden(!htmlComp.isSupported("placeHolder"));
         txt.setEnabled(htmlComp.isSupported("placeHolder"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getPlaceHolder());
         form.add(txt);
 
         txt = new InputText("txtTitle") {
@@ -185,12 +175,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setTitle(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getTitle());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblTitle");
         txt.setHidden(!htmlComp.isSupported("title"));
         txt.setEnabled(htmlComp.isSupported("title"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getTitle());
         form.add(txt);
         
         
@@ -199,12 +193,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setToolTipText(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getToolTipText());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblToolTipText");
         txt.setHidden(!htmlComp.isSupported("toolTipText"));
         txt.setEnabled(htmlComp.isSupported("toolTipText"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getToolTipText());
         form.add(txt);
 
         txt = new InputText("txtPattern") {
@@ -212,12 +210,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setPattern(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getPattern());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblPattern");
         txt.setHidden(!htmlComp.isSupported("pattern"));
         txt.setEnabled(htmlComp.isSupported("pattern"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getPattern());
         form.add(txt);
         
         
@@ -226,12 +228,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setAutoComplete(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getAutoComplete());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblAutoComplete");
         txt.setHidden(!htmlComp.isSupported("autocomplete"));
         txt.setEnabled(htmlComp.isSupported("autocomplete"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getAutoComplete());
         form.add(txt);
                 
         
@@ -257,7 +263,7 @@ public class HtmlElementPropertyEditor {
         };
         chk.setLabelId("lblRequired");
         chk.setHidden(!htmlComp.isSupported("required"));
-        chk.setEnabled(htmlComp.isSupported("required"));
+        chk.setEnabled(htmlComp.isSupported("required") && !(htmlComp instanceof OAHtmlComponentInterface));
         chk.setChecked(oahtmlComp.getRequired());
         chk.setAjaxSubmit(true);
         form.add(chk);
@@ -271,7 +277,7 @@ public class HtmlElementPropertyEditor {
         };
         chk.setLabelId("lblEnabled");
         chk.setHidden(!htmlComp.isSupported("enabled"));
-        chk.setEnabled(htmlComp.isSupported("enabled"));
+        chk.setEnabled(htmlComp.isSupported("enabled") && !(htmlComp instanceof OAHtmlComponentInterface));
         chk.setChecked(oahtmlComp.getEnabled());
         chk.setAjaxSubmit(true);
         form.add(chk);
@@ -297,7 +303,7 @@ public class HtmlElementPropertyEditor {
         };
         chk.setLabelId("lblVisible");
         chk.setHidden(!htmlComp.isSupported("visible"));
-        chk.setEnabled(htmlComp.isSupported("visible"));
+        chk.setEnabled(htmlComp.isSupported("visible") && !(htmlComp instanceof OAHtmlComponentInterface));
         chk.setChecked(oahtmlComp.getVisible());
         chk.setAjaxSubmit(true);
         form.add(chk);
@@ -360,13 +366,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setHeight(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getHeight());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblHeight");
         txt.setHidden(!htmlComp.isSupported("height"));
         txt.setEnabled(htmlComp.isSupported("height"));
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getHeight());
         form.add(txt);
         
         txt = new InputText("txtWidth") {
@@ -374,13 +384,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setWidth(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getWidth());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblWidth");
         txt.setHidden(!htmlComp.isSupported("width"));
         txt.setEnabled(htmlComp.isSupported("width"));
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getWidth());
         form.add(txt);
 
         txt = new InputText("txtMinHeight") {
@@ -388,13 +402,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMinHeight(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getMinHeight());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblMinHeight");
         txt.setHidden(!htmlComp.isSupported("minHeight"));
         txt.setEnabled(htmlComp.isSupported("minHeight"));
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getMinHeight());
         form.add(txt);
         
         txt = new InputText("txtMinWidth") {
@@ -402,13 +420,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMinWidth(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getMinWidth());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblMinWidth");
         txt.setHidden(!htmlComp.isSupported("minWidth"));
         txt.setEnabled(htmlComp.isSupported("minWidth"));
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getMinWidth());
         form.add(txt);
         
         txt = new InputText("txtMaxHeight") {
@@ -416,13 +438,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMaxHeight(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getMaxHeight());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblMaxHeight");
         txt.setHidden(!htmlComp.isSupported("maxHeight"));
         txt.setEnabled(htmlComp.isSupported("maxHeight"));
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getMaxHeight());
         form.add(txt);
         
         txt = new InputText("txtMaxWidth") {
@@ -430,13 +456,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMaxWidth(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getMaxWidth());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblMaxWidth");
         txt.setHidden(!htmlComp.isSupported("maxWidth"));
         txt.setEnabled(htmlComp.isSupported("maxWidth"));
         txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getMaxWidth());
         form.add(txt);
         
         // display size (in chars) of txt field
@@ -445,13 +475,19 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setSize(OAConv.toInt(getValue()));
             }
+
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (oahtmlComp.getSize() == 0) setValue("");
+                else setValue(""+oahtmlComp.getSize());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txtNumber.setLabelId("lblSize");
         txtNumber.setHidden(!htmlComp.isSupported("size"));
         txtNumber.setEnabled(htmlComp.isSupported("size"));
         txtNumber.addStyle("width", "5em");
         txtNumber.setAjaxSubmit(true);
-        if (oahtmlComp.getSize() > 0) txtNumber.setValue(""+oahtmlComp.getSize());
         form.add(txtNumber);
 
         // min input size (in chars) of txt field
@@ -460,13 +496,18 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMinLength(OAConv.toInt(getValue()));
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (oahtmlComp.getMinLength() == 0) setValue("");
+                else setValue(""+oahtmlComp.getMinLength());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txtNumber.setLabelId("lblMinLength");
         txtNumber.setHidden(!htmlComp.isSupported("minLength"));
         txtNumber.setEnabled(htmlComp.isSupported("minLength"));
         txtNumber.addStyle("width", "5em");
         txtNumber.setAjaxSubmit(true);
-        if (oahtmlComp.getMinLength() > 0) txtNumber.setValue(""+oahtmlComp.getMinLength());
         form.add(txtNumber);
         
         // max input size (in chars) of txt field
@@ -475,13 +516,18 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMaxLength(OAConv.toInt(getValue()));
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (oahtmlComp.getMaxLength() == 0) setValue("");
+                else setValue(""+oahtmlComp.getMaxLength());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txtNumber.setLabelId("lblMaxLength");
         txtNumber.setHidden(!htmlComp.isSupported("maxLength"));
         txtNumber.setEnabled(htmlComp.isSupported("maxLength"));
         txtNumber.addStyle("width", "5em");
         txtNumber.setAjaxSubmit(true);
-        if (oahtmlComp.getMaxLength() > 0) txtNumber.setValue(""+oahtmlComp.getMaxLength());
         form.add(txtNumber);
         
 
@@ -510,13 +556,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMin(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(""+oahtmlComp.getMin());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblMin");
         txt.setHidden(!htmlComp.isSupported("min"));
         txt.setEnabled(htmlComp.isSupported("min"));
         txt.setSize(12);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getMin());
         form.add(txt);
         
         // max value allowed
@@ -525,13 +575,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setMax(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(""+oahtmlComp.getMax());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblMax");
         txt.setHidden(!htmlComp.isSupported("max"));
         txt.setEnabled(htmlComp.isSupported("max"));
         txt.setSize(12);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getMax());
         form.add(txt);
 
         txt = new InputText("txtStep") {
@@ -539,13 +593,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setStep(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getStep());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblStep");
         txt.setHidden(!htmlComp.isSupported("step"));
         txt.setEnabled(htmlComp.isSupported("step"));
         txt.setSize(12);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getStep());
         form.add(txt);
         
         
@@ -567,13 +625,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setAccept(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getAccept());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblAccept");
         txt.setHidden(!htmlComp.isSupported("accept"));
         txt.setEnabled(htmlComp.isSupported("accept"));
         txt.setSize(12);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getAccept());
         form.add(txt);
 
         txt = new InputText("txtCapture") {
@@ -581,13 +643,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setCapture(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getCapture());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblCapture");
         txt.setHidden(!htmlComp.isSupported("capture"));
         txt.setEnabled(htmlComp.isSupported("capture"));
         txt.setSize(12);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getCapture());
         txt.setToolTip("off, name, etc");
         form.add(txt);
 
@@ -612,34 +678,31 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setSrc(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getSrc());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblSrc");
         txt.setHidden(!htmlComp.isSupported("src"));
         txt.setEnabled(htmlComp.isSupported("src"));
         // txt.setSize(8);
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getSrc());
         form.add(txt);
     
 
-        txtNumber = new InputNumber("txtCols") {
-            @Override
-            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
-                oahtmlComp.setCols(OAConv.toInt(getValue()));
-            }
-        };
-        txtNumber.setLabelId("lblCols");
-        txtNumber.setHidden(!htmlComp.isSupported("cols"));
-        txtNumber.setEnabled(htmlComp.isSupported("cols"));
-        txtNumber.addStyle("width", "4em");
-        txtNumber.setAjaxSubmit(true);
-        if (oahtmlComp.getMinLength() > 0) txtNumber.setValue(""+oahtmlComp.getCols());
-        form.add(txtNumber);
 
         txtNumber = new InputNumber("txtRows") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setRows(OAConv.toInt(getValue()));
+            }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (oahtmlComp.getRows() == 0) setValue(null);
+                else setValue(""+oahtmlComp.getRows());
+                return super.getAjaxScript(bIsInitializing);
             }
         };
         txtNumber.setLabelId("lblRows");
@@ -647,13 +710,42 @@ public class HtmlElementPropertyEditor {
         txtNumber.setEnabled(htmlComp.isSupported("rows"));
         txtNumber.addStyle("width", "4em");
         txtNumber.setAjaxSubmit(true);
-        if (oahtmlComp.getMinLength() > 0) txtNumber.setValue(""+oahtmlComp.getRows());
         form.add(txtNumber);
+        
+
+        
+        txtNumber = new InputNumber("txtCols") {
+            @Override
+            public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
+                oahtmlComp.setCols(OAConv.toInt(getValue()));
+            }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (oahtmlComp.getCols() == 0) setValue(null);
+                else setValue(""+oahtmlComp.getCols());
+                return super.getAjaxScript(bIsInitializing);
+            }
+        };
+        txtNumber.setLabelId("lblCols");
+        txtNumber.setHidden(!htmlComp.isSupported("cols"));
+        txtNumber.setEnabled(htmlComp.isSupported("cols"));
+        txtNumber.addStyle("width", "4em");
+        txtNumber.setAjaxSubmit(true);
+        form.add(txtNumber);
+
+        
+        
         
         txt = new InputText("txtAccessKey") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setAccessKey(OAConv.toChar(getValue()));
+            }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (oahtmlComp.getAccessKey() == 0) setValue(null);
+                else setValue(""+oahtmlComp.getAccessKey());
+                return super.getAjaxScript(bIsInitializing);
             }
         };
         txt.setLabelId("lblAccessKey");
@@ -661,7 +753,6 @@ public class HtmlElementPropertyEditor {
         txt.setEnabled(htmlComp.isSupported("accessKey"));
         txt.setSize(2);
         txt.setAjaxSubmit(true);
-        if (oahtmlComp.getAccessKey() > 0) txt.setValue(OAConv.toString(oahtmlComp.getAccessKey()));
         form.add(txt);
 
         txtNumber = new InputNumber("txtTabIndex") {
@@ -683,14 +774,22 @@ public class HtmlElementPropertyEditor {
         txt = new InputText("txtInnerHtml") {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
-                oahtmlComp.setInnerHtml(getValue());
+                if (htmlComp.isSupported("innerHtml")) {
+                    oahtmlComp.setInnerHtml(getValue());
+                }
+            }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                if (htmlComp.isSupported("innerHtml")) {
+                    setValue(oahtmlComp.getInnerHtml());
+                }
+                return super.getAjaxScript(bIsInitializing);
             }
         };
         txt.setLabelId("lblInnerHtml");
         txt.setHidden(!htmlComp.isSupported("innerHtml"));
         txt.setEnabled(htmlComp.isSupported("innerHtml"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getInnerHtml());
         form.add(txt);
         
         txt = new InputText("txtHref") {
@@ -698,12 +797,16 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setHref(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getHref());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblHref");
         txt.setHidden(!htmlComp.isSupported("href"));
         txt.setEnabled(htmlComp.isSupported("href"));
         txt.setAjaxSubmit(true);
-        txt.setValue(oahtmlComp.getHref());
         form.add(txt);
         
         txt = new InputText("txtTarget") {
@@ -711,13 +814,17 @@ public class HtmlElementPropertyEditor {
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setTarget(getValue());
             }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setValue(oahtmlComp.getTarget());
+                return super.getAjaxScript(bIsInitializing);
+            }
         };
         txt.setLabelId("lblTarget");
         txt.setHidden(!htmlComp.isSupported("target"));
         txt.setEnabled(htmlComp.isSupported("target"));
         txt.setAjaxSubmit(true);
         txt.setToolTip("_self, _blank, _parent, _top, or a named frame/window");
-        txt.setValue(oahtmlComp.getTarget());
         form.add(txt);
 
         txt = new InputText("txtStyle") {
@@ -737,7 +844,7 @@ public class HtmlElementPropertyEditor {
         };
         txt.setLabelId("lblStyle");
         txt.setAjaxSubmit(true);
-        // txt.setValue(oahtmlComp.getTarget());
+        // txt.setValue(oahtmlComp.getStyle());
         form.add(txt);
     }
 

@@ -1,5 +1,8 @@
 package com.viaoa.web.html.input;
 
+import com.viaoa.util.OADate;
+import com.viaoa.util.OADateTime;
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 /* Notes:
@@ -14,6 +17,39 @@ public class InputDateTime extends InputRange {
 
     public InputDateTime(String id) {
         super(id, InputType.DateTimeLocal);
+    }
+
+    
+    public void setValue(OADateTime dateTime) {
+        if (dateTime == null) super.setValue(null);
+        else super.setValue(dateTime.toString(OADateTime.JsonFormat));
+    }
+
+    public OADateTime getDateTimeValue() {
+        String val = getValue();
+        if (OAStr.isEmpty(val)) return null;
+        return new OADateTime(val, OADateTime.JsonFormat);
+    }
+    
+    public void setMin(OADateTime dt) {
+        if (dt == null) super.setMin(null);
+        else super.setMin(dt.toString(OADateTime.JsonFormat));
+    }
+
+    public void setMax(OADateTime dt) {
+        if (dt == null) super.setMax(null);
+        else super.setMax(dt.toString(OADateTime.JsonFormat));
+    }
+
+    public OADateTime getMinDateTime() {
+        String val = getMin();
+        if (val == null) return null;
+        return new OADateTime(val, OADateTime.JsonFormat);
+    }
+    public OADateTime getMaxDateTime() {
+        String val = getMax();
+        if (val == null) return null;
+        return new OADateTime(val, OADateTime.JsonFormat);
     }
 
 }

@@ -43,7 +43,7 @@ public abstract class OABase implements Serializable {
         for (OABase b = this; b != null;  b = b.getParent()) {
             if (b.getDebug()) return true;
         }
-        return false;
+        return getDebug();
     }
     
     public void setDebug(boolean b) {

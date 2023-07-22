@@ -8,8 +8,11 @@ import java.io.OutputStream;
 import java.util.*;
 
 import com.viaoa.object.OAObject;
+import com.viaoa.util.OAStr;
+import com.viaoa.util.OAString;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
+import com.viaoa.web.server.OASession;
 
 /**
  * Base class for all HTML Elements.
@@ -19,14 +22,14 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  */
 public class HtmlElement {
     // use this to manage any of the HTML elements
-    protected final OAHtmlComponent oaHtmlComponent;
+    protected final OAHtmlComponentPlus htmlComponent;
 
     public HtmlElement(String id) {
-        this.oaHtmlComponent = new OAHtmlComponent(id) {
+        this.htmlComponent = new OAHtmlComponentPlus(id) {
             @Override
             public void onSubmitPrecheck(OAFormSubmitEvent formSubmitEvent) {
                 super.onSubmitPrecheck(formSubmitEvent);
-                if (formSubmitEvent.getSubmitOAHtmlComponent() == HtmlElement.this.oaHtmlComponent) {
+                if (formSubmitEvent.getSubmitOAHtmlComponent() == HtmlElement.this.htmlComponent) {
                     formSubmitEvent.setSubmitHtmlElement(HtmlElement.this);;
                 }
             }
@@ -62,6 +65,8 @@ public class HtmlElement {
                 HtmlElement.this.onSubmitCompleted(formSubmitEvent);
             }
             
+            // ==============
+            
             @Override
             public void beforePageLoad() {
                 super.beforePageLoad();
@@ -74,33 +79,64 @@ public class HtmlElement {
                 HtmlElement.this.afterPageLoad();
             }
 
+            // ==============
+            
             @Override
-            public String getScript() {
-                String js = super.getScript();
-                js = HtmlElement.this.getScript(js);
-                return js;
+            public String onGetJson(OASession session) {
+                return HtmlElement.this.onGetJson(session);
+            }
+
+            // ==============
+
+            @Override
+            public void beforeGetScript() {
+                HtmlElement.this.beforeGetScript();
+            }
+            
+            @Override
+            public String getInitializeScript() {
+                String js = HtmlElement.this.getInitializeScript();
+                String js2 = super.getInitializeScript();
+                if (js == null) return js2;
+                if (js2 == null) return js;
+                return js2 + "\n" + js;
             }
 
             @Override
             public String getVerifyScript() {
-                String js = super.getVerifyScript();
-                js = HtmlElement.this.getVerifyScript(js);
-                return js;
+                String js = HtmlElement.this.getVerifyScript();
+                String js2 = super.getVerifyScript();
+                if (js == null) return js2;
+                if (js2 == null) return js;
+                return js2 + "\n" + js;
             }
 
             @Override
             public String getAjaxScript(final boolean bIsInitializing) {
-                String js = super.getAjaxScript(bIsInitializing);
-                js = HtmlElement.this.getAjaxScript(js, bIsInitializing);
-                return js;
+                String js = HtmlElement.this.getAjaxScript(bIsInitializing);
+                String js2 = super.getAjaxScript(bIsInitializing);
+                if (js == null) return js2;
+                if (js2 == null) return js;
+                return js2 + "\n" + js;
             }
             
             @Override
-            public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fname, long contentLength) {
-                OutputStream os = super.onSubmitGetFileOutputStream(formSubmitEvent, fname, contentLength);
-                OutputStream os2 = HtmlElement.this.onSubmitGetFileOutputStream(fname, contentLength);
+            public OutputStream onSubmitGetFileOutputStream(OAFormSubmitEvent formSubmitEvent, String fileName, String contentType) {
+                OutputStream os = super.onSubmitGetFileOutputStream(formSubmitEvent, fileName, contentType);
+                OutputStream os2 = HtmlElement.this.onSubmitGetFileOutputStream(fileName, contentType);
                 if (os2 != null) os = os2;
                 return os;
+            }
+            
+            @Override
+            public void getRequiredCssNames(final Set<String> hsCssName) {
+                super.getRequiredCssNames(hsCssName);
+                HtmlElement.this.getRequiredCssNames(hsCssName);
+            }
+            @Override
+            public void getRequiredJsNames(final Set<String> hsJsName) {
+                super.getRequiredJsNames(hsJsName);
+                HtmlElement.this.getRequiredJsNames(hsJsName);
             }
         };
     }
@@ -109,240 +145,217 @@ public class HtmlElement {
      * Internal component used bo control any/all HTML elements, attributes, etc.
      */
     public OAHtmlComponent getOAHtmlComponent() {
-        return oaHtmlComponent;
+        return htmlComponent;
     }
     
     public OAForm getForm() {
-        return oaHtmlComponent.getForm();
+        return htmlComponent.getForm();
     }
 
     public void setForm(OAForm form) {
-        oaHtmlComponent.setForm(form);
+        htmlComponent.setForm(form);
     }
     
     public String getId() {
-        return oaHtmlComponent.getId();
+        return htmlComponent.getId();
     }
 
     public boolean getHidden() {
-        return oaHtmlComponent.getHidden();
+        return htmlComponent.getHidden();
     }
     public boolean isHidden() {
-        return oaHtmlComponent.getHidden();
+        return htmlComponent.getHidden();
     }
     public void setHidden(boolean b) {
-        oaHtmlComponent.setHidden(b);
+        htmlComponent.setHidden(b);
     }
 
     public boolean getVisible() {
-        return oaHtmlComponent.getVisible();
+        return htmlComponent.getVisible();
     }
     public boolean isVisible() {
-        return oaHtmlComponent.getVisible();
+        return htmlComponent.getVisible();
     }
     public void setVisible(boolean b) {
-        oaHtmlComponent.setVisible(b);
+        htmlComponent.setVisible(b);
     }
 
     public String getForwardUrl() {
-        return oaHtmlComponent.getForwardUrl();
+        return htmlComponent.getForwardUrl();
     }
 
     public void setForwardUrl(String forwardUrl) {
-        oaHtmlComponent.setForwardUrl(forwardUrl);
+        htmlComponent.setForwardUrl(forwardUrl);
     }
 
     public boolean getSubmit() {
-        return oaHtmlComponent.getSubmit();
+        return htmlComponent.getSubmit();
     }
 
     public void setSubmit(boolean b) {
-        oaHtmlComponent.setSubmit(b);
+        htmlComponent.setSubmit(b);
     }
 
     public boolean getAjaxSubmit() {
-        return oaHtmlComponent.getAjaxSubmit();
+        return htmlComponent.getAjaxSubmit();
     }
 
     public void setAjaxSubmit(boolean b) {
-        oaHtmlComponent.setAjaxSubmit(b);
+        htmlComponent.setAjaxSubmit(b);
     }
 
     public String getToolTip() {
-        return oaHtmlComponent.getToolTipText();
+        return htmlComponent.getToolTipText();
     }
 
     public void setToolTip(String tooltip) {
-        oaHtmlComponent.setToolTipText(tooltip);
+        htmlComponent.setToolTipText(tooltip);
     }
 
     public String getToolTipText() {
-        return oaHtmlComponent.getToolTipText();
+        return htmlComponent.getToolTipText();
     }
 
     public void setToolTipText(String tooltip) {
-        oaHtmlComponent.setToolTipText(tooltip);
-    }
-
-    public String getToolTipTemplate() {
-        return oaHtmlComponent.getToolTipTemplate();
-    }
-
-    public void setToolTipTemplate(String toolTipTemplate) {
-        oaHtmlComponent.setToolTipTemplate(toolTipTemplate);
-    }
-
-    public String getCalcToolTipText() {
-        return oaHtmlComponent.getCalcToolTipText();
+        htmlComponent.setToolTipText(tooltip);
     }
 
     public boolean getPlainText() {
-        return oaHtmlComponent.getPlainText();
+        return htmlComponent.getPlainText();
     }
 
     public boolean isPlainText() {
-        return oaHtmlComponent.getPlainText();
+        return htmlComponent.getPlainText();
     }
 
     public void setPlainText(boolean b) {
-        oaHtmlComponent.setPlainText(b);
+        htmlComponent.setPlainText(b);
     }
 
     public String getTitle() {
-        return oaHtmlComponent.getTitle();
+        return htmlComponent.getTitle();
     }
 
     public void setTitle(String title) {
-        oaHtmlComponent.setTitle(title);
+        htmlComponent.setTitle(title);
     }
 
     
     
     public String getStyle(String name) {
-        return oaHtmlComponent.getStyle(name);
+        return htmlComponent.getStyle(name);
     }
 
     public List<String> getStyles() {
-        return oaHtmlComponent.getStyles();
+        return htmlComponent.getStyles();
     }
     
     public void addStyle(String name, String value) {
-        oaHtmlComponent.addStyle(name, value);
+        htmlComponent.addStyle(name, value);
     }
 
     public void removeStyle(String name) {
-        oaHtmlComponent.removeStyle(name);
+        htmlComponent.removeStyle(name);
     }
 
     public List<String> getClasses() {
-        return oaHtmlComponent.getClasses();
+        return htmlComponent.getClasses();
     }
     public void addClass(String name) {
-        oaHtmlComponent.addClass(name);
+        htmlComponent.addClass(name);
     }
 
     public void removeClass(String name) {
-        oaHtmlComponent.removeClass(name);
+        htmlComponent.removeClass(name);
     }
 
+    
     public String getConfirmMessage() {
-        return oaHtmlComponent.getConfirmMessage();
+        return htmlComponent.getConfirmMessage();
     }
 
     public void setConfirmMessage(String msg) {
-        oaHtmlComponent.setConfirmMessage(msg);
+        htmlComponent.setConfirmMessage(msg);
     }
 
-    public String getConfirmMessageTemplate() {
-        return oaHtmlComponent.getConfirmMessageTemplate();
-    }
-
-    public void setConfirmMessageTemplate(String msg) {
-        oaHtmlComponent.setConfirmMessageTemplate(msg);
-    }
-    
-    public String getCalcConfirmMessage() {
-        return oaHtmlComponent.getCalcConfirmMessage();
-    }
-    
     public String getHeight() {
-        return oaHtmlComponent.getHeight();
+        return htmlComponent.getHeight();
     }
 
     public void setHeight(String val) {
-        oaHtmlComponent.setHeight(val);
+        htmlComponent.setHeight(val);
     }
 
     public String getWidth() {
-        return oaHtmlComponent.getWidth();
+        return htmlComponent.getWidth();
     }
 
     public void setWidth(String val) {
-        oaHtmlComponent.setWidth(val);
+        htmlComponent.setWidth(val);
     }
     
     public String getMinHeight() {
-        return oaHtmlComponent.getMinHeight();
+        return htmlComponent.getMinHeight();
     }
 
     public void setMinHeight(String val) {
-        oaHtmlComponent.setMinHeight(val);
+        htmlComponent.setMinHeight(val);
     }
 
     public String getMinWidth() {
-        return oaHtmlComponent.getMinWidth();
+        return htmlComponent.getMinWidth();
     }
 
     public void setMinWidth(String val) {
-        oaHtmlComponent.setMinWidth(val);
+        htmlComponent.setMinWidth(val);
     }
 
     public String getMaxHeight() {
-        return oaHtmlComponent.getMaxHeight();
+        return htmlComponent.getMaxHeight();
     }
 
     public void setMaxHeight(String val) {
-        oaHtmlComponent.setMaxHeight(val);
+        htmlComponent.setMaxHeight(val);
     }
 
     public String getMaxWidth() {
-        return oaHtmlComponent.getMaxWidth();
+        return htmlComponent.getMaxWidth();
     }
 
     public void setMaxWidth(String val) {
-        oaHtmlComponent.setMaxWidth(val);
+        htmlComponent.setMaxWidth(val);
     }
 
     public String getOverflow() {
-        return oaHtmlComponent.getOverflow();
+        return htmlComponent.getOverflow();
     }
 
     public void setOverflow(String overflow) {
-        oaHtmlComponent.setOverflow(overflow);
+        htmlComponent.setOverflow(overflow);
     }
 
     public void setOverflow(OverflowType overflowType) {
-        oaHtmlComponent.setOverflow(overflowType);
+        htmlComponent.setOverflow(overflowType);
     }
 
     public String getEventName() {
-        return oaHtmlComponent.getEventName();
+        return htmlComponent.getEventName();
     }
 
     public void setEventName(String name) {
-        oaHtmlComponent.setEventName(name);
+        htmlComponent.setEventName(name);
     }
 
     public void setEventType(EventType eventType) {
-        oaHtmlComponent.setEventType(eventType);
+        htmlComponent.setEventType(eventType);
     }
 
     public String getCursor() {
-        return oaHtmlComponent.getCursor();
+        return htmlComponent.getCursor();
     }
 
     public void setCursor(String cursorName) {
-        oaHtmlComponent.setCursor(cursorName);
+        htmlComponent.setCursor(cursorName);
     }
 
     public void setCursor(CursorType cursorType) {
@@ -350,62 +363,65 @@ public class HtmlElement {
     }
 
     public String getInnerHtml() {
-        return oaHtmlComponent.getInnerHtml();
+        return htmlComponent.getInnerHtml();
     }
 
     public void setInnerHtml(String html) {
-        oaHtmlComponent.setInnerHtml(html);
+        htmlComponent.setInnerHtml(html);
     }
     
     public char getAccessKey() {
-        return oaHtmlComponent.getAccessKey();
+        return htmlComponent.getAccessKey();
     }
 
     public void setAccessKey(char ch) {
-        oaHtmlComponent.setAccessKey(ch);
+        htmlComponent.setAccessKey(ch);
     }
     
     public int getTabIndex() {
-        return oaHtmlComponent.getTabIndex();
+        return htmlComponent.getTabIndex();
     }
 
     public void setTabIndex(int val) {
-        oaHtmlComponent.setTabIndex(val);
+        htmlComponent.setTabIndex(val);
     }
     
 
     public boolean getDebug() {
-        return oaHtmlComponent.getDebug();
+        return htmlComponent.getDebug();
     }
     public void setDebug(boolean b) {
-        oaHtmlComponent.setDebug(b);
+        htmlComponent.setDebug(b);
     }
 
     public boolean isChanged() {
-        return oaHtmlComponent.isChanged();
+        return htmlComponent.isChanged();
     }
 
     protected String getRenderHtml(OAObject obj) {
-        return oaHtmlComponent.getEditorHtml(obj);
+        return htmlComponent.getEditorHtml(obj);
     }
 
     public boolean getNeedsReloaded() {
-        return oaHtmlComponent.getNeedsReloaded();
+        return htmlComponent.getNeedsRefreshed();
     }
 
+    
+    // These are all originated from OAForm --------------------------
 
-
-    // These are all originated through OAForm --------------------------
-
-    protected String getScript(String js) {
-        return js;
+    // called before calling getInitializeScript, and before ajaxScript (when not initializing)
+    protected void beforeGetScript() {
     }
-    protected String getVerifyScript(String js) {
-        return js;
+    
+    protected String getInitializeScript() {
+        return null;
+    }
+    protected String getVerifyScript() {
+        return null;
     }
 
-    protected String getAjaxScript(String js, final boolean bIsInitializing) {
-        return js;
+    protected String getAjaxScript(final boolean bIsInitializing) {
+        return null;
     }
     
     
@@ -414,6 +430,12 @@ public class HtmlElement {
     
     // called by OAForm
     protected void afterPageLoad() {
+    }
+
+    
+    public void getRequiredCssNames(final Set<String> hsCssName) {
+    }
+    public void getRequiredJsNames(final Set<String> hsJsName) {
     }
     
     // chance to cancel event
@@ -433,10 +455,16 @@ public class HtmlElement {
     protected void onSubmitCompleted(OAFormSubmitEvent formSubmitEvent) {
     }
 
-    protected OutputStream onSubmitGetFileOutputStream(String fname, long contentLength) {
+    protected OutputStream onSubmitGetFileOutputStream(String fileName, String contentType) {
         return null;
     }
 
+    protected String onGetJson(OASession session)  {
+        return null;
+    }
+    
+    
+    
     private static Set<String> hsSupported = new HashSet();  // lowercase
     static {
         hsSupported.add("id");

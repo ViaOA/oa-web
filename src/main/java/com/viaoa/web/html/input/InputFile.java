@@ -32,76 +32,75 @@ public class InputFile extends InputElement {
     }
 
     public String getValue() {
-        return oaHtmlComponent.getValue();
+        return htmlComponent.getValue();
     }
     public void setValue(String value) {
-        oaHtmlComponent.setValue(value);
+        htmlComponent.setValue(value);
     }
 
     public String[] getValues() {
-        return oaHtmlComponent.getValues();
+        return htmlComponent.getValues();
     }
     public void setValues(String[] values) {
-        oaHtmlComponent.setValues(values);
+        htmlComponent.setValues(values);
     }
 
 
     public String getAccept() {
-        return oaHtmlComponent.getAccept();
+        return htmlComponent.getAccept();
     }
     public void setAccept(String val) {
-        oaHtmlComponent.setAccept(val);
+        htmlComponent.setAccept(val);
     }
 
     public String getCapture() {
-        return oaHtmlComponent.getCapture();
+        return htmlComponent.getCapture();
     }
     public void setCapture(String val) {
-        oaHtmlComponent.setCapture(val);
+        htmlComponent.setCapture(val);
     }
     
     public boolean getMultiple() {
-        return oaHtmlComponent.getMultiple();
+        return htmlComponent.getMultiple();
     }
     public void setMultiple(boolean b) {
-        oaHtmlComponent.setMultiple(b);
+        htmlComponent.setMultiple(b);
     }
 
     public int getMaxFileSize() {
-        return oaHtmlComponent.getMaxFileSize();
+        return htmlComponent.getMaxFileSize();
     }
     public void setMaxFileSize(int val) {
-        oaHtmlComponent.setMaxFileSize(val);
+        htmlComponent.setMaxFileSize(val);
     }
 
     public boolean getRequired() {
-        return oaHtmlComponent.getRequired();
+        return htmlComponent.getRequired();
     }
 
     public boolean isRequired() {
-        return oaHtmlComponent.getRequired();
+        return htmlComponent.getRequired();
     }
 
     public void setRequired(boolean req) {
-        oaHtmlComponent.setRequired(req);
+        htmlComponent.setRequired(req);
     }
     
     
     @Override
-    public OutputStream onSubmitGetFileOutputStream(String fname, long contentLength) {
-        return super.onSubmitGetFileOutputStream(fname, contentLength);
+    public OutputStream onSubmitGetFileOutputStream(String fileName, String contentType) {
+        return super.onSubmitGetFileOutputStream(fileName, contentType);
     }
 
     
     @Override
-    protected String getVerifyScript(final String js) {
+    protected String getVerifyScript() {
         StringBuilder sb = null;
         
         // add js code to check for max size
         if (getMaxFileSize() > 0) {
             if (sb == null) {
                 sb = new StringBuilder();
-                if (OAStr.isNotEmpty(js)) sb.append(js);
             }
             
             sb.append("val = $('#"+getId()+"')[0];\n");
@@ -126,7 +125,6 @@ public class InputFile extends InputElement {
         if (isRequired()) {
             if (sb == null) {
                 sb = new StringBuilder();
-                if (OAStr.isNotEmpty(js)) sb.append(js);
             }
             
             String s = getTitle();
@@ -146,11 +144,9 @@ public class InputFile extends InputElement {
             sb.append("  requires.push('" + s + "');");
             sb.append("  $('#" + getId() + "').addClass('oaError');");
             sb.append("}\n");
-            
-            
         }
 
-        if (sb == null) return js;
+        if (sb == null) return null;
         return sb.toString();
     }
 

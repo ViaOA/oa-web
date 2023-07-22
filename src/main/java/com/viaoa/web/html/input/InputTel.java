@@ -13,7 +13,7 @@ public class InputTel extends InputText {
 
     public InputTel(String id) {
         super(id, InputType.Tel);
-        oaHtmlComponent.setInputMode(InputModeType.Tel);
+        htmlComponent.setInputMode(InputModeType.Tel);
     }
 
 }

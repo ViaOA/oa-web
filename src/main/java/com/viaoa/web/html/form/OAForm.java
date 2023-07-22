@@ -1395,7 +1395,7 @@ public class OAForm extends OABase implements Serializable {
         
         for (OAHtmlComponent comp : alOAHtmlComponent) {
             alOAHtmlComponentAll.add(comp);
-            comp.geten
+            comp
         }
         
         

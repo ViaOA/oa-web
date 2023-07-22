@@ -17,7 +17,7 @@ import com.viaoa.web.server.OASession;
 /**
  * Base class for all HTML Elements.
  * <p>
- * This will use an internal OAHtmlComponent, which can work with any and all HTML elements.
+ * This will use an internal OAHtmlComponent, which can work with any and all HTML elements, attributes, etc.
  * 
  */
 public class HtmlElement {
@@ -462,7 +462,16 @@ public class HtmlElement {
     protected String onGetJson(OASession session)  {
         return null;
     }
+
     
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+    /**
+     * Return any embedded HtmlComponents that are not added to OAForm, but
+     * used inside a container component.  ex: OAHtmlTable
+     */
+    public void addEmbeddedComponents(final List<OAHtmlComponent> al) {
+    }
     
     
     private static Set<String> hsSupported = new HashSet();  // lowercase

@@ -464,14 +464,27 @@ public class HtmlElement {
     }
 
     
-qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
     /**
-     * Return any embedded HtmlComponents that are not added to OAForm, but
+     * Embedded HtmlComponents that are not added to OAForm, but
      * used inside a container component.  ex: OAHtmlTable
      */
-    public void addEmbeddedComponents(final List<OAHtmlComponent> al) {
+    private List<HtmlElement> alHtmlElement;
+    public void add(HtmlElement he) {
+        if (he == null) return;
+        if (alHtmlElement == null) alHtmlElement = new ArrayList<>();
+        if (!alHtmlElement.contains(he)) alHtmlElement.add(he);
     }
+    public void remove(HtmlElement he) {
+        if (he == null) return;
+        if (alHtmlElement == null) return;
+        alHtmlElement.remove(he);
+    }
+    public List<HtmlElement> getHtmlElements() {
+        return alHtmlElement;
+    }
+    
     
     
     private static Set<String> hsSupported = new HashSet();  // lowercase

@@ -82,11 +82,9 @@ public class OAForm extends OABase implements Serializable {
     
     private static final long serialVersionUID = 1L;
 
-    protected final List<OAHtmlComponent> alOAHtmlComponent = new ArrayList();
-    protected final List<OAHtmlComponent> alAddOAHtmlComponent = new ArrayList();
+    protected final List<HtmlElement> alHtmlElement = new ArrayList();
+    protected final List<HtmlElement> alAddHtmlElement = new ArrayList();
     
-    // map OAHtmlComponent to HtmlElement
-    protected final Map<OAHtmlComponent, HtmlElement> hsComponment = new HashMap<>();
     
     protected OASession session;
     protected String id;
@@ -193,11 +191,11 @@ public class OAForm extends OABase implements Serializable {
         return forwardUrl;
     }
 
+    
     /** resets the form, takes off any edits not saved */
     public void reset() {
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             comp.reset();
         }
     }
@@ -335,25 +333,22 @@ public class OAForm extends OABase implements Serializable {
 
     /** finds out if any of the values have changed */
     public boolean isChanged() {
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             if (comp.isChanged()) return true;
         }
         return false;
     }
 
     /** finds out the name of components that have changed */
-    public OAHtmlComponent[] getChangedComponents() {
+    public HtmlElement[] getChangedHtmlElements() {
         List<OAHtmlComponent> al = new ArrayList();
-
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             if (comp.isChanged()) al.add(comp);
         }
 
-        OAHtmlComponent[] ss = new OAHtmlComponent[al.size()];
+        HtmlElement[] ss = new HtmlElement[al.size()];
         al.toArray(ss);
         return ss;
     }
@@ -400,19 +395,22 @@ public class OAForm extends OABase implements Serializable {
     }
 
     protected void beforeGetScript() {
-        for (OAHtmlComponent comp : alOAHtmlComponent) {
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             comp.beforeGetScript();
         }
     }
     
     
     protected void beforePageLoad() {
-        for (OAHtmlComponent comp : alOAHtmlComponent) {
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             comp.beforePageLoad();
         }
     }
     protected void afterPageLoad() {
-        for (OAHtmlComponent comp : alOAHtmlComponent) {
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             comp.afterPageLoad();
         }
     }
@@ -420,7 +418,7 @@ public class OAForm extends OABase implements Serializable {
     
     // javascript code to initialize client/browser
     protected void getInitializeScript(StringBuilder sb) {
-        alAddOAHtmlComponent.clear();
+        alAddHtmlElement.clear();
 
         // ======== outside method definitions 
         
@@ -586,7 +584,8 @@ public class OAForm extends OABase implements Serializable {
         }
 
         boolean b = true;
-        for (OAHtmlComponent comp : alOAHtmlComponent) {
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             String s = comp.getInitializeScript();
 
             if (debugNow) p(sb, "$('#"+comp.getId()+"').addClass('oaDebug');", indent);
@@ -615,9 +614,9 @@ public class OAForm extends OABase implements Serializable {
             p(sb, "  onsubmit: false", ++indent);
             
             b = false;
-            for (int i=0; ;i++) {
-                if (i >= alOAHtmlComponent.size()) break;
-                OAHtmlComponent comp = alOAHtmlComponent.get(i);
+
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 String s = comp.getVerifyScript();
     
                 s = comp.getValidationRules();
@@ -635,9 +634,8 @@ public class OAForm extends OABase implements Serializable {
             }            
             
             b = false;
-            for (int i=0; ;i++) {
-                if (i >= alOAHtmlComponent.size()) break;
-                OAHtmlComponent comp = alOAHtmlComponent.get(i);
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 String s = comp.getVerifyScript();
     
                 s = comp.getValidationMessages();
@@ -682,9 +680,8 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "  var regex;", indent);
         p(sb, "  var val;", indent);
 
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             String s = comp.getVerifyScript();
             if (!OAString.isEmpty(s)) p(sb, "  " + s, indent);
         }
@@ -845,12 +842,11 @@ public class OAForm extends OABase implements Serializable {
             }
         }
 
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             
             String s;
-            if (alAddOAHtmlComponent.contains(comp)) {
+            if (alAddHtmlElement.contains(he)) {
                 s = comp.getInitializeScript();
                 if (!OAString.isEmpty(s)) p(sb, s + "", 1);
                 s = comp.getVerifyScript();
@@ -864,7 +860,7 @@ public class OAForm extends OABase implements Serializable {
                 else p(sb, "    $('#"+comp.getId()+"').removeClass('oaDebug');", indent);
             }
         }
-        alAddOAHtmlComponent.clear();
+        alAddHtmlElement.clear();
 
         /* added to js code 
         p(sb, "$('#oacommand').val('');", indent); // set back to blank
@@ -1167,73 +1163,64 @@ public class OAForm extends OABase implements Serializable {
         }
     }
     
-    public List<OAHtmlComponent> getComponents() {
-        return alOAHtmlComponent;
+    public List<HtmlElement> getHtmlElements() {
+        return alHtmlElement;
     }
 
-    public OAHtmlComponent getComponent(String id) {
+    public HtmlElement getHtmlElement(String id, boolean bIncludedEmbeded) {
         if (id == null) return null;
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
-            if (id.equalsIgnoreCase(comp.getId())) {
-                return comp;
+        
+        List<HtmlElement> al = bIncludedEmbeded ? getAllHtmlElements() : alHtmlElement;
+        
+        for (HtmlElement he : al) {
+            if (id.equalsIgnoreCase(he.getId())) {
+                return he;
             }
         }
         return null;
     }
 
+    public List<HtmlElement> getAllHtmlElements() {
+        ArrayList<HtmlElement> al = new ArrayList<>();
+        for (HtmlElement he : alHtmlElement) {
+            _getRecursiveAllHtmlElements(he, al);
+        }
+        return al;
+    }
+    protected void _getRecursiveAllHtmlElements(final HtmlElement he, final List<HtmlElement> al) {
+        if (al.contains(he)) return;
+        al.add(he);
+
+        List<HtmlElement> alx = he.getHtmlElements();
+        if (alx == null) return;
+        
+        for (HtmlElement hex : alx) {
+            _getRecursiveAllHtmlElements(hex, alx);
+        }
+    }
     
-
-    public void add(OAHtmlComponent comp) {
-        if (comp == null) return;
-        add(null, comp);
-    }
-    public void add(String id, OAHtmlComponent comp) {
-        if (comp == null) return;
-        if (OAString.isEmpty(id)) id = comp.getId();
-        else comp.setId(id);
-
-        if (!OAString.isEmpty(id)) {
-            OAHtmlComponent compx = getComponent(id);
-            
-            if (compx != null) {
-                if ( comp.getClass().isAssignableFrom(compx.getClass()) || compx.getClass().isAssignableFrom(comp.getClass()) ) {
-                    remove(id);
-                }
-            }
-        }
-        if (!alOAHtmlComponent.contains(comp)) {
-            alOAHtmlComponent.add(comp);
-        }
-        if (!alAddOAHtmlComponent.contains(comp)) {
-            alAddOAHtmlComponent.add(comp);
-        }
-        comp.setForm(this);
-    }
-
     
     public void add(HtmlElement he) {
         if (he == null) return;
-        add(he.getOAHtmlComponent());
-        hsComponment.put(he.getOAHtmlComponent(), he);
-    }
-    public void add(String id, HtmlElement he) {
-        if (he == null) return;
-        add(id, he.getOAHtmlComponent());
-        hsComponment.put(he.getOAHtmlComponent(), he);
+        
+        if (!alHtmlElement.contains(he)) {
+            alHtmlElement.add(he);
+        }
+        if (!alAddHtmlElement.contains(he)) {
+            alAddHtmlElement.add(he);
+        }
+        
+        he.setForm(this);
     }
     
-    public void remove(String name) {
-        OAHtmlComponent comp = getComponent(name);
-        if (comp != null) {
-            alOAHtmlComponent.remove(comp);
-            hsComponment.remove(comp);
-        }
-        super.remove(name);
+    public void remove(HtmlElement he) {
+        alHtmlElement.remove(he);
     }
+
     
 
+    
+    
     /** used to manage ajax callbacks from the browser, so that not too many will be created on the browser. */
     private final AtomicInteger aiAjaxIdLastRequest = new AtomicInteger();
     
@@ -1391,12 +1378,8 @@ public class OAForm extends OABase implements Serializable {
 
 //qqqqqqqqq have OAHtmlTable use command=table.Id, and subcommand=TD.id  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq        
         
-        final List<OAHtmlComponent> alOAHtmlComponentAll = new ArrayList();
-        
-        for (OAHtmlComponent comp : alOAHtmlComponent) {
-            alOAHtmlComponentAll.add(comp);
-            comp
-        }
+//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq NEEDS To be recursive qqqqqqqqqqqqq but using HtmlElements            
+//            comp
         
         
         // set the component that submitted (if any)
@@ -1405,11 +1388,13 @@ public class OAForm extends OABase implements Serializable {
             String id = ids == null || ids.length == 0 ? null : ids[0];
             
             if (formSubmitEvent.getSubmitOAHtmlComponent() == null && OAStr.isNotEmpty(id)) {
-                formSubmitEvent.setSubmitOAHtmlComponent(getComponent(id));
+                HtmlElement he = getHtmlElement(id, true);
+                if (he != null) formSubmitEvent.setSubmitOAHtmlComponent(he.getOAHtmlComponent());
             }
 
             if (formSubmitEvent.getSubmitOAHtmlComponent() == null) {
-                for (OAHtmlComponent comp : alOAHtmlComponent) {
+                for (HtmlElement he : getHtmlElements()) {
+                    OAHtmlComponent comp = he.getOAHtmlComponent();
                     if (comp.getInputType() == OAHtmlComponent.InputType.Submit) {
                         if (formSubmitEvent.getRequest().getParameter(comp.getCalcName()) != null) {
                             formSubmitEvent.setSubmitOAHtmlComponent(comp);
@@ -1443,7 +1428,8 @@ public class OAForm extends OABase implements Serializable {
         }
         
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alOAHtmlComponent) {
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 comp.onSubmitPrecheck(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
             }
@@ -1451,7 +1437,8 @@ public class OAForm extends OABase implements Serializable {
         
         if (!formSubmitEvent.getCancel()) {
             // all are called, allows components to cancel
-            for (OAHtmlComponent comp : alOAHtmlComponent) {
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitBeforeLoadValues(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
@@ -1459,14 +1446,16 @@ public class OAForm extends OABase implements Serializable {
         }
         
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alOAHtmlComponent) {
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitLoadValues(formSubmitEvent);
             }
         }
 
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alOAHtmlComponent) {
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitAfterLoadValues(formSubmitEvent);
                 if (formSubmitEvent.getCancel()) break;
@@ -1483,7 +1472,8 @@ public class OAForm extends OABase implements Serializable {
         }
 
         if (!formSubmitEvent.getCancel()) {
-            for (OAHtmlComponent comp : alOAHtmlComponent) {
+            for (HtmlElement he : getAllHtmlElements()) {
+                OAHtmlComponent comp = he.getOAHtmlComponent();
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitCompleted(formSubmitEvent);
             }
@@ -1540,8 +1530,10 @@ public class OAForm extends OABase implements Serializable {
             name = OAStr.field(name, "=", 2);
             name = name.replace('"', ' ');
             name = name.trim();
+
+            HtmlElement he = getHtmlElement(name, true);
+            final OAHtmlComponent comp = he == null ? null : he.getOAHtmlComponent();
             
-            final OAHtmlComponent comp = getComponent(name);
             final boolean bIsFile = (comp != null) && (comp.getInputType() == InputType.File);
             
             String value = null;
@@ -1632,7 +1624,10 @@ public class OAForm extends OABase implements Serializable {
         if (this.session == null) this.session = session;
 
         String id = session.getRequest().getParameter("id");
-        OAHtmlComponent comp = getComponent(id);
+        HtmlElement he = getHtmlElement(id, true);
+        if (he == null) return null;
+        OAHtmlComponent comp = he.getOAHtmlComponent();
+        
         String json = comp.onGetJson(session);
         if (json == null) json = "";
         return json;
@@ -1673,8 +1668,10 @@ public class OAForm extends OABase implements Serializable {
         catch (Exception e) {}
 
         String id = formSubmitEvent.getRequest().getParameter("oacommand");
-        final OAHtmlComponent comp = getComponent(id);
-        if (comp == null) return;
+        
+        HtmlElement he = getHtmlElement(id, true);
+        if (he == null) return;
+        OAHtmlComponent comp = he.getOAHtmlComponent();
 
         formSubmitEvent.setSubmitOAHtmlComponent(comp);
         formSubmitEvent.setForwardUrl(comp.getForwardUrl());
@@ -1737,9 +1734,8 @@ public class OAForm extends OABase implements Serializable {
         
         //qqqqqqqqqqq might want to add *theme css files        
         
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             comp.getRequiredCssNames(hsCssName);
         }
         
@@ -1783,9 +1779,8 @@ public class OAForm extends OABase implements Serializable {
             hsJsName.add(name);
         }
         
-        for (int i=0; ;i++) {
-            if (i >= alOAHtmlComponent.size()) break;
-            OAHtmlComponent comp = alOAHtmlComponent.get(i);
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
             comp.getRequiredJsNames(hsJsName);
         }        
        
@@ -1818,15 +1813,8 @@ public class OAForm extends OABase implements Serializable {
         return urlRedirect;
     }
     
-    public HtmlElement getHtmlElement(String id) {
-        OAHtmlComponent comp = getComponent(id);
-        if (comp == null) return null;
-        HtmlElement he = hsComponment.get(comp);
-        return he;
-    }
-    
     public OAInputText getOAInputText(String id) {
-        HtmlElement he = getHtmlElement(id);
+        HtmlElement he = getHtmlElement(id, true);
         if (he instanceof OAInputText) return (OAInputText) he;
         return null;
     }

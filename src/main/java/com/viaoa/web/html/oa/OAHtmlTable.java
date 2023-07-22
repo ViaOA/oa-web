@@ -49,6 +49,11 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
     
     
     public void addColumn(String title, OAHtmlTableComponentInterface comp) {
+    
+    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq needs to add to list of 
+    qqqqqqqqqqqqqqqqqqqqqqq
+    if (comp instanceof HtmlElement) add((HtmlElement) comp);
+    
         HtmlCol htmlCol = new HtmlCol();
         HtmlTH htmlTh = new HtmlTH();
         htmlTh.setInnerHtml(title == null ? "" : title);
@@ -229,16 +234,6 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         
         return sb.toString();
     }
-    
-    
-    @Override
-    public void addEmbeddedComponents(List<OAHtmlComponent> al) {
-        for (Column c : alColumn) {
-            if (!(c.comp instanceof HtmlElement)) continue;
-            al.add( ((HtmlElement) c.comp).getOAHtmlComponent() );
-        }
-    }    
-
     
     
     private static Set<String> hsSupported = new HashSet();  // lowercase

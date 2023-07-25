@@ -741,6 +741,8 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "      $('#oaWait').hide();", indent);
         p(sb, "    }", --indent);
         p(sb, "    if (data) eval(data);", indent);
+        
+        
         p(sb, "  }", --indent);
         p(sb, "  var f2 = function() {", indent);
         p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
@@ -846,7 +848,7 @@ public class OAForm extends OABase implements Serializable {
             OAHtmlComponent comp = he.getOAHtmlComponent();
             
             String s;
-            if (alAddHtmlElement.contains(he)) {
+            if (alAddHtmlElement.contains(he) || he.getNeedsReloaded()) {
                 s = comp.getInitializeScript();
                 if (!OAString.isEmpty(s)) p(sb, s + "", 1);
                 s = comp.getVerifyScript();
@@ -1195,7 +1197,7 @@ public class OAForm extends OABase implements Serializable {
         if (alx == null) return;
         
         for (HtmlElement hex : alx) {
-            _getRecursiveAllHtmlElements(hex, alx);
+            _getRecursiveAllHtmlElements(hex, al);
         }
     }
     
@@ -1323,7 +1325,8 @@ public class OAForm extends OABase implements Serializable {
                 this.addErrorMessage(e.toString());
             }
             
-            if (formSubmitEvent.getForm().getCalcDebug()) {
+//qqqqqqqqqqqqqqqqqqq "true ||"            
+            if (true || formSubmitEvent.getForm().getCalcDebug()) {
                 hmNameValue.forEach( (k,v) -> 
                 System.out.println("  Key: " + k + ": Values[0]: " + ((v == null || v.length == 0) ? "" : v[0])));
             }
@@ -1819,6 +1822,18 @@ public class OAForm extends OABase implements Serializable {
         return null;
     }
     
-    //qqqqqqqqq add others get* methods qqqqqqqqqqqqqqq
-
+    
+    public static final String Key_Shift = "[SHIFT]";
+    public static final String Key_CTRL = "[CTRL]";
+    public static final String Key_ALT = "[ALT]";
+    public static final String Key_UP = "[UP]";
+    public static final String Key_PGUP = "[PGUP]";
+    public static final String Key_DOWN = "[DOWN]";
+    public static final String Key_PGDN = "[PGDN]";
+    public static final String Key_RIGHT = "[RIGHT]";
+    public static final String Key_END = "[END]";
+    public static final String Key_HOME = "[HOME]";
+    public static final String Key_LEFT = "[LEFT]";
+    
+    
 }

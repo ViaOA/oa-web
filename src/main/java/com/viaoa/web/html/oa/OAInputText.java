@@ -125,7 +125,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
     }
     @Override
     public String getTableCellEditor(int row) {
-        String s = "<input type='text' id='"+getId()+"'>";
-        return getTableCellRenderer(row);
+        String s = "<input type='text' id='"+getId()+"' name='"+getId()+"'>";
+        return s;
     }
 }

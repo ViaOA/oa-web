@@ -97,6 +97,13 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     }
     @Override
     public String getTableCellEditor(int row) {
-        return getTableCellRenderer(row);
+        String s = getTableCellRenderer(row);
+        if (s == null) s = "";
+        //was: s = "<span contenteditable>"+s+"</span>";
+        
+        //onkeypress="handleKeypress(event)"
+        s = "<input type=text value='"+s+"' onkeypress='(event) {event.preventDefault(); return false;}'>";
+        
+        return s;
     }
 }

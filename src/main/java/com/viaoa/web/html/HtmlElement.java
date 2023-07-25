@@ -8,8 +8,6 @@ import java.io.OutputStream;
 import java.util.*;
 
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAStr;
-import com.viaoa.util.OAString;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.server.OASession;
@@ -17,21 +15,28 @@ import com.viaoa.web.server.OASession;
 /**
  * Base class for all HTML Elements.
  * <p>
- * This will use an internal OAHtmlComponent, which can work with any and all HTML elements, attributes, etc.
+ * This uses an internal OAHtmlComponent, and overwrites some of it's public methods to call
+ * protected methods in this class (for method "hiding").
  * 
  */
 public class HtmlElement {
     // use this to manage any of the HTML elements
     protected final OAHtmlComponentPlus htmlComponent;
-
+    private List<HtmlElement> alHtmlElement;
+    
     public HtmlElement(String id) {
         this.htmlComponent = new OAHtmlComponentPlus(id) {
+            /**
+             * Override all of these public methods and have them use the protected method in this class.
+             */
+            
             @Override
             public void onSubmitPrecheck(OAFormSubmitEvent formSubmitEvent) {
                 super.onSubmitPrecheck(formSubmitEvent);
                 if (formSubmitEvent.getSubmitOAHtmlComponent() == HtmlElement.this.htmlComponent) {
                     formSubmitEvent.setSubmitHtmlElement(HtmlElement.this);;
                 }
+                HtmlElement.this.onSubmitPrecheck(formSubmitEvent);
             }
 
             @Override
@@ -137,6 +142,11 @@ public class HtmlElement {
             public void getRequiredJsNames(final Set<String> hsJsName) {
                 super.getRequiredJsNames(hsJsName);
                 HtmlElement.this.getRequiredJsNames(hsJsName);
+            }
+            
+            @Override
+            public boolean isSupported(String name) {
+                return HtmlElement.this.isSupported(name);
             }
         };
     }
@@ -433,18 +443,22 @@ public class HtmlElement {
     }
 
     
-    public void getRequiredCssNames(final Set<String> hsCssName) {
+    protected void getRequiredCssNames(final Set<String> hsCssName) {
     }
-    public void getRequiredJsNames(final Set<String> hsJsName) {
+    protected void getRequiredJsNames(final Set<String> hsJsName) {
     }
     
-    // chance to cancel event
+
+    protected void onSubmitPrecheck(OAFormSubmitEvent formSubmitEvent) {
+    }    
     protected void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
     }
     protected void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
     }
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
     }
+    
+    
     
     /**
      * Only called for the component that submitted.
@@ -464,13 +478,11 @@ public class HtmlElement {
     }
 
     
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
     /**
      * Embedded HtmlComponents that are not added to OAForm, but
-     * used inside a container component.  ex: OAHtmlTable
+     * are used inside a container component.  ex: OAHtmlTable has internal components for the colums.
      */
-    private List<HtmlElement> alHtmlElement;
     public void add(HtmlElement he) {
         if (he == null) return;
         if (alHtmlElement == null) alHtmlElement = new ArrayList<>();
@@ -520,7 +532,10 @@ public class HtmlElement {
         hsSupported.add("debug");
     }
     
-    public boolean isSupported(String name) {
+    /**
+     * Overwritten from OAHtmlComponent.isSupported (public method) to call this (as protected).
+     */
+    protected boolean isSupported(String name) {
         if (name == null) return false;
         return hsSupported.contains(name.toLowerCase());
     }

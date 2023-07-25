@@ -28,11 +28,21 @@ import com.viaoa.util.*;
 
 
 /**
- * The main "super" class for controlling any HTML element, including form and input components.
+ * The main "super" class for controlling any HTML element.
  * <p>
- * The HTML element design does not map cleanly to OO classes using inheritance.<br>
+ * The HTML element design does not map cleanly to OO classes using inheritance, etc.<br>
  * OA uses a composite design, where this class includes all of the functionality needed by all components,
  * and then each component (java class) can "have a" OAHtmlComponent to do the work for it's subset of methods.
+ * <p>
+ * This is used inside of  HtmlElement (base class for all OA web components), to handle all html element features.<br>
+ * <p>
+ * <em>"HtmlElement has an OAHtmlComponent"</em>, and overrides the OAHtmlComponent public methods and 
+ * makes them protected in HtmlElement. Since they are protected in HtmlElement and cant be directly called,
+ * just call HtmlElement.getOAHtmlComponent.<i>methodName</I>, which is a public method that HtmlElement has overwritten.
+ * <p>
+ * This is designed to help hide methods (by making "public" here, but "protected" in HtmlElement), 
+ * so that the OA web components appear to only have it's necessary subset for the html element that it
+ * represents.
  * <p>
  * Notes: if a form component is disabled, then data is not sent to server during form submit.    
  *
@@ -322,8 +332,8 @@ public class OAHtmlComponent {
     public static enum EventType {
         Unknown(),
         OnBlur(),
-        OnClick(),
-        OnDoubleClick(),
+        OnClick(true),
+        OnDoubleClick(true),
         OnChange(),
         OnContextMenu(),
         OnFocus(),
@@ -331,8 +341,13 @@ public class OAHtmlComponent {
         OnSearch();
         
         private String display;
-        
+        private boolean bUsesKeys;
+
         EventType() {
+            this(false);
+        }
+        EventType(boolean usesKeys) {
+            this.bUsesKeys = usesKeys;
             display = name().toLowerCase();
         }
         
@@ -344,7 +359,12 @@ public class OAHtmlComponent {
             if (display == null) return name();
             return display;
         }
+    
+        public boolean getUsesKeys() {
+            return this.bUsesKeys;
+        }
     }
+
     protected String eventName;
     
     
@@ -675,6 +695,7 @@ public class OAHtmlComponent {
     public void reset() {
         value = null;
         lastAjaxSent = null;
+        bValueChangedByAjax = false;
     }
     
     public boolean isChanged() {
@@ -1300,6 +1321,7 @@ public class OAHtmlComponent {
     
     public String getInitializeScript() {
         lastAjaxSent = null;
+        bValueChangedByAjax = false;
         String s = _getInitializeScript();
         setNeedsRefreshed(false);
         return s;
@@ -1361,7 +1383,7 @@ public class OAHtmlComponent {
             if (eventName.startsWith("on")) eventName = eventName.substring(2);  // ex: onclick -> click
         
             if (getSubmit()) {
-                sb.append("$('#" + id + "')."+ eventName + "(function() {\n");
+                sb.append("$('#" + id + "')."+ eventName + "(function(event) {\n");
                 
                 if (formElementType != null && formElementType.getUsesValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
                     sb.append("if (this.value === this.oaPrevValue) return false;\n");
@@ -1372,6 +1394,18 @@ public class OAHtmlComponent {
                     sb.append("  "+confirm);
                 }
                 sb.append("  $('#oacommand').val('" + id + "');\n");
+                
+                
+                if (formElementType != null) {
+                    EventType et = formElementType.getDefaultEventType();
+                    if (et != null && et.getUsesKeys()) {
+                        sb.append("  var keys = 'KEYS=';\n"); 
+                        sb.append("  if (event.shiftKey) keys += '[SHIFT]';\n"); 
+                        sb.append("  if (event.ctrlKey) keys += '[CTRL]';\n"); 
+                        sb.append("  $('#oaparam').val(keys);\n");
+                    }
+                }
+                
                 sb.append("  $('#"+getForm().getId()+"').submit();\n");
                 sb.append("  $('#oacommand').val('');\n");
                 sb.append("  $('#oaparam').val('');\n");
@@ -1379,16 +1413,10 @@ public class OAHtmlComponent {
                 sb.append("});\n");
             }
             else if (getAjaxSubmit()) {
-                sb.append("$('#" + id + "')."+ eventName+"(function() {\n");
+                sb.append("$('#" + id + "')."+ eventName+"(function(event) {\n");
 
                 if (formElementType != null && formElementType.getUsesValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
                     sb.append("if (this.value === this.oaPrevValue) return false;\n");
-                    /*was:
-                    sb.append("if (typeof this.oaPrevValue === \"undefined\") {\n");
-                    sb.append("    if (this.value === this.getAttribute(\"value\")) return false;\n");
-                    sb.append("}\n");
-                    sb.append("else if (this.value === this.oaPrevValue) return false;\n");
-                    */
                     sb.append("this.oaPrevValue = this.value;\n");
                 }
                 
@@ -1396,6 +1424,18 @@ public class OAHtmlComponent {
                     sb.append("  "+confirm);
                 }
                 sb.append("  $('#oacommand').val('" + id + "');\n");
+                
+//qqqqqqqqqq get keys,                
+                if (formElementType != null) {
+                    EventType et = formElementType.getDefaultEventType();
+                    if (et != null && et.getUsesKeys()) {  // ex: button or image
+                        sb.append("  var keys = 'KEYS=';\n"); 
+                        sb.append("  if (event.shiftKey) keys += '[SHIFT]';\n"); 
+                        sb.append("  if (event.ctrlKey) keys += '[CTRL]';\n"); 
+                        sb.append("  $('#oaparam').val(keys);\n");
+                    }
+                }
+                
                 sb.append("  ajaxSubmit();\n");
                 sb.append("  $('#oacommand').val('');\n");
                 sb.append("  $('#oaparam').val('');\n");
@@ -2066,4 +2106,13 @@ public class OAHtmlComponent {
         bTargetChanged = OAStr.isNotEqualNullEqualsBlank(this.target, target);
         this.target = target;
     }
+    
+    /**
+     * called to know if a feature/method is supported.
+     * Defaults to true, and is overwritten by HtmlElements. 
+     */
+    public boolean isSupported(String name) {
+        return true;
+    }
+    
 }

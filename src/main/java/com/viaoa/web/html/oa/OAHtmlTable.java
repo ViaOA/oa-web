@@ -11,12 +11,14 @@ import com.viaoa.util.OAStr;
 import com.viaoa.web.html.HtmlCol;
 import com.viaoa.web.html.HtmlColGroup;
 import com.viaoa.web.html.HtmlElement;
+import com.viaoa.web.html.HtmlFormElement;
 import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.HtmlTH;
 import com.viaoa.web.html.HtmlTR;
 import com.viaoa.web.html.HtmlTable;
 import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.html.OAHtmlComponent.EventType;
+import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormInsertDelegate;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.server.OASession;
@@ -33,9 +35,10 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         
         oaUiControl = new OAUISelectController(hub);
         setAjaxSubmit(true);
+        getOAHtmlComponent().addClass("oatable");
     }
     
-    private static class Column {
+    public static class Column {
         HtmlCol htmlCol;
         HtmlTH htmlTh;
         OAHtmlTableComponentInterface comp;
@@ -49,10 +52,9 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
     
     
     public void addColumn(String title, OAHtmlTableComponentInterface comp) {
-    
-    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq needs to add to list of 
-    qqqqqqqqqqqqqqqqqqqqqqq
-    if (comp instanceof HtmlElement) add((HtmlElement) comp);
+        if (comp instanceof HtmlElement) {
+            add((HtmlElement) comp);
+        }
     
         HtmlCol htmlCol = new HtmlCol();
         HtmlTH htmlTh = new HtmlTH();
@@ -60,6 +62,10 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         addColumn(htmlCol, htmlTh, comp);
     }
     
+    public Column getColumn(int pos) {
+        if (pos < 0 || pos >= this.alColumn.size()) return null;
+        return this.alColumn.get(pos);
+    }
     
     /**
      * 
@@ -91,6 +97,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         HtmlCol htmlCol = new HtmlCol();
         HtmlTH htmlTh = new HtmlTH();
         htmlTh.setInnerHtml(title == null ? "" : title);
+        htmlTh.addClass("oatableColumnCount");
         addCounterColumn(htmlCol, htmlTh);
     }
     
@@ -122,8 +129,12 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         htmlComponent.setEnabled(b);
     }
     
+    private int submitRow=-1, submitCol=-1;
+    private String submitKeys;
+    
     @Override
     protected void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
+        submitCol = submitRow = -1;
         String[] ids = formSubmitEvent.getNameValueMap().get("oacommand");
         if (ids != null && ids.length == 1) {
             String id = ids[0];
@@ -132,27 +143,29 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
                 formSubmitEvent.setSubmitHtmlElement(this);
                 
                 int dcnt = OAStr.dcount(id, "_");
-                int row = OAConv.toInt(OAStr.field(id, "_", dcnt-1));
-                int col = OAConv.toInt(OAStr.field(id, "_", dcnt));
+                submitRow = OAConv.toInt(OAStr.field(id, "_", dcnt-1));
+                submitCol = OAConv.toInt(OAStr.field(id, "_", dcnt));
             }
-        }        
+        }
+        
+        submitKeys = null;
+        String[] params = formSubmitEvent.getNameValueMap().get("oaparam");
+        if (params != null && params.length == 1) {
+            submitKeys = params[0];
+        }
     }
 
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
         if (formSubmitEvent.getSubmitHtmlElement() != this) return;
             
-        String[] ids = formSubmitEvent.getNameValueMap().get("oacommand");
-        if (ids != null && ids.length == 1) {
-            String id = ids[0];
-            if (id.startsWith(getId()+"_")) {
-                int dcnt = OAStr.dcount(id, "_");
-                int row = OAConv.toInt(OAStr.field(id, "_", dcnt-1));
-                int col = OAConv.toInt(OAStr.field(id, "_", dcnt));
-  
-                hub.setPos(row);
-            }
-        }        
+        if (submitRow >=0 && submitRow >= 0 && OAStr.isNotEmpty(submitKeys)) {
+            if (submitKeys.indexOf(OAForm.Key_UP) >= 0) submitRow--;
+            else if (submitKeys.indexOf(OAForm.Key_DOWN) >= 0) submitRow++;
+            else if (submitKeys.indexOf(OAForm.Key_LEFT) >= 0) submitCol--;
+            else if (submitKeys.indexOf(OAForm.Key_RIGHT) >= 0) submitCol++;
+        }
+        hub.setPos(submitRow);
     }
     
     @Override
@@ -164,12 +177,100 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         if (js != null) sb.append(js);
         
         if (getAjaxSubmit()) {
-            
-            // $("table").on("click", "tr td", function() {
 
-            sb.append("$('#" + getId() + "').on('click', 'tr td', function() {\n");
+            // mouse click event
+            sb.append("$('#" + getId() + "').on('click', 'tr td', function(event) {\n");
             
-            //was:  sb.append("$('#" + getId() + " TR TD').click(function() {\n");
+            // check if TR is the selected row  
+            sb.append("  if ($(this).parent().hasClass('oatableSelected')) {"); 
+            sb.append("      if (!event.shiftKey && !event.ctrlKey) return false;");  
+            sb.append("  }");  
+
+            sb.append("  $('#oacommand').val($(this).attr('id'));\n");
+            
+            sb.append("  var keys = 'KEYS=';\n"); 
+            sb.append("  if (event.shiftKey) keys += '[SHIFT]';\n"); 
+            sb.append("  if (event.ctrlKey) keys += '[CTRL]';\n"); 
+            sb.append("  if (event.ctrlKey) keys += '[ALT]';\n"); 
+            sb.append("  $('#oaparam').val(keys);\n");
+            
+            sb.append("  ajaxSubmit();\n");
+            sb.append("  $('#oacommand').val('');\n");
+            sb.append("  $('#oaparam').val('');\n");
+            sb.append("  return false;\n");
+            sb.append("});\n");
+            
+//qqqqqqqqqqqqqqqqqqqqqqqqq NAV keys            
+            
+            // add nav keys event
+            sb.append("$('#" + getId() + "').on('keydown', 'tr td', function(event) {\n");
+
+            sb.append("  var ss = $(this).attr('id').split('_');\n");
+            sb.append("  if (ss == undefined) return true;\n");
+            sb.append("  var row = ss[ss.length -2];\n");
+            sb.append("  var col = ss[ss.length -1];\n");
+            
+            
+            sb.append("  if (!$(this).parent().hasClass('oatableSelected')) return false;\n"); 
+            sb.append("  var keys = 'KEYS=';\n"); 
+            sb.append("  if (event.shiftKey) keys += '["+OAForm.Key_Shift+"]';\n"); 
+            sb.append("  if (event.ctrlKey) keys += '["+OAForm.Key_CTRL+"]';\n");
+            sb.append("  if (event.altKey) keys += '["+OAForm.Key_ALT+"]';\n");
+
+            
+            
+            sb.append("  var bEnd = true;\n");
+            sb.append("  var bBeg = true;\n");
+            sb.append("  if (event.target.tagName === 'INPUT' && event.target.type === 'text') {;\n");
+            sb.append("    bBeg = (event.target.selectionEnd == 0 || event.target.selectionStart == 0);\n");
+            sb.append("    bEnd = (event.target.selectionEnd >= event.target.value.length || event.target.selectionStart >= event.target.value.length);\n");
+            sb.append("  }\n");
+            
+            sb.append("  switch (event.which) {\n");
+            sb.append("  case 38: keys += '[UP]';\n");
+            sb.append("    if (row == 0) return false;\n");
+            sb.append("    break\n");
+            sb.append("  case 33: keys += '[PGUP]';\n");
+            sb.append("    if (row == 0) return false;\n");
+            sb.append("    break;\n");
+            sb.append("  case 40: keys += '[DOWN]';\n");
+            sb.append("    if (row+1 == "+hub.getSize()+") return false;\n");
+            sb.append("    break;\n");
+            sb.append("  case 34: keys += '[PGDN]';\n");
+            sb.append("    if (row+1 == "+hub.getSize()+") return false;\n");
+            sb.append("    break;\n");
+            sb.append("  case 39: keys += '[RIGHT]';\n");
+            sb.append("    if (col == "+alColumn.size()+") return true;\n");
+            sb.append("    if (!bEnd) return true;\n");
+            sb.append("    break;\n");
+            sb.append("  case 35: keys += '[END]';\n");
+            sb.append("    if (col == "+alColumn.size()+") return true;\n");
+            sb.append("    if (!bEnd) return true;\n");
+            sb.append("    break;\n");
+            sb.append("  case 36: keys += '[HOME]';\n");
+            sb.append("    if (col == 0) return false;\n");
+            sb.append("    if (!bBeg) return true;\n");
+            sb.append("    break;\n");
+            sb.append("  case 37: keys += '[LEFT]';\n");
+            sb.append("    if (col == 0) return false;\n");
+            sb.append("    if (!bBeg) return true;\n");
+            sb.append("    break;\n");
+
+            sb.append("  default:\n");
+            sb.append("    if (!event.target.hasAttribute('id')) return false;\n");
+            sb.append("    return true;\n");
+            sb.append("  }  \n");
+
+            /*
+            sb.append("  case 27: keys += '[ESC]';break;\n");
+            sb.append("  case 8: keys += '[BACK]';break;\n");
+            sb.append("  case 45: keys += '[INS]';break;\n");
+            sb.append("  case 46: keys += '[DEL]';break;\n");
+            
+            sb.append("  default: keys += String.fromCharCode(event.which);break;\n");
+            */
+
+            sb.append("  $('#oaparam').val(keys);\n");
             sb.append("  $('#oacommand').val($(this).attr('id'));\n");
             sb.append("  ajaxSubmit();\n");
             sb.append("  $('#oacommand').val('');\n");
@@ -177,7 +278,6 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             sb.append("  return false;\n");
             sb.append("});\n");
         }
-        
         return sb.toString();
     }
     
@@ -207,8 +307,39 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
                 
                 HtmlTD td = new HtmlTD(getId() + "_" + r + "_" + c);
                 String s;
+                
+//qqqqqqqqqqqqqqqqqqqqqqqqqqq
+/*               
+ 
+dont use height qqqqqqq
+
+ td {border: 1px solid black;height: 50px;padding: 5px;position: relative;}
+
+    input[type="text"] {
+      width: 100%; height: 100%;border: none;box-sizing: border-box;padding: 5px;position: absolute;top: 0;left: 0;
+    }                
+                
+*/     
+                
+/*                
+//qqqqqqq ctrl+mouseclick needs to unset selected line AO
+  
+table commands
+keys:  up, down, left, right, pgUp, pgDown, home, end
+
+shift+control
+mouse click                
+                
+*/                
+                
                 if (r == hub.getPos()) {
+                    if (column.comp instanceof HtmlElement) {
+                        ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
+                    }
                     s = column.comp.getTableCellEditor(r);
+                    if (r == submitRow && c == submitCol && (column.comp instanceof HtmlFormElement)) {
+                        ((HtmlFormElement) column.comp).setFocus();
+                    }
                 }
                 else s = column.comp.getTableCellRenderer(r);
                 if (s == null) s = "";
@@ -217,7 +348,32 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
                 tr.addTableData(td);
             }
         }
+        submitRow = submitCol = -1;
         
+        
+//qqqqqqqqq if click on AO row, then dont call ajax        
+// qqqqqqqq if there is no AO row, then need to do what?? qqqqqqqqqqqqqqqqqqqqqq
+// qqqq selecting row needs to set focus on cell clicked and select all text        
+        
+        
+        if (hub.getPos() < 0) {
+            
+            HtmlTR tr = new HtmlTR();
+            // tr.setVisible(false);
+            tr.setHidden(true);
+            addTBodyRow(tr);
+            
+            for (Column column : alColumn) {
+                HtmlTD td = new HtmlTD();
+                String s = column.comp.getTableCellEditor(-1);
+                td.setInnerHtml(s);
+                tr.addTableData(td);
+                if (column.comp instanceof HtmlElement) {
+                    ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then readded to the page/dom.
+                }
+            }            
+        }
+
         super.beforeGetScript();
     }
 

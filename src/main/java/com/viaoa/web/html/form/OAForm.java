@@ -458,6 +458,12 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "  }", --indent);
 
         
+        
+        
+        
+        
+        
+        
         // ======== JQuery document ready 
         
         p(sb, "$(document).ready(function() {", indent);
@@ -728,6 +734,9 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "  return true;", indent);
         p(sb, "}", --indent); // end function oaSubmit(..)
 
+        
+        
+        
         p(sb, "var cntAjaxSubmit = 0;", indent);
         p(sb, "function ajaxSubmit(cmdName) {", indent);
         p(sb, "  cntAjaxSubmit++;", ++indent);
@@ -763,8 +772,6 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "    async: bUseAsync", indent);
         p(sb, "  };", --indent);
         
-        p(sb, "  $.ajax(objAjax).done(f1).fail(f2);", indent);
-        
         /*was:
         p(sb, "  var args = $('#"+id+"').serialize();", indent);
         p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
@@ -780,7 +787,11 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "  });", --indent);
         */
         
+        p(sb, "  $.ajax(objAjax).done(f1).fail(f2);", indent);
         p(sb, "}", --indent);
+
+        
+        
 
         p(sb, "function ajaxSubmit2(cmdName) {", indent);
         p(sb, "  var args = $('#"+id+"').serialize();", ++indent);
@@ -1377,12 +1388,6 @@ public class OAForm extends OABase implements Serializable {
         catch (Exception e) {
             LOG.log(Level.WARNING, "error setting browser info, jsDate="+jsDate+", jsTzRawOffset="+jsTzRawOffset+", jsDateSupportsDST="+jsDateSupportsDST, e);
         }
-        
-
-//qqqqqqqqq have OAHtmlTable use command=table.Id, and subcommand=TD.id  qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq        
-        
-//qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq NEEDS To be recursive qqqqqqqqqqqqq but using HtmlElements            
-//            comp
         
         
         // set the component that submitted (if any)

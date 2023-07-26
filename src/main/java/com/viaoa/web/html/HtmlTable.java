@@ -129,19 +129,17 @@ public class HtmlTable extends HtmlElement {
             }
             sb.append("</tbody>\n");
         }
-        String htmlTable = sb.toString();
+        String html = sb.toString();
 
-        if (!bIsInitializing && htmlTable.equals(prevAjaxScript)) return null;
-        prevAjaxScript = htmlTable;
+        if (!bIsInitializing && html.equals(prevAjaxScript)) return null;
+        prevAjaxScript = html;
 
-        htmlTable = OAWebUtil.createEmbeddedHtmlString(htmlTable, '\"');
+        html = OAWebUtil.createEmbeddedHtmlString(html, '\"');
         
         sb = new StringBuilder();
         sb.append("$('#"+getId()+"').html(`");
-        //was: sb.append("$('#"+getId()+"').html(\"`");
-        sb.append(htmlTable);
+        sb.append(html);
         sb.append("`);\n");
-        //was: sb.append("\");\n");
         
         String js = sb.toString();
         

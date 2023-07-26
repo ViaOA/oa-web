@@ -85,6 +85,9 @@ public class HtmlTD extends HtmlElement {
             sb.append("'");
         }
 
+        int tabIndex = getTabIndex();
+        if (tabIndex > -2) sb.append(" tabindex="+tabIndex);;
+        
         int x = getRowSpan();
         if (x > 0) sb.append(" rowspan="+x);
 

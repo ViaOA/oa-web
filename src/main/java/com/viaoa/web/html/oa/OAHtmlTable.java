@@ -102,6 +102,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
     }
     
     public void addCounterColumn(HtmlCol htmlCol, HtmlTH htmlTh) {
+        
         OAHtmlTableComponentInterface comp = new OAHtmlTableComponentInterface() {
             @Override
             public String getTableCellRenderer(int row) {
@@ -110,8 +111,12 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
                 return s;
             }
             @Override
-            public String getTableCellEditor(int row) {
-                return getTableCellRenderer(row);
+            public String getTableCellEditor(int row, boolean bHasFocus) {
+                //String s = "<input type=text value='"+(row+1)+"' onkeypress='(event) {event.preventDefault(); return false;}'";
+                // if (bHasFocus) s += " autofocus";
+                //s += ">";
+                String s = getTableCellRenderer(row);
+                return s;
             }
         };
         addColumn(htmlCol, htmlTh, comp);
@@ -168,6 +173,9 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         hub.setPos(submitRow);
     }
     
+    
+    
+    
     @Override
     protected String getInitializeScript() {
         addClass("oatable");
@@ -177,7 +185,105 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         if (js != null) sb.append(js);
         
         if (getAjaxSubmit()) {
+            sb.append("$('#"+getId()+"').on('focus', 'tbody tr td', function(event) {\n");
+            sb.append("  if ($(this).parent().hasClass('oatableSelected')) return true;\n");
+            sb.append("  $('#oacommand').val($(this).attr('id'));\n");
+            sb.append("  ajaxSubmit();\n");
+            sb.append("  return true;\n");
+            sb.append("});\n");
+        }
+            
+        // add nav keys event
+        sb.append("$('#" + getId() + "').on('keydown', 'tr td', function(event) {\n");
 
+        sb.append("  var ss = $(this).attr('id').split('_');\n");
+        sb.append("  if (ss == undefined) return true;\n");
+        sb.append("  var row = ss[ss.length -2];\n");
+        sb.append("  var col = ss[ss.length -1];\n");
+        sb.append("  const totalRows = event.delegateTarget.tBodies[0].rows.length;\n");
+        sb.append("  const totalCols = event.delegateTarget.tBodies[0].rows[0].cells.length;\n");
+        
+        sb.append("  var keys = '';\n");
+        sb.append("  if (event.shiftKey) keys += '[SHIFT]';\n");
+        sb.append("  if (event.ctrlKey) keys += '[CTRL]';\n");
+        sb.append("  if (event.altKey) keys += '[ALT]';\n");
+        sb.append("  if (keys.length > 0) {\n");
+        sb.append("    keys = 'KEYS='+keys;\n");
+        sb.append("  }\n");
+        sb.append("  var bEnd = true;\n");
+        sb.append("  var bBeg = true;\n");
+        sb.append("  if (event.target.tagName === 'INPUT' && event.target.type === 'text') {\n");
+        sb.append("    var p1 = event.target.selectionStart;\n");
+        sb.append("    var p2 = event.target.selectionEnd;\n");
+        sb.append("    if (p2 < p1) {\n");
+        sb.append("      var p3 = p1;\n");
+        sb.append("      p1 = p2;\n");
+        sb.append("      p2 = p3;\n");
+        sb.append("    }\n");
+        sb.append("    bBeg = p1 == 0 && p2 == 0;\n");
+        sb.append("    bEnd = p2 == event.target.value.length && p1 == p2;\n");
+        sb.append("  }\n");
+
+        sb.append("  switch (event.which) {\n");
+        sb.append("  case 38: keys += '[UP]';\n");
+        sb.append("    if (row == 0) return false;\n");
+        sb.append("    row--;\n");
+        sb.append("    break\n");
+        sb.append("  case 33: keys += '[PGUP]';\n");
+        sb.append("    if (row == 0) return false;\n");
+        sb.append("    row=0;\n");
+        sb.append("    break;\n");
+        sb.append("  case 40: keys += '[DOWN]';\n");
+        sb.append("    if (row+1 == totalRows) return false;\n");
+        sb.append("    row++;\n");
+        sb.append("    break;\n");
+        sb.append("  case 34: keys += '[PGDN]';\n");
+        sb.append("    if (row+1 == totalRows) return false;\n");
+        sb.append("    row = totalRows-1;\n");
+        sb.append("    break;\n");
+        sb.append("  case 39: keys += '[RIGHT]';\n");
+        sb.append("    if (col+1 == totalCols) return true;\n");
+        sb.append("    if (!bEnd) return true;\n");
+        sb.append("    col++;\n");
+        sb.append("    break;\n");
+        sb.append("  case 35: keys += '[END]';\n");
+        sb.append("    if (col+1 == totalCols) return true;\n");
+        sb.append("    if (!bEnd) return true;\n");
+        sb.append("    col = totalCols-1;\n");
+        sb.append("    break;\n");
+        sb.append("  case 36: keys += '[HOME]';\n");
+        sb.append("    if (col == 0) return false;\n");
+        sb.append("    if (!bBeg) return true;\n");
+        sb.append("    col = 0;\n");
+        sb.append("    break;\n");
+        sb.append("  case 37: keys += '[LEFT]';\n");
+        sb.append("    if (col == 0) return false;\n");
+        sb.append("    if (!bBeg) return true;\n");
+        sb.append("    col--;\n");
+        sb.append("    break;\n");
+        sb.append("  default:\n");
+        sb.append("    return true;\n");
+        sb.append("  }  \n");
+
+        /*
+        sb.append("  case 27: keys += '[ESC]';break;\n");
+        sb.append("  case 8: keys += '[BACK]';break;\n");
+        sb.append("  case 45: keys += '[INS]';break;\n");
+        sb.append("  case 46: keys += '[DEL]';break;\n");
+        
+        sb.append("  default: keys += String.fromCharCode(event.which);break;\n");
+        */
+
+        sb.append("  $('#"+getId()+"_'+row+'_'+col).focus();\n");
+        sb.append("  return false;\n");
+        sb.append("});\n");
+
+        
+        
+        
+        
+        //qqqqqqqqqqqqqqqq OLD
+        if (false && getAjaxSubmit()) { 
             // mouse click event
             sb.append("$('#" + getId() + "').on('click', 'tr td', function(event) {\n");
             
@@ -200,8 +306,6 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             sb.append("  return false;\n");
             sb.append("});\n");
             
-//qqqqqqqqqqqqqqqqqqqqqqqqq NAV keys            
-            
             // add nav keys event
             sb.append("$('#" + getId() + "').on('keydown', 'tr td', function(event) {\n");
 
@@ -213,12 +317,10 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             
             sb.append("  if (!$(this).parent().hasClass('oatableSelected')) return false;\n"); 
             sb.append("  var keys = 'KEYS=';\n"); 
-            sb.append("  if (event.shiftKey) keys += '["+OAForm.Key_Shift+"]';\n"); 
-            sb.append("  if (event.ctrlKey) keys += '["+OAForm.Key_CTRL+"]';\n");
-            sb.append("  if (event.altKey) keys += '["+OAForm.Key_ALT+"]';\n");
+            sb.append("  if (event.shiftKey) keys += '"+OAForm.Key_Shift+"';\n"); 
+            sb.append("  if (event.ctrlKey) keys += '"+OAForm.Key_CTRL+"';\n");
+            sb.append("  if (event.altKey) keys += '"+OAForm.Key_ALT+"';\n");
 
-            
-            
             sb.append("  var bEnd = true;\n");
             sb.append("  var bBeg = true;\n");
             sb.append("  if (event.target.tagName === 'INPUT' && event.target.type === 'text') {;\n");
@@ -278,6 +380,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             sb.append("  return false;\n");
             sb.append("});\n");
         }
+        
         return sb.toString();
     }
     
@@ -293,8 +396,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         int row = 0;
         for (Object obj : hub) {
             final int r = row++;
-            HtmlTR tr = new HtmlTR();
-            //was: HtmlTR tr = new HtmlTR(getId()+"_row_"+r);
+            HtmlTR tr = new HtmlTR(getId()+"_"+r);
             addTBodyRow(tr);
 
             if (r == hub.getPos()) {
@@ -306,6 +408,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
                 final int c = col++;
                 
                 HtmlTD td = new HtmlTD(getId() + "_" + r + "_" + c);
+                td.setTabIndex(0);
                 String s;
                 
 //qqqqqqqqqqqqqqqqqqqqqqqqqqq
@@ -336,7 +439,7 @@ mouse click
                     if (column.comp instanceof HtmlElement) {
                         ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
                     }
-                    s = column.comp.getTableCellEditor(r);
+                    s = column.comp.getTableCellEditor(r, (r == submitRow && c == submitCol));
                     if (r == submitRow && c == submitCol && (column.comp instanceof HtmlFormElement)) {
                         ((HtmlFormElement) column.comp).setFocus();
                     }
@@ -348,7 +451,6 @@ mouse click
                 tr.addTableData(td);
             }
         }
-        submitRow = submitCol = -1;
         
         
 //qqqqqqqqq if click on AO row, then dont call ajax        
@@ -365,7 +467,7 @@ mouse click
             
             for (Column column : alColumn) {
                 HtmlTD td = new HtmlTD();
-                String s = column.comp.getTableCellEditor(-1);
+                String s = column.comp.getTableCellEditor(-1, false);
                 td.setInnerHtml(s);
                 tr.addTableData(td);
                 if (column.comp instanceof HtmlElement) {
@@ -385,8 +487,18 @@ mouse click
         String js = super.getAjaxScript(bIsInitializing);
         if (js != null) sb.append(js);
 
-        sb.append("$('table#"+ getId() +" tbody tr:even').each(function(i) { if (!$(this).hasClass('oatableDisable') && !$(this).hasClass('oatableSelected')) $(this).addClass('oatableEven');});");
-        sb.append("$('table#"+ getId() +" tbody tr:odd').each(function(i) { if (!$(this).hasClass('oatableDisable') && !$(this).hasClass('oatableSelected')) $(this).addClass('oatableOdd');});");
+        //qqqqqqqqqqqqqqqqqqqqqq update rows only ..... dont redo full table ??
+//        $("#table tbody tr:eq(0) td:eq(0)").html("TEXTXXX");        
+        
+        sb.append("$('table#"+ getId() +" tbody tr:even').each(function(i) { if (!$(this).hasClass('oatableDisable') && !$(this).hasClass('oatableSelected')) $(this).addClass('oatableEven');});\n");
+        sb.append("$('table#"+ getId() +" tbody tr:odd').each(function(i) { if (!$(this).hasClass('oatableDisable') && !$(this).hasClass('oatableSelected')) $(this).addClass('oatableOdd');});\n");
+        
+//qqqqqqqqqqqqqqqq        
+        if (submitRow >= 0 && submitCol >= 0) {
+            sb.append("$('#"+ getId() +"_" + submitRow + "_"+ submitCol + ").focus();\n");
+        }
+        submitRow = submitCol = -1;
+
         
         return sb.toString();
     }

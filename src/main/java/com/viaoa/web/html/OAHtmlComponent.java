@@ -260,7 +260,7 @@ public class OAHtmlComponent {
     private List<HtmlOption> alOptions;  // list of options for a select
     
     protected char chAccessKey;  // hot-key
-    protected int tabIndex;
+    protected int tabIndex = -2;  // valid values are >= -1
     protected boolean bUseTabIndex;  // flag to know if tabIndex is used. Auto set to true if tabIndex is set.
 
     protected String href;
@@ -1219,7 +1219,7 @@ public class OAHtmlComponent {
             EventType et = fet.getDefaultEventType();
             if (et != null) name = et.getDisplay();
         }
-        if (OAStr.isEmpty(name)) name = EventType.OnClick.getDisplay();
+        // if (OAStr.isEmpty(name)) name = EventType.OnClick.getDisplay();
         return name;
     }
     
@@ -2060,6 +2060,7 @@ public class OAHtmlComponent {
     /**
      * Starts at zero. 
      * Set to -1 to not be including in tabbing.
+     * Note: detfault is -2 (not used/needed)
      * @see #setUsesTabIndex(boolean) to turn on or off.
      */
     public int getTabIndex() {

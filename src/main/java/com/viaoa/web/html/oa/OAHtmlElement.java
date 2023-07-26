@@ -96,13 +96,21 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         return s;
     }
     @Override
-    public String getTableCellEditor(int row) {
+    public String getTableCellEditor(int row, boolean bHasFocus) {
         String s = getTableCellRenderer(row);
         if (s == null) s = "";
+        
+        if (s != null) return s; //qqqqqqqqq
+        
+//qqqqqqqqqq remove this, dont need to "fake" an input        
         //was: s = "<span contenteditable>"+s+"</span>";
         
         //onkeypress="handleKeypress(event)"
-        s = "<input type=text value='"+s+"' onkeypress='(event) {event.preventDefault(); return false;}'>";
+        s = "<input type=text value='"+s+"' onkeypress='(event) {event.preventDefault(); return false;}'";
+        
+        // if (bHasFocus) s += " autofocus";
+        s += ">";
+        
         
         return s;
     }

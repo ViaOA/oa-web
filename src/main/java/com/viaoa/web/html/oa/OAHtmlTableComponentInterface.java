@@ -1,8 +1,8 @@
 package com.viaoa.web.html.oa;
 
-import com.viaoa.hub.Hub;
+import com.viaoa.web.html.HtmlTD;
 
 public interface OAHtmlTableComponentInterface {
-    public String getTableCellEditor(int row, boolean hasFocus);
-    public String getTableCellRenderer(int row);
+    public String getTableCellEditor(HtmlTD td, int row, boolean hasFocus);
+    public String getTableCellRenderer(HtmlTD td, int row);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAStr;
 import com.viaoa.web.util.OAWebUtil;
 
 /*
@@ -30,11 +31,16 @@ limited selection of CSS properties
 /**
  * Control and Html colgroup Col element.
  * <p>
+ * This needs to have style "table-layout: fixed;" in table.
+ * <p>
  * Notes:<br>
  * 
  * Styles are limited to: width, visibility, background, border
  * <br>
  * hide column using the visibility: collapse
+ * 
+ * 
+ * 
  * 
  * @author vince
  */
@@ -61,18 +67,32 @@ public class HtmlCol extends HtmlElement {
         final StringBuilder sb = new StringBuilder();
         sb.append("<col");
 
+        boolean b = false;
         List<String> al = getStyles();
         if (al != null && al.size() > 0) {
             sb.append(" style='");
+            b = true;
             for (String s : al) {
                 sb.append(s + ": " + OAWebUtil.createJsString(getStyle(s), '\'') + ";");
             }
-            sb.append("'");
         }
-        int x = OAConv.toInt(getWidth());
-        if (x > 0) sb.append(" width="+x);
 
-        x = getSpan();
+        if (OAStr.isNotEmpty(getWidth())) {
+            if (!b) sb.append(" style='");
+            sb.append("width:"+getWidth()+";");
+            b = true;
+        }
+
+        
+        if (!getVisible()) {
+            if (!b) sb.append(" style='");
+            b = true;
+            sb.append("visibility:collapse;");
+        }
+        if (b) sb.append("'");
+        
+        
+        int x = getSpan();
         if (x > 0) sb.append(" span="+x);
         
         sb.append(">");

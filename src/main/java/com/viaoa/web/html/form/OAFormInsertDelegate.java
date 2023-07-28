@@ -30,7 +30,7 @@ public class OAFormInsertDelegate {
     public static final String CSS_bootstrap_select = "bootstrap-select";
     public static final String CSS_bootstrap_ladda = "bootstrap-ladda";
     public static final String CSS_summernote = "summernote";
-    public static final String CSS_oajsp = "oajsp";
+    public static final String CSS_oaweb= "oaweb";
     public static final String CSS_croppie = "croppie";
 
     /**
@@ -59,7 +59,7 @@ public class OAFormInsertDelegate {
         registerRequiredCssName(CSS_bootstrap_select, "vendor/bootstrap-select/css/bootstrap-select.css");
         registerRequiredCssName(CSS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda-themeless.css");
         registerRequiredCssName(CSS_summernote, "vendor/summernote/summernote.css");
-        registerRequiredCssName(CSS_oajsp, "vendor/viaoa/oajsp.css");
+        registerRequiredCssName(CSS_oaweb, "vendor/viaoa/oaweb.css");
         registerRequiredCssName(CSS_croppie, "vendor/Croppie-2.6.2/croppie.css");
     }
     

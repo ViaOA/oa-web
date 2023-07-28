@@ -162,20 +162,8 @@ public class BsDateTime extends InputText {
             sb.append("if ($().bsdatetimepicker) {\n");
             sb.append("  $('#" + getId() + "').bsdatetimepicker({");
             sb.append("format: '" + OAJspUtil.createJsString((dfmtBS + " " + tfmtBS), '\'') + "'");
+
             sb.append(", sideBySide: true, showTodayButton: true, showClear: true, showClose: true});\n");
-            
-/*qqqqqq this code uses the JQuery datetimepicker            
-            sb.append("else {\n");
-            sb.append("$('#" + getId() + "').datetimepicker({ ");
-            sb.append("dateFormat: '" + OAJspUtil.createJsString(dfmtJquery, '\'') + "'");
-            sb.append(", timeFormat: '" + OAJspUtil.createJsString(tfmtJquery, '\'') + "'");
-            if (tfmtJquery != null && tfmtJquery.toLowerCase().indexOf('z') >= 0) {
-                // sb.append(", timezoneList: [{label: 'EDT', value: '-240'}, {label: 'other', value: '-480'}]");
-            }
-            sb.append(" });\n");
-*/          
-            
-            
             sb.append("}\n");
         }
         else if (OAStr.isNotEmpty(dfmtJquery)) {
@@ -184,13 +172,6 @@ public class BsDateTime extends InputText {
             sb.append("format: '" + OAJspUtil.createJsString(dfmtBS, '\'') + "'");
             sb.append(", showTodayButton: true, showClear: true, showClose: true});\n");
             sb.append("}\n");
-            
-/*qqqqqq this code uses the JQuery datetimepicker            
-            sb.append("else {\n");
-            sb.append("$('#" + getId() + "').datepicker({ dateFormat: '" + dfmtJquery + "'");
-            sb.append("});\n");
-            sb.append("}\n");
-*/            
         }
         else if (OAStr.isNotEmpty(tfmtJquery)) {
             sb.append("if ($().bsdatetimepicker) {\n");
@@ -198,13 +179,6 @@ public class BsDateTime extends InputText {
             sb.append("format: '" + OAJspUtil.createJsString(tfmtBS, '\'') + "'");
             sb.append(", showClear: true, showClose: true});\n");
             sb.append("}\n");
-            
-/*qqqqqq this code uses the JQuery datetimepicker            
-            sb.append("else {\n");
-            sb.append("  $('#" + getId() + "').timepicker({ timeFormat: '" + OAJspUtil.createJsString(tfmtJquery, '\'') + "'");
-            sb.append("});\n");
-            sb.append("}");
-*/            
         }
 
         return sb.toString();

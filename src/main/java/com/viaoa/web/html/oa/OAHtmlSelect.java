@@ -11,6 +11,9 @@ import com.viaoa.web.html.HtmlSelect;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
+
+//qqqqqqqqqqq need to add support for recursiveLinks
+
 /**
  * HtmlSelect to work with OAModel. Has option for creating multi select.
  * <p>
@@ -18,10 +21,9 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * hubSelect is used for multiselect.<br>
  * setDisplay rows to change to/from dropdown (<2) or scrollinglist (> 1)
  * 
- *  
  * @author vince
  */
-public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHtmlComponentInterface {
+public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUISelectController oaUiControl;
     private String propName;
     private String format;
@@ -150,6 +152,12 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
         setVisible(b);
         
         clearOptions();
+        for (HtmlOption ho : getOptions(getHub().getAO())) add(ho);
+    }
+    
+    //qqqqqq add recursive support
+    protected List<HtmlOption> getOptions(final OAObject objSelected) {
+        final List<HtmlOption> alOption = new ArrayList<>();
         
         if (hubSelect != null) {
             setMultiple(true);
@@ -163,7 +171,7 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
                 else {
                     ho = new HtmlOption(obj.toString(), obj.toString(), getSelectHub().contains(obj));
                 }
-                add(ho);
+                alOption.add(ho);
             }
         }
         else {
@@ -172,20 +180,21 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
                 if (obj instanceof OAObject) {
                     String label = ((OAObject) obj).getPropertyAsString(propName, format);
                     if (OAStr.isEmpty(label)) label = " "; // otherwise it will default to displaying value.
-                    ho = new HtmlOption(""+ ((OAObject) obj).getGuid(), label, (getHub().getAO() == obj));
+                    ho = new HtmlOption(""+ ((OAObject) obj).getGuid(), label, (objSelected == obj));
                 }
                 else {
-                    ho = new HtmlOption(obj.toString(), obj.toString(), (getHub().getAO() == obj));
+                    ho = new HtmlOption(obj.toString(), obj.toString(), (objSelected == obj));
                 }
-                add(ho);
+                alOption.add(ho);
             }
             String s = getNullDescription(); 
             if (s != null) {
                 if (s.length() == 0) s = " "; 
-                HtmlOption ho = new HtmlOption("oanull", s, getHub().getAO() == null && getDisplayRows() < 2);
-                add(ho);
+                HtmlOption ho = new HtmlOption("oanull", s, objSelected == null && getDisplayRows() < 2);
+                alOption.add(ho);
             }
         }   
+        return alOption;
     }
     
     public String getNullDescription() {
@@ -193,6 +202,49 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
     }
     public void setNullDescription(String s) {
         this.nullDescription = s;
+    }
+
+    @Override
+    public String getTableCellRenderer(int row) {
+        if (row < 0) return "";
+        if (oaUiControl.getLinkToHub() == null) return "";
+        OAObject objLinkTo = (OAObject) oaUiControl.getLinkToHub().get(row);
+        if (objLinkTo == null) return "";
+
+        String s;
+        if (!oaUiControl.isVisible(objLinkTo)) s = "";
+        else {
+            Object objx = objLinkTo.getProperty(oaUiControl.getLinkPropertyName());
+            if (!(objx instanceof OAObject)) return "";
+            s = ((OAObject) objx).getPropertyAsString(propName, format);
+            if (s == null) s = "";
+            td.addClass("oaNoTextOverflow");
+        }
+        return s;
+    }
+
+    @Override
+    public String getTableCellEditor(int row, boolean bHasFocus) {
+
+//qqqqqq do same for txt
+        
+        boolean bVisible = true;
+        if (oaUiControl.getLinkToHub() == null) bVisible = false;
+        else {
+            OAObject objLinkTo = (OAObject) oaUiControl.getLinkToHub().get(row);
+            if (objLinkTo == null) {
+                bVisible = false;
+            }
+            else bVisible = oaUiControl.isVisible(objLinkTo); 
+        }
+        
+        String s = "<select id='"+getId()+"' name='"+getId()+"'";
+        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
+        if (!bVisible) s += "visibility: hidden;"; 
+        s += "'>";
+        // note: options will be added oahtmlcomponent
+        s += "</select>";
+        return s;
     }
     
 }

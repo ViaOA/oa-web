@@ -91,27 +91,16 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         else {
             boolean b = obj.isVisible(getPropertyName());
             if (!b) s = "";
-            else s = obj.getPropertyAsString(getPropertyName(), getFormat());
+            else {
+                s = obj.getPropertyAsString(getPropertyName(), getFormat());
+                td.addClass("oaNoTextOverflow");
+            }
         }
         return s;
     }
     @Override
     public String getTableCellEditor(int row, boolean bHasFocus) {
         String s = getTableCellRenderer(row);
-        if (s == null) s = "";
-        
-        if (s != null) return s; //qqqqqqqqq
-        
-//qqqqqqqqqq remove this, dont need to "fake" an input        
-        //was: s = "<span contenteditable>"+s+"</span>";
-        
-        //onkeypress="handleKeypress(event)"
-        s = "<input type=text value='"+s+"' onkeypress='(event) {event.preventDefault(); return false;}'";
-        
-        // if (bHasFocus) s += " autofocus";
-        s += ">";
-        
-        
         return s;
     }
 }

@@ -2,20 +2,17 @@ package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
-import com.viaoa.template.OATemplate;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.*;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.*;
-import com.viaoa.web.util.OAWebUtil;
-
 
 /**
  * Binds InputDateTime to a Hub + propertyName
  *
  */
-public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInterface {
+public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
 
     private final OAUIPropertyController oaUiControl;
 
@@ -87,4 +84,35 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
         String val = oaUiControl.getValueAsString();
         setValue(val);
     }
+
+
+
+
+    @Override
+    public String getTableCellRenderer(int row) {
+        OAObject obj = (OAObject) getHub().get(row);
+
+        String s;
+        if (obj == null) s = "";
+        else {
+            boolean b = obj.isVisible(getPropertyName());
+            if (!b) s = "";
+            else {
+                s = obj.getPropertyAsString(getPropertyName(), getFormat());
+                td.addClass("oaNoTextOverflow");
+            }
+        }
+        return s;
+    }
+    @Override
+    public String getTableCellEditor(int row, boolean bHasFocus) {
+        String s = "<input id='"+getId()+"'";
+        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
+        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
+        
+        s += "'>";
+        // note: other settings will be added oahtmlcomponent
+        return s;
+    }
+
 }

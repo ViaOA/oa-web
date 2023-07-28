@@ -89,8 +89,10 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         if (getConversion() == 0) {
             OAObjectInfo oi = getHub().getOAObjectInfo();
             OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
-            if (pi.isUpper()) oaUiControl.setConversion('U');
-            else if (pi.isLower()) oaUiControl.setConversion('L');
+            if (pi != null) {
+                if (pi.isUpper()) oaUiControl.setConversion('U');
+                else if (pi.isLower()) oaUiControl.setConversion('L');
+            }
         }
         
         
@@ -119,15 +121,22 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         else {
             boolean b = obj.isVisible(getPropertyName());
             if (!b) s = "";
-            else s = obj.getPropertyAsString(getPropertyName(), getFormat());
+            else {
+                s = obj.getPropertyAsString(getPropertyName(), getFormat());
+                if (s == null) s = "";
+                else td.addClass("oaNoTextOverflow");
+            }
         }
         return s;
     }
     @Override
     public String getTableCellEditor(int row, boolean bHasFocus) {
-        String s = "<input type='text' id='"+getId()+"' name='"+getId()+"'";
-        // if (bHasFocus) s += " autofocus";
-        s += ">";
+        String s = "<input type='text' id='"+getId()+"'";
+        s += " class='oaFitColumnSize'";
+        //was: s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
+        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
+        s += "'>";
+        // note: other settings will be added oahtmlcomponent
         return s;
     }
 }

@@ -42,7 +42,6 @@ import com.viaoa.web.util.OAWebUtil;
 
 /**
  * Html Table element.
- * <p>
  */
 public class HtmlTable extends HtmlElement {
     private HtmlColGroup colGroup;
@@ -99,12 +98,22 @@ public class HtmlTable extends HtmlElement {
     @Override
     protected String getAjaxScript(boolean bIsInitializing) {
     
+        //qqqqqqqqqqqqqqqqq create a version that updates existing TRs, TDs        
+        // add isChanged=true to TR, TD classes
+        //      $("#table tbody tr:eq(0) td:eq(0)").html("TEXTXXX");        
+        
+        
         StringBuilder sb = new StringBuilder();
 
         HtmlColGroup colGroup = getColGroup();
         if (colGroup != null) {
             sb.append(colGroup.createHtml());
         }
+        
+        
+//qqqqqqqqqqqq
+//    <col style="width: calc(600px - 90px);">
+
         
         if (getTHeadRows().size() > 0) {
             sb.append("<thead>");
@@ -148,10 +157,6 @@ public class HtmlTable extends HtmlElement {
     
     
     
-    
-    
-    
-    
     private static Set<String> hsSupported = new HashSet();  // lowercase
     static {
         hsSupported.add("enabled"); 
@@ -160,5 +165,4 @@ public class HtmlTable extends HtmlElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
-
 }

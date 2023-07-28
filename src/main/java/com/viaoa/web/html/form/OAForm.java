@@ -383,7 +383,7 @@ public class OAForm extends OABase implements Serializable {
             sb.append(s);
         }
         
-        // ======== end JQuery document ready 
+        // end JQuery document ready 
         p(sb, "});", 0); 
         
         p(sb, "</script>", 0);
@@ -420,8 +420,6 @@ public class OAForm extends OABase implements Serializable {
     protected void getInitializeScript(StringBuilder sb) {
         alAddHtmlElement.clear();
 
-        // ======== outside method definitions 
-        
         int indent = 0;
         p(sb, "", indent);
         p(sb, "var oaShowMessage;", indent);
@@ -444,6 +442,7 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "}", --indent);
         
         
+        
         // bootstrap
         p(sb, "function oaShowSnackbarMessage(msg) {", indent);
         p(sb, "    $('#oaFormSnackbarMessage').html(msg);", ++indent);
@@ -457,6 +456,132 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "    }, 2000);", --indent);
         p(sb, "  }", --indent);
 
+        //qqqqqqqqqqqqqqqqqqqqqqqq        
+
+        p(sb, "var oaSubmitCancelled;", indent);
+        p(sb, "function oaSubmit(event) {", indent);
+        p(sb, "  oaSubmitCancelled = true;", ++indent);
+        p(sb, "  var errors = [];", indent);
+        p(sb, "  var requires = [];", indent);
+        p(sb, "  var regex;", indent);
+        p(sb, "  var val;", indent);
+
+        for (HtmlElement he : getAllHtmlElements()) {
+            OAHtmlComponent comp = he.getOAHtmlComponent();
+            String s = comp.getVerifyScript();
+            if (!OAString.isEmpty(s)) p(sb, "  " + s, indent);
+        }
+
+        // 20171104 add jquery.validate
+        if (addValidation) {
+            p(sb, "  if ($.validator) {", ++indent);
+            p(sb, "    if(!$('#"+id+"').valid()) {", indent);
+            p(sb, "      $('"+id+"').validate().focusInvalid();", ++indent);
+            p(sb, "      oaShowMessage('Can not submit', 'Required fields are missing');", indent);
+            p(sb, "      return false;", indent);
+            p(sb, "    }", --indent);
+            p(sb, "  }", --indent);
+        }        
+        
+           
+        p(sb, "  if (requires.length > 0) {", indent);
+        p(sb, "    event.preventDefault();", ++indent);
+        p(sb, "    var msg = '';", indent);
+        p(sb, "    for (var i=0; i<requires.length; i++) {", indent);
+        p(sb, "      if (i > 0) {", ++indent);
+        p(sb, "        msg += ',<br>';", ++indent);
+        p(sb, "      }", --indent);
+        p(sb, "      msg += requires[i];", indent);
+        p(sb, "    }", --indent);
+        p(sb, "    oaShowMessage('Required fields are missing', msg);", indent);
+        p(sb, "    return false;", indent);
+        p(sb, "  }", --indent);
+
+        p(sb, "  if (errors.length > 0) {", indent);
+        p(sb, "    event.preventDefault();", ++indent);
+        p(sb, "    var msg = '';", indent);
+        p(sb, "    for (var i=0; i<errors.length; i++) {", indent);
+        p(sb, "      if (i > 0) {", ++indent);
+        p(sb, "        msg += ', ';", ++indent);
+        p(sb, "        msg += '<br>';", indent);
+        p(sb, "      }", --indent);
+        p(sb, "      msg += errors[i];", indent);
+        p(sb, "    }", --indent);
+        p(sb, "    oaShowMessage('Errors on page', msg);", indent);
+        p(sb, "    return false;", indent);
+        p(sb, "  }", --indent);
+        p(sb, "  oaSubmitCancelled = false;", indent);
+        p(sb, "  return true;", indent);
+        p(sb, "}", --indent); // end function oaSubmit(..)
+        
+        
+        p(sb, "var cntAjaxSubmit = 0;", indent);
+        p(sb, "function ajaxSubmit(cmdName) {", indent);
+        p(sb, "  cntAjaxSubmit++;", ++indent);
+        p(sb, "  var bUseAsync = (cntAjaxSubmit == 1);", indent);
+        p(sb, "  if (bUseAsync && cntAjaxSubmit == 1) {", indent);
+        p(sb, "    $('#oaWait').fadeIn(200, function(){ if (cntAjaxSubmit < 1) {cntAjaxSubmit=0;$('#oaWait').hide();}});", ++indent);  
+        p(sb, "  }", --indent);
+        p(sb, "  var f1 = function(data) {", indent);
+        p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
+        p(sb, "      cntAjaxSubmit=0; ", ++indent);
+        p(sb, "      $('#oaWait').hide();", indent);
+        p(sb, "    }", --indent);
+        p(sb, "    if (data) eval(data);", indent);
+        
+        
+        p(sb, "  }", --indent);
+        p(sb, "  var f2 = function() {", indent);
+        p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
+        p(sb, "      cntAjaxSubmit=0; ", ++indent);
+        p(sb, "      $('#oaWait').hide();", indent);
+        p(sb, "    }", --indent);
+        p(sb, "  }", --indent);
+
+        // 20260628 support for sending enctype=multipart
+        p(sb, "  var objAjax = {", indent);
+        p(sb, "    method: 'POST',", ++indent);
+        p(sb, "    url: 'oaajax.jsp?oaform="+id+"',", indent);
+        p(sb, "    data: new FormData($('#"+id+"')[0]),", indent);
+        p(sb, "    processData: false,", indent); // so that jq does not try to serialize
+        p(sb, "    contentType: false,", indent); // so jq wont do it's default 
+        p(sb, "    dataType: 'script',", indent);
+        p(sb, "    timeout: 30000,", indent);
+        p(sb, "    async: bUseAsync", indent);
+        p(sb, "  };", --indent);
+        
+        /*was:
+        p(sb, "  var args = $('#"+id+"').serialize();", indent);
+        p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
+        p(sb, "  $.ajax({", indent);
+        p(sb, "    type: 'POST',", ++indent);
+        p(sb, "    url: 'oaajax.jsp',", indent);
+        p(sb, "    data: args,", indent);
+        p(sb, "    success: f1,", indent);
+        p(sb, "    error: f2,", indent);
+        p(sb, "    dataType: 'text',", indent);
+        p(sb, "    timeout: 30000,", indent);
+        p(sb, "    async: bUseAsync", indent);
+        p(sb, "  });", --indent);
+        */
+        
+        p(sb, "  $.ajax(objAjax).done(f1).fail(f2);", indent);
+        p(sb, "}", --indent);
+
+        
+        
+
+        p(sb, "function ajaxSubmit2(cmdName) {", indent);
+        p(sb, "  var args = $('#"+id+"').serialize();", ++indent);
+        p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
+        p(sb, "  $.ajax({", indent);
+        p(sb, "    method: 'POST',", ++indent);
+        p(sb, "    data: args,", indent);
+        p(sb, "    url: 'oaajax.jsp',", indent);
+        p(sb, "    dataType: 'script'", indent);
+        p(sb, "  }).done(function(data) {if (data) eval(data);});", --indent);
+        p(sb, "}", --indent);
+        
         
         
         
@@ -465,6 +590,7 @@ public class OAForm extends OABase implements Serializable {
         
         
         // ======== JQuery document ready 
+
         
         p(sb, "$(document).ready(function() {", indent);
         indent++;
@@ -678,131 +804,12 @@ public class OAForm extends OABase implements Serializable {
         
         // add form submit, to verify components
         p(sb, "$('#"+id+"').on('submit', oaSubmit);", indent);
-        p(sb, "var oaSubmitCancelled;", indent);
-        p(sb, "function oaSubmit(event) {", indent);
-        p(sb, "  oaSubmitCancelled = true;", ++indent);
-        p(sb, "  var errors = [];", indent);
-        p(sb, "  var requires = [];", indent);
-        p(sb, "  var regex;", indent);
-        p(sb, "  var val;", indent);
-
-        for (HtmlElement he : getAllHtmlElements()) {
-            OAHtmlComponent comp = he.getOAHtmlComponent();
-            String s = comp.getVerifyScript();
-            if (!OAString.isEmpty(s)) p(sb, "  " + s, indent);
-        }
-
-        // 20171104 add jquery.validate
-        if (addValidation) {
-            p(sb, "  if ($.validator) {", ++indent);
-            p(sb, "    if(!$('#"+id+"').valid()) {", indent);
-            p(sb, "      $('"+id+"').validate().focusInvalid();", ++indent);
-            p(sb, "      oaShowMessage('Can not submit', 'Required fields are missing');", indent);
-            p(sb, "      return false;", indent);
-            p(sb, "    }", --indent);
-            p(sb, "  }", --indent);
-        }        
-        
-           
-        p(sb, "  if (requires.length > 0) {", indent);
-        p(sb, "    event.preventDefault();", ++indent);
-        p(sb, "    var msg = '';", indent);
-        p(sb, "    for (var i=0; i<requires.length; i++) {", indent);
-        p(sb, "      if (i > 0) {", ++indent);
-        p(sb, "        msg += ',<br>';", ++indent);
-        p(sb, "      }", --indent);
-        p(sb, "      msg += requires[i];", indent);
-        p(sb, "    }", --indent);
-        p(sb, "    oaShowMessage('Required fields are missing', msg);", indent);
-        p(sb, "    return false;", indent);
-        p(sb, "  }", --indent);
-
-        p(sb, "  if (errors.length > 0) {", indent);
-        p(sb, "    event.preventDefault();", ++indent);
-        p(sb, "    var msg = '';", indent);
-        p(sb, "    for (var i=0; i<errors.length; i++) {", indent);
-        p(sb, "      if (i > 0) {", ++indent);
-        p(sb, "        msg += ', ';", ++indent);
-        p(sb, "        msg += '<br>';", indent);
-        p(sb, "      }", --indent);
-        p(sb, "      msg += errors[i];", indent);
-        p(sb, "    }", --indent);
-        p(sb, "    oaShowMessage('Errors on page', msg);", indent);
-        p(sb, "    return false;", indent);
-        p(sb, "  }", --indent);
-        p(sb, "  oaSubmitCancelled = false;", indent);
-        p(sb, "  return true;", indent);
-        p(sb, "}", --indent); // end function oaSubmit(..)
 
         
         
-        
-        p(sb, "var cntAjaxSubmit = 0;", indent);
-        p(sb, "function ajaxSubmit(cmdName) {", indent);
-        p(sb, "  cntAjaxSubmit++;", ++indent);
-        p(sb, "  var bUseAsync = (cntAjaxSubmit == 1);", indent);
-        p(sb, "  if (bUseAsync && cntAjaxSubmit == 1) {", indent);
-        p(sb, "    $('#oaWait').fadeIn(200, function(){ if (cntAjaxSubmit < 1) {cntAjaxSubmit=0;$('#oaWait').hide();}});", ++indent);  
-        p(sb, "  }", --indent);
-        p(sb, "  var f1 = function(data) {", indent);
-        p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
-        p(sb, "      cntAjaxSubmit=0; ", ++indent);
-        p(sb, "      $('#oaWait').hide();", indent);
-        p(sb, "    }", --indent);
-        p(sb, "    if (data) eval(data);", indent);
+//was here: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq        
         
         
-        p(sb, "  }", --indent);
-        p(sb, "  var f2 = function() {", indent);
-        p(sb, "    if (--cntAjaxSubmit < 1) {", ++indent);
-        p(sb, "      cntAjaxSubmit=0; ", ++indent);
-        p(sb, "      $('#oaWait').hide();", indent);
-        p(sb, "    }", --indent);
-        p(sb, "  }", --indent);
-
-        // 20260628 support for sending enctype=multipart
-        p(sb, "  var objAjax = {", indent);
-        p(sb, "    method: 'POST',", ++indent);
-        p(sb, "    url: 'oaajax.jsp?oaform="+id+"',", indent);
-        p(sb, "    data: new FormData($('#"+id+"')[0]),", indent);
-        p(sb, "    processData: false,", indent); // so that jq does not try to serialize
-        p(sb, "    contentType: false,", indent); // so jq wont do it's default 
-        p(sb, "    dataType: 'script',", indent);
-        p(sb, "    timeout: 30000,", indent);
-        p(sb, "    async: bUseAsync", indent);
-        p(sb, "  };", --indent);
-        
-        /*was:
-        p(sb, "  var args = $('#"+id+"').serialize();", indent);
-        p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
-        p(sb, "  $.ajax({", indent);
-        p(sb, "    type: 'POST',", ++indent);
-        p(sb, "    url: 'oaajax.jsp',", indent);
-        p(sb, "    data: args,", indent);
-        p(sb, "    success: f1,", indent);
-        p(sb, "    error: f2,", indent);
-        p(sb, "    dataType: 'text',", indent);
-        p(sb, "    timeout: 30000,", indent);
-        p(sb, "    async: bUseAsync", indent);
-        p(sb, "  });", --indent);
-        */
-        
-        p(sb, "  $.ajax(objAjax).done(f1).fail(f2);", indent);
-        p(sb, "}", --indent);
-
-        
-        
-
-        p(sb, "function ajaxSubmit2(cmdName) {", indent);
-        p(sb, "  var args = $('#"+id+"').serialize();", ++indent);
-        p(sb, "  if (cmdName != undefined && cmdName) args = cmdName + '=1&' + args;", indent);
-        p(sb, "  $.ajax({", indent);
-        p(sb, "    method: 'POST',", ++indent);
-        p(sb, "    data: args,", indent);
-        p(sb, "    url: 'oaajax.jsp',", indent);
-        p(sb, "    dataType: 'script'", indent);
-        p(sb, "  }).done(function(data) {if (data) eval(data);});", --indent);
-        p(sb, "}", --indent);
         
         
         if (!OAString.isEmpty(jsAddScript)) {
@@ -862,8 +869,9 @@ public class OAForm extends OABase implements Serializable {
             if (alAddHtmlElement.contains(he) || he.getNeedsReloaded()) {
                 s = comp.getInitializeScript();
                 if (!OAString.isEmpty(s)) p(sb, s + "", 1);
-                s = comp.getVerifyScript();
-                if (!OAString.isEmpty(s)) p(sb, s + "", 1);
+                //qqqqqqq this needs to embedded in the init script                
+                //  s = comp.getVerifyScript();
+                // if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             }
             s = comp.getAjaxScript(bIsInitializing);
             
@@ -1748,7 +1756,7 @@ public class OAForm extends OABase implements Serializable {
         }
         
         // include oajsp.css after components
-        hsCssName.add(OAFormInsertDelegate.CSS_oajsp);
+        hsCssName.add(OAFormInsertDelegate.CSS_oaweb);
 
         ArrayList<String> alFilePath = new ArrayList<>();
 
@@ -1839,6 +1847,4 @@ public class OAForm extends OABase implements Serializable {
     public static final String Key_END = "[END]";
     public static final String Key_HOME = "[HOME]";
     public static final String Key_LEFT = "[LEFT]";
-    
-    
 }

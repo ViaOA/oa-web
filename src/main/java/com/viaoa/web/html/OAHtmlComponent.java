@@ -195,8 +195,8 @@ public class OAHtmlComponent {
 
     protected boolean bEnabled = true;
     protected boolean bReadOnly;
-    protected boolean bHidden;   // uses HTML hidden attr, does not use space
-    protected boolean bVisible=true;  // uses CSS visibility:visible|hidden, does take up space
+    protected boolean bHidden;   // uses HTML hidden attr, does not use space ... same CSS display: none ... does not take up space 
+    protected boolean bVisible=true;  // uses CSS visibility:visible|hidden, ... does take up space
     
     protected boolean bRequired;
     private boolean bFocus;
@@ -880,6 +880,8 @@ public class OAHtmlComponent {
             removeStyle(name);
             return;
         }
+        if (name.equals("width")) this.width = value;
+        if (name.equals("height")) this.height = value;
         
         if (hmStyle == null) hmStyle = new HashMap<String, String>();
         else {
@@ -1338,11 +1340,15 @@ public class OAHtmlComponent {
         s = getType();
         if (OAStr.isNotEmpty(s)) sb.append("$('#" + id + "').attr('type', '"+s+"');\n");
         
-        sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
 
         final InputType inputType = getInputType();
+
+        if (inputType != null) {
+            sb.append("$('#" + id + "').blur(function() {$(this).removeClass('oaError');}); \n");
+        }
         
-        if (getSubmit() || getAjaxSubmit() || (inputType != null && inputType.getSubmitsByDefault())) {
+        
+        if (inputType != null && (getSubmit() || getAjaxSubmit() || inputType.getSubmitsByDefault())) {
             sb.append("$('#" + id + "').addClass('oaSubmit');\n");
         }
 
@@ -1357,8 +1363,8 @@ public class OAHtmlComponent {
         
         String confirm = getConfirmMessage();
         if (OAString.isNotEmpty(confirm)) {
-            confirm = OAJspUtil.createJsString(confirm, '\"');
-            confirm = "if (!window.confirm(\""+confirm+"\")) return false;";
+            confirm = OAJspUtil.createJsString(confirm, '\'');
+            confirm = "if (!window.confirm('"+confirm+"')) return false;";
         }
         else confirm = "";
 
@@ -1425,13 +1431,13 @@ public class OAHtmlComponent {
                 }
                 sb.append("  $('#oacommand').val('" + id + "');\n");
                 
-//qqqqqqqqqq get keys,                
                 if (formElementType != null) {
                     EventType et = formElementType.getDefaultEventType();
                     if (et != null && et.getUsesKeys()) {  // ex: button or image
                         sb.append("  var keys = 'KEYS=';\n"); 
                         sb.append("  if (event.shiftKey) keys += '[SHIFT]';\n"); 
                         sb.append("  if (event.ctrlKey) keys += '[CTRL]';\n"); 
+                        sb.append("  if (event.altKey) keys += '[ALT]';\n"); 
                         sb.append("  $('#oaparam').val(keys);\n");
                     }
                 }
@@ -1469,7 +1475,7 @@ public class OAHtmlComponent {
         
         final FormElementType fet = getFormElementType();        
 
-        if (fet == null || fet.getUsesValue()) {
+        if (fet != null && fet.getUsesValue()) {
             if (!this.bValueChangedByAjax) {
                 if (fet != FormElementType.StyledTextArea) {
                     s = OAJspUtil.createJsString(s, '\'');
@@ -1734,6 +1740,7 @@ public class OAHtmlComponent {
             }
         }
         
+        // CSS visible=false does take up space
         if (bVisibleChanged || (bIsInitializing && !getVisible())) {
             bVisibleChanged = false;
             if (isVisible()) {
@@ -1821,10 +1828,10 @@ public class OAHtmlComponent {
                 sb.append("$('#" + id + "DataList').remove();\n");
                 sb.append("$('#" + id + "').attr('list', '"+id+"DataList');\n");
         
-                String list = "<datalist id=\""+getId()+"DataList\">";
+                String list = "<datalist id='"+getId()+"DataList'>";
                 for (String option : dataList) {
-                    option = OAJspUtil.createJsString(option, '\"');                
-                    list += "<option value=\""+option+"\">";
+                    option = OAJspUtil.createJsString(option, '\'');                
+                    list += "<option value='"+option+"'>";
                 }
                 list += "</datalist>";
                 sb.append("$('#" + id + "').append('" + list + "');\n");
@@ -1835,38 +1842,7 @@ public class OAHtmlComponent {
             bOptionsChanged = false;
             List<HtmlOption> al = getOptions();
             if (al != null && al.size() > 0) {
-                String list = "";
-                boolean bInOptGroup = false;
-                for (HtmlOption ho : al) {
-                    
-                    s = ho.getLabel();
-                    if (OAStr.isEmpty(s)) s = ho.getValue();
-                    
-                    if (ho instanceof HtmlOptionGroup) {
-                        if (bInOptGroup) {
-                            list += "</optgroup>";
-                        }
-                        bInOptGroup = true;
-                        list += "<optgroup label=\""+s+"\"";
-                        if (!ho.getEnabled()) list += " disabled";
-                        list += ">";
-                    }
-                    else {
-                        list += "<option value=\""+ho.getValue()+"\"";
-                        if (!ho.getEnabled()) list += " disabled";
-                        if (ho.getSelected()) list += " selected";
-                        list += ">"+s;
-                    }
-
-                    if (ho instanceof HtmlOptionGroup) {
-                    }
-                    else {
-                        list += "</option>";
-                    }
-                }
-                if (bInOptGroup) {
-                    list += "</optgroup>";
-                }
+                String list = getOptionsJs(al);
                 sb.append("$('#" + id + "').html('" + OAJspUtil.createJsString(list, '\'') + "');\n");
             }
         }
@@ -1883,6 +1859,41 @@ public class OAHtmlComponent {
         return js;
     }
 
+    public String getOptionsJs(final List<HtmlOption> al) {
+        String list = "";
+        boolean bInOptGroup = false;
+        for (HtmlOption ho : al) {
+            String s = ho.getLabel();
+            if (OAStr.isEmpty(s)) s = ho.getValue();
+            
+            if (ho instanceof HtmlOptionGroup) {
+                if (bInOptGroup) {
+                    list += "</optgroup>";
+                }
+                bInOptGroup = true;
+                list += "<optgroup label='"+s+"'";
+                if (!ho.getEnabled()) list += " disabled";
+                list += ">";
+            }
+            else {
+                list += "<option value='"+ho.getValue()+"'";
+                if (!ho.getEnabled()) list += " disabled";
+                if (ho.getSelected()) list += " selected";
+                list += ">"+s;
+            }
+
+            if (ho instanceof HtmlOptionGroup) {
+            }
+            else {
+                list += "</option>";
+            }
+        }
+        if (bInOptGroup) {
+            list += "</optgroup>";
+        }
+        return list;
+    }
+    
     protected void getDataListJs(StringBuilder sb) {
         List<String> dataList = getDataList();
         if (dataList == null || dataList.size() == 0) return;
@@ -1890,12 +1901,12 @@ public class OAHtmlComponent {
 
         sb.append("$('#" + getList() + ").remove()");;
         
-        sb.append("$('#" + id + ").append(\"");
+        sb.append("$('#" + id + ").append('");
         sb.append("<datalist id='"+getList()+"'>");
         for (String s : dataList) {
-            sb.append("<option value='"+ OAJspUtil.createJsString(s, '\"') +"'>");
+            sb.append("<option value='"+ OAJspUtil.createJsString(s, '\'') +"'>");
         }
-        sb.append("</datalist>\");\n");
+        sb.append("</datalist>');\n");
     }
 
     public String getInnerHtml() {
@@ -1922,7 +1933,7 @@ public class OAHtmlComponent {
             sb.append("});\n");
             sb.append("if ($('#" + id + "').val().length > 0) $('#" + id + " + span').addClass(\'active\');\n");
         }
-        sb.append("$('#" + id + " + span').html(\"" + OAJspUtil.createJsString(getFloatLabel(), '\"') + "\");\n");
+        sb.append("$('#" + id + " + span').html('" + OAJspUtil.createJsString(getFloatLabel(), '\'') + "');\n");
     }
 
     protected String getEnabledScript() {

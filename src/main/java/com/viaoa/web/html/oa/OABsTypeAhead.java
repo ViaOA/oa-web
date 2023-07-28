@@ -10,11 +10,11 @@ import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /**
- * Create a OA Bootstrap TypeAhead that could be used
+ * Create a OA Bootstrap TypeAhead
  *
  * @author vince
  */
-public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterface {
+public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
     private final Hub hub;
     
@@ -135,5 +135,33 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
             }
         }
         setValue(s);
+    }
+
+    @Override
+    public String getTableCellRenderer(int row) {
+        OAObject obj = (OAObject) getHub().get(row);
+
+        String s;
+        if (obj == null) s = "";
+        else {
+            boolean b = obj.isVisible(oaUiControl.getPropertyName());
+            if (!b) s = "";
+            else {
+                s = obj.getPropertyAsString(oaUiControl.getPropertyName(), oaUiControl.getFormat());
+                td.addClass("oaNoTextOverflow");
+            }
+        }
+        return s;
+    }
+        
+    @Override
+    public String getTableCellEditor(int row, boolean bHasFocus) {
+        String s = "<input type='text' id='"+getId()+"'";
+        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
+        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
+        
+        s += "'>";
+        // note: other settings will be added oahtmlcomponent
+        return s;
     }
 }

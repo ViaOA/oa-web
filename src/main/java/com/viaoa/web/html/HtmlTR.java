@@ -41,6 +41,10 @@ public class HtmlTR extends HtmlElement {
         if (OAStr.isNotEmpty(getId())) {
             sb.append(" id='"+getId()+"'");
         }
+
+        if (!getVisible() || getHidden()) {
+            sb.append(" hidden"); // html property so that element wont take up space
+        }
         
         List<String> al = getClasses();
         if (al != null && al.size() > 0) {
@@ -53,7 +57,6 @@ public class HtmlTR extends HtmlElement {
             }
             sb.append("'");
         }
-        
         
         al = getStyles();
         if (al != null && al.size() > 0) {

@@ -4,6 +4,7 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.*;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.bootstrap.BsDateTime;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
@@ -13,7 +14,7 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * Binds Bootstrap DateTime to a Hub + propertyName
  *
  */
-public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface {
+public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
 
     private final OAUIPropertyController oaUiControl;
 
@@ -72,8 +73,8 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
     protected void beforeGetScript() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
         boolean b = oaUiControl.isEnabled();
+        
         setEnabled(bIsFormEnabled && b);
 
         b = oaUiControl.isVisible();
@@ -84,5 +85,32 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
         
         String val = oaUiControl.getValueAsString();
         setValue(val);
+    }
+
+    @Override
+    public String getTableCellRenderer(HtmlTD td, int row) {
+        OAObject obj = (OAObject) getHub().get(row);
+
+        String s;
+        if (obj == null) s = "";
+        else {
+            boolean b = obj.isVisible(getPropertyName());
+            if (!b) s = "";
+            else {
+                td.addClass("oaNoTextOverflow");
+                s = obj.getPropertyAsString(getPropertyName(), getFormat());
+            }
+        }
+        return s;
+    }
+    @Override
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+        String s = "<input id='"+getId()+"'";
+        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
+        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;";
+        
+        s += "'>";
+        // note: other settings will be added oahtmlcomponent
+        return s;
     }
 }

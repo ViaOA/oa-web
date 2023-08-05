@@ -2,7 +2,7 @@ package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.uicontroller.OAUISelectController;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.HtmlTD;
@@ -11,48 +11,27 @@ import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /**
- * Binds a Bootstrap TypeAhead to a Hub.AO.linkProperty.
- * <br>
- * Uses Bootstrap TypeAhead & OATypeAhead to find an object and update Hub.AO.linkProperty
+ * Uses Bootstrap TypeAhead, OATypeAhead set Hub.AO
  * <p>
- * a Input.text:TypeAhead<F,T> is used to set Hub.AO.linkProperty<T> 
+ * TypeAhead<F,T> is used to set the TypeAhead.hub<T>.AO 
  * <p>
+ * a Input.text:TypeAhead<F,T> is used to set Hub.AO 
+ * 
  * Notes:<br>
- *  
  * @author vince
  */
-public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    private final OAUIPropertyController oaUiControl;
+public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+    private final OAUISelectController oaUiControl;
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    /**
-     * Create a new OABsTypeAhead that is linked to hub.AO.linkProperty
-     * 
-     * @param id html element id of input:text 
-     * @param hub Hub.AO that gets updated
-     * @param propName  name of Hub.AO.linkProperty that is updated.
-     * @param typeAhead  has [root] Hub, and propertyPath to allow setting hub.AO.linkProperty 
-     */
-    public OABsTypeAhead(String id, Hub hub, String propName, OATypeAhead typeAhead) {
+    public OABsTypeAheadSelect(String id, OATypeAhead typeAhead) {
         super(id);
 
         if (typeAhead == null) throw new IllegalArgumentException("typeAhead cant be null");
+        if (typeAhead.getHub() == null) throw new IllegalArgumentException("typeAhead hub cant be null");
         setTypeAhead(typeAhead);
         
-        typeAhead.setShowHint(false);  // we want the exact match
-        
-        if (hub == null) throw new IllegalArgumentException("hub cant be null");
-        if (OAStr.isEmpty(propName)) throw new IllegalArgumentException("propName cant be empty");
-        
-        OALinkInfo li = hub.getOAObjectInfo().getLinkInfo(propName);
-        if (li == null) throw new IllegalArgumentException("propName must be a reference property to a OneLink");
-        if (!li.isOne()) throw new IllegalArgumentException("propName must be a reference property to a OneLink");
-        
-        if (!li.getToClass().equals(typeAhead.getToClass())) {
-            throw new IllegalArgumentException("the link to propertyName=%s must match class=" + typeAhead.getToClass().getSimpleName());
-        }
-        
-        oaUiControl = new OAUIPropertyController(hub, propName) {
+        oaUiControl = new OAUISelectController(typeAhead.getHub()) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
                 OAForm form = getForm();
@@ -74,23 +53,38 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
     }
 
     private static class LastRefresh {
-        OAObject objToUpdate;
-        OAObject linkValue;
-        String displayValue;
+        Hub hubUsed;
+        OAObject hubUsedAO;
+
+        // if hubUsed is linked 
+        OAObject linkToObject;
+        OAObject linkToObjectLinkValue;
     }
-
-
+    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         setMultiValue(false);
         super.onSubmitAfterLoadValues(formSubmitEvent);  
-        
+
         // make sure that it has not changed since it was sent to page
-        if (OACompare.isNotEqual(lastRefresh.linkValue, (OAObject) oaUiControl.getValue(lastRefresh.objToUpdate))) {
-            formSubmitEvent.addSyncError("OABsTypeAhead.A");
+        if (lastRefresh.hubUsed != getHub().getRealHub()) {
+            formSubmitEvent.addSyncError("OABsTypeAheadSelect.A");
+            return;
+        }
+        
+        if (lastRefresh.hubUsedAO != getHub().getAO()) {
+            formSubmitEvent.addSyncError("OABsTypeAheadSelect.B");
             return;
         }
 
+        if (lastRefresh.linkToObject != null) {
+            Object objx = (OAObject) lastRefresh.linkToObject.getProperty(oaUiControl.getLinkPropertyName());
+            if (objx != lastRefresh.linkToObjectLinkValue) {
+                formSubmitEvent.addSyncError("OABsTypeAheadSelect.C");
+                return;
+            }
+        }
+        
         final String id = getValue(); 
         
         OAObject obj;
@@ -100,15 +94,14 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
         else {
             obj = typeAhead.findObjectUsingId(id);
             if (obj == null) {
-                formSubmitEvent.addSyncError("OABsTypeAhead.B");
+                formSubmitEvent.addSyncError("OABsTypeAheadSelect.C");
                 return;
             }
         }
-
-        oaUiControl.onSetProperty(lastRefresh.objToUpdate, obj);
+        oaUiControl.onAOChange(lastRefresh.linkToObject, lastRefresh.hubUsedAO, obj);
     }
 
-    public OAUIPropertyController getController() {
+    public OAUISelectController getController() {
         return oaUiControl;
     }
 
@@ -116,6 +109,8 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
         return oaUiControl.getHub();
     }
 
+    
+    
     @Override
     protected void beforeGetScript() {
         setMultiValue(false);
@@ -123,19 +118,23 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-        lastRefresh.objToUpdate = (OAObject) getHub().getAO();
-        lastRefresh.linkValue = (OAObject) oaUiControl.getValue(lastRefresh.objToUpdate);
+        lastRefresh.hubUsed = getHub().getRealHub();
+        lastRefresh.hubUsedAO = (OAObject) getHub().getAO();
+        
+        Hub hubx = oaUiControl.getLinkToHub();
+        lastRefresh.linkToObject = hubx == null ? null : (OAObject) hubx.getAO();
+        lastRefresh.linkToObjectLinkValue = lastRefresh.linkToObject == null ? null : ((OAObject) lastRefresh.linkToObject.getProperty(oaUiControl.getLinkPropertyName()));
 
-        boolean b = oaUiControl.isEnabled(lastRefresh.objToUpdate);
+        boolean b = oaUiControl.isEnabled(lastRefresh.hubUsedAO);
         setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible(lastRefresh.objToUpdate);
+        b = oaUiControl.isVisible(lastRefresh.hubUsedAO);
         setVisible(b);
 
-        lastRefresh.displayValue = getTypeAhead().getDisplayValue(lastRefresh.linkValue);
+        String val = getTypeAhead().getDisplayValue(lastRefresh.hubUsedAO);
 
         // set text.value
-        setValue(lastRefresh.displayValue);
+        setValue(val);
     }
     
     

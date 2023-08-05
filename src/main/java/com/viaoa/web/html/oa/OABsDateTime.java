@@ -17,6 +17,12 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
 
     private final OAUIPropertyController oaUiControl;
+    private static class LastRefresh {
+        OAObject objUsed;
+        OADateTime value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
+
 
     public OABsDateTime(String id, Hub hub, String propName) {
         super(id);
@@ -60,30 +66,34 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
-        }
+        if (lastRefresh.objUsed == null) return;
 
         final OADateTime dt = getDateTimeValue();
-        oaUiControl.onSetProperty(dt);
+        if (OACompare.isNotEqual(lastRefresh.value, dt)) {
+            oaUiControl.onSetProperty(lastRefresh.objUsed, dt);
+            lastRefresh.value = dt;
+        }
     }
+    
     
     @Override
     protected void beforeGetScript() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
-        boolean b = oaUiControl.isEnabled();
-        
-        setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible();
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = (OADateTime) oaUiControl.getValue(lastRefresh.objUsed);
+        
+        boolean b = bIsFormEnabled && oaUiControl.isEnabled(lastRefresh.objUsed);
+        setEnabled(b);
+
+        b = oaUiControl.isVisible(lastRefresh.objUsed);
         setVisible(b);
         
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        String val = oaUiControl.getValueAsString();
+        String val = oaUiControl.getValueAsString(lastRefresh.objUsed);
         setValue(val);
     }
 
@@ -97,8 +107,8 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
             boolean b = obj.isVisible(getPropertyName());
             if (!b) s = "";
             else {
-                td.addClass("oaNoTextOverflow");
                 s = obj.getPropertyAsString(getPropertyName(), getFormat());
+                td.addClass("oaNoTextOverflow");
             }
         }
         return s;
@@ -106,10 +116,10 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
     @Override
     public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
         String s = "<input id='"+getId()+"'";
-        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
-        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;";
-        
-        s += "'>";
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        else td.addStyle("position", "relative");
+        s += ">";
         // note: other settings will be added oahtmlcomponent
         return s;
     }

@@ -189,6 +189,16 @@ public class BsDateTime extends InputText {
         if (OAStr.isEmpty(val)) return null;
         return new OADateTime(val, OADateTime.JsonFormat);
     }
+    public OADateTime getDateValue() {
+        String val = getValue();
+        if (OAStr.isEmpty(val)) return null;
+        return new OADate(val, OADate.JsonFormat);
+    }
+    public OATime getTimeValue() {
+        String val = getValue();
+        if (OAStr.isEmpty(val)) return null;
+        return new OATime(val, OATime.JsonFormat);
+    }
     
     
 //qqqqqqqq might want to do this during the method onSubmitLoadValues    

@@ -42,6 +42,8 @@ public class OAFormSubmitEvent {
     // x, y values used when submitted by an input type=image.
     private int imageClickX, imageClickY;
     
+    private final List<String> alError = new ArrayList();
+    
 
     public OAFormSubmitEvent(OAForm form, OASession session, HttpServletRequest request, HttpServletResponse response, boolean isAjax) {
         this.form = form;
@@ -50,6 +52,7 @@ public class OAFormSubmitEvent {
         this.response = response;
         this.bAjax = isAjax;
     }
+    
 
     public Map<String, String[]> getNameValueMap() {
         return hmNameValue;
@@ -122,4 +125,12 @@ public class OAFormSubmitEvent {
     public void setImageClickY(int y) {
         imageClickY = y;
     }
+    
+    public List<String> getErrors() {
+        return alError;
+    }
+    public void addSyncError(String msg) {
+        alError.add(msg);
+    }
+
 }

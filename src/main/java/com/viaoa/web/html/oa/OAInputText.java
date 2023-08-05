@@ -3,6 +3,8 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.util.OAString;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputText;
@@ -14,6 +16,12 @@ import com.viaoa.web.html.input.InputText;
 public class OAInputText extends InputText implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
 
     private final OAUIPropertyController oaUiControl;
+
+    private static class LastRefresh {
+        OAObject objUsed;
+        String value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
     
     public OAInputText(String id, Hub hub, String propName) {
         super(id);
@@ -57,30 +65,33 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         return oaUiControl.getConversion();
     }
     
-    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
-        }
-
+        if (lastRefresh.objUsed == null) return;
+        
         final String val = getValue();
-        oaUiControl.onSetProperty(val);
+        if (OAString.isNotEqual(lastRefresh.value, val)) {
+            oaUiControl.onSetProperty(lastRefresh.objUsed, val);
+            lastRefresh.value = val;
+        }
     }
+    
     
     @Override
     protected void beforeGetScript() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
+
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         
-        boolean b = oaUiControl.isEnabled();
+        boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible();
+        b = oaUiControl.isVisible(lastRefresh.objUsed);
         setVisible(b);
         
         b = oaUiControl.isRequired();
@@ -95,9 +106,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
             }
         }
         
-        
-        String val = oaUiControl.getValueAsString();
-        setValue(val);
+        setValue(lastRefresh.value);
         
         OAObjectInfo oi = getHub().getOAObjectInfo();
         OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
@@ -113,7 +122,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
     }
 
     @Override
-    public String getTableCellRenderer(int row) {
+    public String getTableCellRenderer(HtmlTD td, int row) {
         OAObject obj = (OAObject) getHub().get(row);
 
         String s;
@@ -130,13 +139,12 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         return s;
     }
     @Override
-    public String getTableCellEditor(int row, boolean bHasFocus) {
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
         String s = "<input type='text' id='"+getId()+"'";
         s += " class='oaFitColumnSize'";
-        //was: s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
-        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
-        s += "'>";
-        // note: other settings will be added oahtmlcomponent
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        s += ">";
+        // note: other settings will be added InputText
         return s;
     }
 }

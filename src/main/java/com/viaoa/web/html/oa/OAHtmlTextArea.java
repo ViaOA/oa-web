@@ -3,6 +3,8 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.util.OAString;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.HtmlTextArea;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
@@ -12,6 +14,7 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  */
 public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
+    private String lastValue;
 
     public OAHtmlTextArea(String id, Hub hub, String propName) {
         super(id);
@@ -64,8 +67,12 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
             return;
         }
 
-        String val = getValue();
-        oaUiControl.onSetProperty(obj);
+        final String val = getValue();
+        if (OAString.isNotEqual(lastValue, val)) {
+            oaUiControl.onSetProperty(val);
+            lastValue = val;
+        }
+        
     }
     
     @Override
@@ -84,6 +91,8 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         
         String val = oaUiControl.getValueAsString();
         setValue(val);
+        lastValue = val;
+        
 
         OAObjectInfo oi = getHub().getOAObjectInfo();
         OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
@@ -95,7 +104,7 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
     }
 
     @Override
-    public String getTableCellRenderer(int row) {
+    public String getTableCellRenderer(HtmlTD td, int row) {
         OAObject obj = (OAObject) getHub().get(row);
 
         String s;
@@ -112,10 +121,10 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         return s;
     }
     @Override
-    public String getTableCellEditor(int row, boolean bHasFocus) {
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
         String s = "<textarea id='"+getId()+"'";
-        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
-        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
         s += "'></textarea>";
         // note: other settings will be added oahtmlcomponent
         return s;

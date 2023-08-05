@@ -29,6 +29,7 @@ import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlElement;
 import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+import com.viaoa.web.html.input.InputText;
 import com.viaoa.web.html.oa.OAInputText;
 import com.viaoa.web.server.OAApplication;
 import com.viaoa.web.server.OABase;
@@ -583,7 +584,7 @@ public class OAForm extends OABase implements Serializable {
         p(sb, "}", --indent);
         
         
-        
+        p(sb, "var oaFocusValue = '';", indent);
         
         
         
@@ -843,7 +844,7 @@ public class OAForm extends OABase implements Serializable {
 
     public String getAjaxScript(final boolean bIsInitializing) {
         
-        if (!bIsInitializing) beforeGetScript();        
+        if (!bIsInitializing) beforeGetScript();  // already done if getInitializeScript(..) was called first.      
         
         if (!getEnabled()) return "";
         StringBuilder sb = new StringBuilder(1024);
@@ -866,14 +867,15 @@ public class OAForm extends OABase implements Serializable {
             OAHtmlComponent comp = he.getOAHtmlComponent();
             
             String s;
-            if (alAddHtmlElement.contains(he) || he.getNeedsReloaded()) {
+            final boolean b = (alAddHtmlElement.contains(he) || he.getNeedsReloaded());
+            if (b) {
                 s = comp.getInitializeScript();
                 if (!OAString.isEmpty(s)) p(sb, s + "", 1);
                 //qqqqqqq this needs to embedded in the init script                
                 //  s = comp.getVerifyScript();
                 // if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             }
-            s = comp.getAjaxScript(bIsInitializing);
+            s = comp.getAjaxScript(b || bIsInitializing);
             
             if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             if (debugNow != bLastDebug) {
@@ -1188,10 +1190,10 @@ public class OAForm extends OABase implements Serializable {
         return alHtmlElement;
     }
 
-    public HtmlElement getHtmlElement(String id, boolean bIncludedEmbeded) {
+    public HtmlElement getHtmlElement(String id, boolean bIncludeEmbeded) {
         if (id == null) return null;
         
-        List<HtmlElement> al = bIncludedEmbeded ? getAllHtmlElements() : alHtmlElement;
+        List<HtmlElement> al = bIncludeEmbeded ? getAllHtmlElements() : alHtmlElement;
         
         for (HtmlElement he : al) {
             if (id.equalsIgnoreCase(he.getId())) {
@@ -1201,6 +1203,7 @@ public class OAForm extends OABase implements Serializable {
         return null;
     }
 
+    
     public List<HtmlElement> getAllHtmlElements() {
         ArrayList<HtmlElement> al = new ArrayList<>();
         for (HtmlElement he : alHtmlElement) {
@@ -1345,7 +1348,7 @@ public class OAForm extends OABase implements Serializable {
             }
             
 //qqqqqqqqqqqqqqqqqqq "true ||"            
-            if (true || formSubmitEvent.getForm().getCalcDebug()) {
+            if (true || getCalcDebug()) {
                 hmNameValue.forEach( (k,v) -> 
                 System.out.println("  Key: " + k + ": Values[0]: " + ((v == null || v.length == 0) ? "" : v[0])));
             }
@@ -1440,7 +1443,6 @@ public class OAForm extends OABase implements Serializable {
                     }
                 }
             }
-            
         }
         
         if (!formSubmitEvent.getCancel()) {
@@ -1493,6 +1495,12 @@ public class OAForm extends OABase implements Serializable {
                 if (!comp.getEnabled()) continue;
                 comp.onSubmitCompleted(formSubmitEvent);
             }
+        }
+        
+        //qqqqqqqqqqqqqqqqqqqqqq
+        
+        for (String msg : formSubmitEvent.getErrors()) {
+            System.out.println("SyncError: "+msg);
         }
     }
     
@@ -1847,4 +1855,12 @@ public class OAForm extends OABase implements Serializable {
     public static final String Key_END = "[END]";
     public static final String Key_HOME = "[HOME]";
     public static final String Key_LEFT = "[LEFT]";
+
+
+    public InputText getInputText(String id, boolean bIncludeEmbeded) {
+        HtmlElement he = getHtmlElement(id, bIncludeEmbeded);
+        if (he instanceof InputText) return (InputText) he;
+        return null;
+    }
+
 }

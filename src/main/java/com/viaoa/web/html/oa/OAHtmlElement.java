@@ -5,6 +5,7 @@ import com.viaoa.object.*;
 import com.viaoa.template.OATemplate;
 import com.viaoa.util.*;
 import com.viaoa.web.html.HtmlElement;
+import com.viaoa.web.html.HtmlTD;
 
 /**
  * Used to set the inner html for any html element.
@@ -83,7 +84,7 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     }
 
     @Override
-    public String getTableCellRenderer(int row) {
+    public String getTableCellRenderer(HtmlTD td, int row) {
         OAObject obj = (OAObject) getHub().get(row);
 
         String s;
@@ -99,8 +100,8 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         return s;
     }
     @Override
-    public String getTableCellEditor(int row, boolean bHasFocus) {
-        String s = getTableCellRenderer(row);
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+        String s = getTableCellRenderer(td, row);
         return s;
     }
 }

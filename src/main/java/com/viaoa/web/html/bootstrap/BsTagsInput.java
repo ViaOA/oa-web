@@ -9,7 +9,7 @@ import com.viaoa.web.html.input.InputText;
 
 
 /**
- * Create a comma separate list of items.
+ * Create a comma separate list of values.
  * @author vince
  */
 public class BsTagsInput extends InputText {
@@ -36,6 +36,7 @@ public class BsTagsInput extends InputText {
         sb.append("$('#" + getId() + "').tagsinput('removeAll');\n");
         for (int i = 1;; i++) {
             String sx = OAString.field(getValue(), ",", i);
+            
             if (sx == null) {
                 break;
             }

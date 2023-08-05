@@ -4,10 +4,10 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.*;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputTime;
-import com.viaoa.web.util.OAWebUtil;
 
 /**
  * Binds InputTime to a Hub + propertyName
@@ -37,7 +37,9 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
                 }
             }
         };
-        oaUiControl.setFormat(OATime.JsonFormat);
+        // HH:mm
+        oaUiControl.setFormat(OATime.HtmlInputTimeFormat);
+        
     }
 
     public Hub getHub() {
@@ -87,7 +89,7 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
     }
 
     @Override
-    public String getTableCellRenderer(int row) {
+    public String getTableCellRenderer(HtmlTD td, int row) {
         OAObject obj = (OAObject) getHub().get(row);
 
         String s;
@@ -98,21 +100,18 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
             else {
                 s = obj.getPropertyAsString(getPropertyName(), getFormat());
                 if (s == null) s = "";
-                td.addClass("oaNoTextOverflow");
+                else td.addClass("oaNoTextOverflow");
             }
         }
         return s;
     }
+
     @Override
-    public String getTableCellEditor(int row, boolean bHasFocus) {
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
         String s = "<input id='"+getId()+"'";
-        
-//qqqqqqqqqq make this a css style        
-        
-        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
-        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
-        
-        s += "'>";
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        s += ">";
         // note: other settings will be added oahtmlcomponent
         return s;
     }

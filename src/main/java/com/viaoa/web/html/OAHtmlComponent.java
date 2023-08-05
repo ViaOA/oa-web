@@ -193,9 +193,22 @@ public class OAHtmlComponent {
     protected String pattern;  // uses Regex to verify input.
     protected String title;  // used as a tooltip
 
+    /**
+     *  uses HTML "disabled" attribute 
+     *  WARNING: for input elements, if this is false, then the element will not be submitted. 
+     */
     protected boolean bEnabled = true;
     protected boolean bReadOnly;
-    protected boolean bHidden;   // uses HTML hidden attr, does not use space ... same CSS display: none ... does not take up space 
+    
+    /**
+     *  uses HTML "hidden" attribute, does not use space ... 
+     *  same CSS display: none ... does not take up space
+     *  WARNING: for input elements, if this is true, then the element will not be submitted.
+     *  note: forms with input:hidden elements are be submitted. 
+     */
+    protected boolean bHidden;    
+    
+    
     protected boolean bVisible=true;  // uses CSS visibility:visible|hidden, ... does take up space
     
     protected boolean bRequired;
@@ -718,11 +731,11 @@ public class OAHtmlComponent {
         this.bValueChangedByAjax = formSubmitEvent.getAjax();
     }
 
-    // calls enabled components
+    // calls enabled & !hidden components
     public void onSubmitBeforeLoadValues(final OAFormSubmitEvent formSubmitEvent) {
     }
 
-    // calls enabled components
+    // calls enabled & !hidden components
     public void onSubmitAfterLoadValues(final OAFormSubmitEvent formSubmitEvent) {
     }
     
@@ -743,6 +756,7 @@ public class OAHtmlComponent {
     public void onSubmitLoadValues(final OAFormSubmitEvent formSubmitEvent) {
         if (formSubmitEvent.getCancel()) return;
         if (!getEnabled()) return; // disabled components do not get submitted.  Note: readony do
+        if (getHidden()) return;  // hidden components do not get submitted. 
         
         String s = getCalcName();
         

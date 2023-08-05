@@ -4,6 +4,7 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.*;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.*;
@@ -36,7 +37,9 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
                 }
             }
         };
-        oaUiControl.setFormat(OADateTime.JsonFormat);
+        
+        // YYYY-MM-DDTHH:mm
+        oaUiControl.setFormat(OADateTime.HtmlInputDateTimeFormat);
     }
 
     public Hub getHub() {
@@ -89,7 +92,7 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
 
 
     @Override
-    public String getTableCellRenderer(int row) {
+    public String getTableCellRenderer(HtmlTD td, int row) {
         OAObject obj = (OAObject) getHub().get(row);
 
         String s;
@@ -105,12 +108,11 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
         return s;
     }
     @Override
-    public String getTableCellEditor(int row, boolean bHasFocus) {
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
         String s = "<input id='"+getId()+"'";
-        s += " style='width: 100%; height: 100%; border: none; box-sizing: border-box; padding: 2px; color: black;";
-        if (row < 0 || getHub().get(row) == null) s += "visibility: hidden;"; 
-        
-        s += "'>";
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        s += ">";
         // note: other settings will be added oahtmlcomponent
         return s;
     }

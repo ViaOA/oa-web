@@ -135,13 +135,13 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         
         OAHtmlTableComponentInterface comp = new OAHtmlTableComponentInterface() {
             @Override
-            public String getTableCellRenderer(int row) {
+            public String getTableCellRenderer(HtmlTD td, int row) {
                 String s = OAConv.toString(row+1, "#,###");
                 return s;
             }
             @Override
-            public String getTableCellEditor(int row, boolean bHasFocus) {
-                String s = getTableCellRenderer(row);
+            public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+                String s = getTableCellRenderer(td, row);
                 return s;
             }
         };
@@ -301,20 +301,23 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         sb.append("  return false;\n");
         sb.append("});\n");
 
+        
+        // need to send before cell editor components are initialized
+        js = createTableScript();
+        sb.append(js);
+        
         return sb.toString();
     }
     
     
     @Override
     protected void beforeGetScript() {
-        
         setVisible(oaUiControl.isVisible());
         setEnabled(oaUiControl.isEnabled());
 
         //rebuild the body rows
         getTBodyRows().clear();
         
-        HtmlTD tdLast = null;
         int row = 0;
         for (Object obj : hub) {
             final int r = row++;
@@ -334,14 +337,17 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
 
     //qqqqqqqqqqqqqqqqqqqq                
 //dont use overflow for bsDT components qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
- td.addStyle("position", "relative");
+
+//qqqqqqq this is needed by date components popup .....
+                //  needs to be put on div ??
+//td.addStyle("position", "relative");
         
-                tdLast = td;
                 td.setTabIndex(0);
                 String s;
                 
                 if (r == hub.getPos()) {
                     if (column.comp instanceof HtmlElement) {
+//qqqqqqqqqqqq                        
                         ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
                     }
                     s = column.comp.getTableCellEditor(td, r, (r == submitRow && c == submitCol));
@@ -358,26 +364,42 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             }
         }
         
-        if (hub.getPos() < 0 && tdLast != null) {
-            String txt = tdLast.getInnerHtml();
-            txt += "<span hidden>";
-            for (Column column : alColumn) {
-                HtmlTD td = new HtmlTD();
-                String s = column.comp.getTableCellEditor(-1, false);
-                txt += s;
-            }            
-            txt += "</span>";
-            tdLast.setInnerHtml(txt);
-        }
+        if (hub.getPos() < 0) {
+            final int r = row;
+            HtmlTR tr = new HtmlTR(getId()+"_"+r);
+            tr.addStyle("display", "none");
+            tr.setHidden(true);
+            addTBodyRow(tr);
 
+            int col = 0;
+            for (Column column : alColumn) {
+                final int c = col++;
+                
+                HtmlTD td = new HtmlTD(getId() + "_" + r + "_" + c);
+
+                if (column.comp instanceof HtmlElement) {
+                    ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
+                }
+                
+                String s = column.comp.getTableCellEditor(td, r, (r == submitRow && c == submitCol));
+                if (s == null) s = "";
+                td.setInnerHtml(s);
+                tr.addTableData(td);
+            }
+        }
         super.beforeGetScript();
     }
 
     
     
     @Override
-    protected String getAjaxScript(boolean bIsInitializing) {
-
+    protected String getAjaxScript(final boolean bIsInitializing) {
+        if (bIsInitializing) return null; // getInitializeScript() already calls createTableScript 
+        return createTableScript();
+    }
+    
+    @Override
+    protected String createTableScript() {
         String width = getWidth();
         boolean bHadWidth = OAStr.isNotEmpty(width);
         if (!bHadWidth) {
@@ -420,7 +442,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
         }
         StringBuilder sb = new StringBuilder();
         
-        String js = super.getAjaxScript(bIsInitializing);
+        String js = super.createTableScript();
         if (js != null) sb.append(js);
 
         if (submitRow >= 0 && submitCol >= 0) {

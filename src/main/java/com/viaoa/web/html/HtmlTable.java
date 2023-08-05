@@ -97,11 +97,18 @@ public class HtmlTable extends HtmlElement {
     
     @Override
     protected String getAjaxScript(boolean bIsInitializing) {
+        String html = createTableScript();
+
+        if (!bIsInitializing && html.equals(prevAjaxScript)) return null;
+        prevAjaxScript = html;
+        
+        return html;
+    }
     
+    protected String createTableScript() {
         //qqqqqqqqqqqqqqqqq create a version that updates existing TRs, TDs        
         // add isChanged=true to TR, TD classes
         //      $("#table tbody tr:eq(0) td:eq(0)").html("TEXTXXX");        
-        
         
         StringBuilder sb = new StringBuilder();
 
@@ -109,7 +116,6 @@ public class HtmlTable extends HtmlElement {
         if (colGroup != null) {
             sb.append(colGroup.createHtml());
         }
-        
         
 //qqqqqqqqqqqq
 //    <col style="width: calc(600px - 90px);">
@@ -140,8 +146,6 @@ public class HtmlTable extends HtmlElement {
         }
         String html = sb.toString();
 
-        if (!bIsInitializing && html.equals(prevAjaxScript)) return null;
-        prevAjaxScript = html;
 
         html = OAWebUtil.createEmbeddedHtmlString(html, '\"');
         
@@ -151,7 +155,6 @@ public class HtmlTable extends HtmlElement {
         sb.append("`);\n");
         
         String js = sb.toString();
-        
         return js;
     }
     

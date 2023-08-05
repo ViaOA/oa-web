@@ -37,9 +37,6 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
                 }
             }
         };
-        // HH:mm
-        oaUiControl.setFormat(OATime.HtmlInputTimeFormat);
-        
     }
 
     public Hub getHub() {
@@ -84,8 +81,7 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        String val = oaUiControl.getValueAsString();
-        setValue(val);
+        setValue((OATime) oaUiControl.getValue());
     }
 
     @Override

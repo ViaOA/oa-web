@@ -38,9 +38,6 @@ public class OAInputDate extends InputDate implements OAHtmlComponentInterface, 
                 }
             }
         };
-        
-        // YYYY-MM-DD
-        oaUiControl.setFormat(OADate.HtmlInputDateFormat);
     }
 
     
@@ -86,8 +83,7 @@ public class OAInputDate extends InputDate implements OAHtmlComponentInterface, 
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        String val = oaUiControl.getValueAsString();
-        setValue(val);
+        setValue((OADate) oaUiControl.getValue());
     }
 
         

@@ -37,9 +37,6 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
                 }
             }
         };
-        
-        // YYYY-MM-DDTHH:mm
-        oaUiControl.setFormat(OADateTime.HtmlInputDateTimeFormat);
     }
 
     public Hub getHub() {
@@ -84,8 +81,7 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        String val = oaUiControl.getValueAsString();
-        setValue(val);
+        setValue((OADateTime) oaUiControl.getValue());
     }
 
 

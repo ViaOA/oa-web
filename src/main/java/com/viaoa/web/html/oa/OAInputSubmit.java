@@ -3,6 +3,7 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUICommandController;
+import com.viaoa.uicontroller.OAUICommandController.Command;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputButton;
@@ -22,25 +23,31 @@ import com.viaoa.web.html.input.InputSubmit;
  * @author vince
  */
 public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterface {
-
     private final OAUICommandController oaUiControl;
+
+    //qqqqq 0: verify class        
+    private static class LastRefresh {
+        Hub hubUsed;
+        OAObject hubUsedAO;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
     
     public OAInputSubmit(String id, Hub hub, OAUICommandController.Command command) {
         super(id);
         oaUiControl = new OAUICommandController(hub, command) {
             @Override
-            public Object getManualObject() {
+            protected Object getManualObject() {
                 return OAInputSubmit.this.getManualObject();
             }
             @Override
             protected boolean performCommand(OAObject obj) {
                 if (command == Command.OtherUsesAO 
                         || command == Command.OtherUsesHub 
-                        || command == Command.ManualChangeAO 
                         || command == Command.GoTo
                         || command == Command.HubSearch
                         || command == Command.Search
                         || command == Command.Select
+                        || command == Command.ManualChangeAO
                         ) {
                     return OAInputSubmit.this.performCommand(obj);
                 }
@@ -67,6 +74,22 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
         };
     }
 
+    
+    @Override
+    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
+        if (oaUiControl.getCommand().getChangesAO()) {
+            Hub h = getHub();
+            if (h != null) {
+                if (lastRefresh.hubUsed != h.getRealHub() || lastRefresh.hubUsedAO != h.getAO()) {
+                    formSubmitEvent.addSyncError("OAInputButton sync error, hub.AO changed");
+                    if (oaUiControl.getCommand().getChangesAO()) {
+                        formSubmitEvent.cancel();
+                    }
+                }
+            }
+        }
+    }
+    
     /**
      * Called by OAForm whenever this button causes the submit (/ajaxSubmit).
      * <br>
@@ -81,7 +104,18 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
      * Override to get manual object, for commands NewManual, AddManual, ManualChangeAO
      */
     protected Object getManualObject() {
-        return null;
+        OAObject obj = null; 
+        switch (oaUiControl.getCommand()) { 
+            case NewManual:
+                obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
+                getHub().insert(obj, getHub().getPos());
+                break;
+            case AddManual:
+                obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
+                getHub().add(obj);
+                break;
+        }
+        return obj;
     }
     
     /**
@@ -102,8 +136,19 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
     
     @Override
     protected void beforeGetScript() {
+        OAForm form = getOAHtmlComponent().getForm();
+        final boolean bIsFormEnabled = form == null || form.getEnabled();
+
         boolean b = oaUiControl.isEnabled();
-        setEnabled(b);
+        setEnabled(bIsFormEnabled && b);
+
+        Hub h = getHub();
+        lastRefresh.hubUsed = h == null ? null : h.getRealHub();
+        lastRefresh.hubUsedAO = h == null ? null : (OAObject) h.getAO();
+
+        b = oaUiControl.isVisible();
+        setVisible(b);
+
         
     }
 }

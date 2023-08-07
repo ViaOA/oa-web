@@ -15,9 +15,9 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  *
  */
 public class OABsDate extends BsDate implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-
     private final OAUIPropertyController oaUiControl;
 
+//qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         OADate value;
@@ -66,8 +66,16 @@ public class OABsDate extends BsDate implements OAHtmlComponentInterface, OAHtml
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        if (lastRefresh.objUsed == null) return;
 
+//qqqqq 2: compare that it was not changed by another        
+        if (lastRefresh.objUsed == null) return;
+        
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq add sync error msg
+        }
+        
         final OADate date = getDateValue();
         if (OACompare.isNotEqual(lastRefresh.value, date)) {
             oaUiControl.onSetProperty(lastRefresh.objUsed, date);
@@ -79,7 +87,8 @@ public class OABsDate extends BsDate implements OAHtmlComponentInterface, OAHtml
     protected void beforeGetScript() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
+
+//qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = (OADate) oaUiControl.getValue(lastRefresh.objUsed);
         
@@ -92,8 +101,7 @@ public class OABsDate extends BsDate implements OAHtmlComponentInterface, OAHtml
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        String val = oaUiControl.getValueAsString(lastRefresh.objUsed);
-        setValue(val);
+        setValue((OADate) oaUiControl.getValue(lastRefresh.objUsed));
     }
 
     @Override

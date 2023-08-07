@@ -134,16 +134,15 @@ public class BsTypeAhead extends InputText {
         id = (ss != null && ss.length == 1) ? ss[0] : null;
 
         if (OAStr.isNotEmpty(id)) {
-            // id is only set by browser, and is the new value to use
+            // id is set by js code sent to browser, and is the new value to use
             setValue(id);
         }
         else {
-            // input:hidden for Id is only assigned when a new value is assigned in the browser.
+            // the input:hidden name="*_id" is only assigned when a new value is assigned in the browser.
             if (OAStr.isEmpty(val)) {
                 // since value was cleared, then the selected item was cleared 
                 // assign as null
                 setValue(null);
-                return;
             }
             // else no change.
         }

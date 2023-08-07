@@ -6,7 +6,6 @@ import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.OACompare;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
-import com.viaoa.web.html.input.InputCheckBox;
 import com.viaoa.web.html.input.InputRadio;
 
 
@@ -18,6 +17,14 @@ public class OAInputRadio extends InputRadio implements OAHtmlComponentInterface
 
     private final OAUIPropertyController oaUiControl;
     private Object selectValue;
+    
+    //qqqqq 0: verify class        
+    private static class LastRefresh {
+        OAObject objUsed;
+        Object value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
+    
     
     public OAInputRadio(String id, String name, String value, Hub hub, String propName, Object selectValue) {
         super(id, name, value);
@@ -61,14 +68,19 @@ public class OAInputRadio extends InputRadio implements OAHtmlComponentInterface
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
+        
+        //qqqqq 2: compare that it was not changed by another        
+        if (lastRefresh.objUsed == null) return;
+        
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq add sync error msg
         }
 
         boolean b = isChecked();
         
-        if (b) oaUiControl.onSetProperty(selectValue);
+        if (b) oaUiControl.onSetProperty(lastRefresh.objUsed, selectValue);
     }
     
     @Override
@@ -76,13 +88,23 @@ public class OAInputRadio extends InputRadio implements OAHtmlComponentInterface
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
+        
+        //qqqqq 1: populate lastRefresh        
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = oaUiControl.getValue(lastRefresh.objUsed);
+        
+        
         boolean b = oaUiControl.isEnabled();
         setEnabled(bIsFormEnabled && b);
 
         b = oaUiControl.isVisible();
         setVisible(b);
 
-        b = (getHub().getAO() == null) ? false : OACompare.isEqual(selectValue, oaUiControl.getValue());
+        b = (lastRefresh.objUsed == null) ? false : OACompare.isEqual(selectValue, lastRefresh.value);
         setChecked(b);
     }
+
+  //qqqqqqqqqq table interface    
+
+    
 }

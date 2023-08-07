@@ -189,7 +189,7 @@ public class BsDateTime extends InputText {
         if (OAStr.isEmpty(val)) return null;
         return new OADateTime(val, OADateTime.JsonFormat);
     }
-    public OADateTime getDateValue() {
+    public OADate getDateValue() {
         String val = getValue();
         if (OAStr.isEmpty(val)) return null;
         return new OADate(val, OADate.JsonFormat);

@@ -22,6 +22,15 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  */
 public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUISelectController oaUiControl;
+
+    private static class LastRefresh {
+        Hub hubUsed;
+        OAObject hubUsedAO;
+
+        // if hubUsed is linked 
+        OAObject linkToObject;
+        OAObject linkToObjectLinkValue;
+    }
     private final LastRefresh lastRefresh = new LastRefresh();
     
     public OABsTypeAheadSelect(String id, OATypeAhead typeAhead) {
@@ -52,15 +61,6 @@ public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentI
         };
     }
 
-    private static class LastRefresh {
-        Hub hubUsed;
-        OAObject hubUsedAO;
-
-        // if hubUsed is linked 
-        OAObject linkToObject;
-        OAObject linkToObjectLinkValue;
-    }
-    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         setMultiValue(false);
@@ -68,19 +68,19 @@ public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentI
 
         // make sure that it has not changed since it was sent to page
         if (lastRefresh.hubUsed != getHub().getRealHub()) {
-            formSubmitEvent.addSyncError("OABsTypeAheadSelect.A");
+            formSubmitEvent.addSyncError("OABsTypeAheadSelect hubUsed changed");
             return;
         }
         
         if (lastRefresh.hubUsedAO != getHub().getAO()) {
-            formSubmitEvent.addSyncError("OABsTypeAheadSelect.B");
+            formSubmitEvent.addSyncError("OABsTypeAheadSelect hub AO changed");
             return;
         }
 
         if (lastRefresh.linkToObject != null) {
             Object objx = (OAObject) lastRefresh.linkToObject.getProperty(oaUiControl.getLinkPropertyName());
             if (objx != lastRefresh.linkToObjectLinkValue) {
-                formSubmitEvent.addSyncError("OABsTypeAheadSelect.C");
+                formSubmitEvent.addSyncError("OABsTypeAheadSelect linkTo property changed");
                 return;
             }
         }
@@ -94,7 +94,7 @@ public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentI
         else {
             obj = typeAhead.findObjectUsingId(id);
             if (obj == null) {
-                formSubmitEvent.addSyncError("OABsTypeAheadSelect.C");
+                formSubmitEvent.addSyncError("OABsTypeAheadSelect could not find Id="+id);
                 return;
             }
         }

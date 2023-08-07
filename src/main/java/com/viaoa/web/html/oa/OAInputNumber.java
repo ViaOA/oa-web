@@ -3,12 +3,11 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputNumber;
-import com.viaoa.web.html.input.InputText;
-import com.viaoa.web.util.OAWebUtil;
 
 
 /**
@@ -16,8 +15,13 @@ import com.viaoa.web.util.OAWebUtil;
  *
  */
 public class OAInputNumber extends InputNumber implements OAHtmlComponentInterface {
-
     private final OAUIPropertyController oaUiControl;
+    //qqqqq 0: verify class        
+    private static class LastRefresh {
+        OAObject objUsed;
+        Object value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
     
     public OAInputNumber(String id, Hub hub, String propName) {
         super(id);
@@ -59,30 +63,40 @@ public class OAInputNumber extends InputNumber implements OAHtmlComponentInterfa
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
-        }
+        
+        //qqqqq 2: compare that it was not changed by another        
+        if (lastRefresh.objUsed == null) return;
 
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq sync error
+        }
+        
         final String val = getValue();
-        oaUiControl.onSetProperty(val);
+        oaUiControl.onSetProperty(lastRefresh.objUsed, val);
+        lastRefresh.value = val;
     }
     
     @Override
     protected void beforeGetScript() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
+       
+      //qqqqq 1: populate lastRefresh        
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = oaUiControl.getValue(lastRefresh.objUsed);
         
-        boolean b = oaUiControl.isEnabled();
+        boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible();
+        b = oaUiControl.isVisible(lastRefresh.objUsed);
         setVisible(b);
         
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        String val = oaUiControl.getValueAsString();
+        String val = oaUiControl.getValueAsString(lastRefresh.objUsed);
         setValue(val);
         
         OAObjectInfo oi = getHub().getOAObjectInfo();
@@ -90,7 +104,6 @@ public class OAInputNumber extends InputNumber implements OAHtmlComponentInterfa
         if (pi != null) {
             if (OAStr.isEmpty(getMax()) && pi.getMaxLength() > 0) setMax(""+pi.getMaxLength());
             if (OAStr.isEmpty(getMin()) && pi.getMinLength() >= 0) setMin(""+pi.getMinLength());
-            setRequired(pi.getRequired());
         }
     }
 }

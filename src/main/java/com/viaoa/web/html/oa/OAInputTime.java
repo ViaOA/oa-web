@@ -14,8 +14,13 @@ import com.viaoa.web.html.input.InputTime;
  *
  */
 public class OAInputTime extends InputTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-
     private final OAUIPropertyController oaUiControl;
+    //qqqqq 0: verify class        
+    private static class LastRefresh {
+        OAObject objUsed;
+        OATime value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
 
     public OAInputTime(String id, Hub hub, String propName) {
         super(id);
@@ -58,19 +63,32 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
+        
+        //qqqqq 2: compare that it was not changed by another        
+        if (lastRefresh.objUsed == null) return;
+        
+        
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq add sync error msg
         }
-
-        final OATime time = getTimeValue();
-        oaUiControl.onSetProperty(time);
+        
+        final OATime dt = getTimeValue();
+        if (OACompare.isNotEqual(lastRefresh.value, dt)) {
+            oaUiControl.onSetProperty(lastRefresh.objUsed, dt);
+            lastRefresh.value = dt;
+        }
     }
     
     @Override
     protected void beforeGetScript() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
+        
+        //qqqqq 1: populate lastRefresh        
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = (OATime) oaUiControl.getValue(lastRefresh.objUsed);
         
         boolean b = oaUiControl.isEnabled();
         setEnabled(bIsFormEnabled && b);
@@ -81,7 +99,7 @@ public class OAInputTime extends InputTime implements OAHtmlComponentInterface, 
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        setValue((OATime) oaUiControl.getValue());
+        setValue(lastRefresh.value);
     }
 
     @Override

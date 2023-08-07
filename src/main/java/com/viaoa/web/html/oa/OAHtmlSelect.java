@@ -30,12 +30,6 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
     private String format;
     private String nullDescription = "";
 
-    /*
-     * Hubs can change (link, master/detail) between the time a page is sent,
-     * and when it is submitted back.<br>
-     * This class is used to capture the current hub/object/selected info
-     * when a page is sent. 
-     */
     private static class LastRefresh {
         Hub hubUsed;
         OAObject objSelected;
@@ -43,7 +37,6 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
         // if hub is linked, then this is the current object that it's linked to and changing.
         OAObject objLinkedTo;  
     }
-    
     private final LastRefresh lastRefresh = new LastRefresh();
 
     public OAHtmlSelect(String id, Hub<F> hub, String propName) {
@@ -88,9 +81,21 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
         final String[] values = getValues();
         if (values == null || values.length == 0) return;
         
-        // verify that hubs "have not moved", when using detailHub, linkHub
+        // verify that hubs "have not moved", when using detailHub, linkHub, etc
         if (getHub().getRealHub() != lastRefresh.hubUsed) {
-            if (lastRefresh.objLinkedTo == null) return; // it was not linked, so do change AO
+            if (lastRefresh.objLinkedTo == null) return; // it was not linked, so dont change AO
+        }
+        
+        if (lastRefresh.hubUsed != getHub().getRealHub()) {
+            formSubmitEvent.addSyncError("OAHtmlSelect select list changed");
+        }
+        else {
+            Hub h = getHub().getLinkHub(true);
+            if (h != null) {
+                if (lastRefresh.objLinkedTo != h.getAO()) {
+                    formSubmitEvent.addSyncError("OAHtmlSelect select list changed");
+                }
+            }
         }
         
         if ("oanull".equals(values[0])) {
@@ -226,7 +231,13 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
 
         String s = "<select id='" + getId() + "' name='" + getId() + "'";
         s += " class='oaFitColumnSize'";
-        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'";
+        
+        Hub h = getHub().getLinkHub(true);
+        
+        
+        if (row < 0 || (h != null && h.get(row) == null)) {
+            s += " style='visibility: hidden;'";
+        }
         s += ">";
         // note: options will be added oahtmlcomponent
         s += "</select>";

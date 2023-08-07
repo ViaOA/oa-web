@@ -3,6 +3,7 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.HtmlTextArea;
@@ -14,11 +15,15 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  */
 public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
-    private String lastValue;
+
+    private static class LastRefresh {
+        OAObject objUsed;
+        String value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
 
     public OAHtmlTextArea(String id, Hub hub, String propName) {
         super(id);
-        
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -57,22 +62,32 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         oaUiControl.setFormat(format);
     }
 
+    public void setConversion(char conv) {
+        oaUiControl.setConversion(conv);
+    }
+    public char getConversion() {
+        return oaUiControl.getConversion();
+    }
+    
+    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
-        }
-
-        final String val = getValue();
-        if (OAString.isNotEqual(lastValue, val)) {
-            oaUiControl.onSetProperty(val);
-            lastValue = val;
+        if (lastRefresh.objUsed == null) return;
+        
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq sync error
         }
         
+        final String val = getValue();
+        if (OAString.isNotEqual(lastRefresh.value, val)) {
+            oaUiControl.onSetProperty(lastRefresh.objUsed, val);
+            lastRefresh.value = val;
+        }
     }
     
     @Override
@@ -80,27 +95,36 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
-        boolean b = oaUiControl.isEnabled();
+//qqqqq 1: populate lastRefresh        
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
+        
+        boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible();
+        b = oaUiControl.isVisible(lastRefresh.objUsed);
         setVisible(b);
         
-        b = oaUiControl.isRequired();
-        setRequired(b);
+        if (getConversion() == 0) {
+            OAObjectInfo oi = getHub().getOAObjectInfo();
+            OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
+            if (pi != null) {
+                if (pi.isUpper()) oaUiControl.setConversion('U');
+                else if (pi.isLower()) oaUiControl.setConversion('L');
+            }
+        }
         
-        String val = oaUiControl.getValueAsString();
-        setValue(val);
-        lastValue = val;
+        setValue(lastRefresh.value);
         
-
         OAObjectInfo oi = getHub().getOAObjectInfo();
         OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
+        
         if (pi != null) {
             if (getMaxLength() == 0 && pi.getMaxLength() > 0) setMaxLength(pi.getMaxLength());
             if (getMinLength() == 0) setMinLength(pi.getMinLength());
-            setRequired(pi.getRequired());
         }
+        b |= oaUiControl.isRequired();
+        setRequired(b);
     }
 
     @Override

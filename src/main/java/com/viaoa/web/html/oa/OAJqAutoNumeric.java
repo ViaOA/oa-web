@@ -3,6 +3,7 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.util.OACompare;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.jquery.JqAutoNumeric;
@@ -14,6 +15,12 @@ import com.viaoa.web.html.jquery.JqMaskedInput;
  */
 public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInterface {
     private final OAUIPropertyController oaUiControl;
+    //qqqqq 0: verify class        
+    private static class LastRefresh {
+        OAObject objUsed;
+        Object value;
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
     
     public OAJqAutoNumeric(String id, Hub hub, String propName) {
         super(id);
@@ -63,13 +70,20 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        OAObject obj = (OAObject) getHub().getAO();
-        if (obj == null) {
-            return;
-        }
+        
+        
+        //qqqqq 2: compare that it was not changed by another        
+        if (lastRefresh.objUsed == null) return;
 
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq sync error
+        }
+        
         final String val = getValue();
-        oaUiControl.onSetProperty(val);
+        oaUiControl.onSetProperty(lastRefresh.objUsed, val);
+        lastRefresh.value = val;
     }
     
     @Override
@@ -77,25 +91,25 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-        boolean b = oaUiControl.isEnabled();
+        //qqqqq 1: populate lastRefresh        
+        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
+        lastRefresh.value = oaUiControl.getValue(lastRefresh.objUsed);
+        
+        
+
+        boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible();
+        b = oaUiControl.isVisible(lastRefresh.objUsed);
         setVisible(b);
         
         b = oaUiControl.isRequired();
         setRequired(b);
         
-        if (getConversion() == 0) {
-            OAObjectInfo oi = getHub().getOAObjectInfo();
-            OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
-            if (pi.isUpper()) oaUiControl.setConversion('U');
-            else if (pi.isLower()) oaUiControl.setConversion('L');
-        }
-        
-        String val = oaUiControl.getValueAsString();
+        String val = oaUiControl.getValueAsString(lastRefresh.objUsed);
         setValue(val);
         
+                
         OAObjectInfo oi = getHub().getOAObjectInfo();
         OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
         if (pi != null) {
@@ -105,7 +119,6 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
             if (getSize() < 1) {
                 setSize(pi.getDisplayLength());
             }
-            setRequired(pi.getRequired());
             
             /*qqqqqqqqqq  Min & Max values ??
             if (pi.getmaxgetMax() == 0 && pi.getMaxLength() > 0) setMaxLength(pi.getMaxLength());

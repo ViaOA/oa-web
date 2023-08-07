@@ -27,13 +27,6 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * @author vince
  */
 public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    
-/* qqqqqqqq  
-   
-      [detail]         [detail]
-  select from hub ->  hubSelect
-*/    
-    
     private final OAUIMultiSelectController oaUiControl;
     private String propName;
     private String format;
@@ -101,6 +94,7 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
         
         // make sure that hubSelect still matches guids that were sent.
         if (lastRefresh.hubSelectUsed.size() != lastRefresh.alSelectOptions.size()) {
+            formSubmitEvent.addSyncError("OAHtmlMultiSelect select list changed");
             return;
         }
         
@@ -119,7 +113,10 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
                 break;
             }
         }
-        if (!bMatch) return;  // hubSelect was changed since the time that the browser originally got it.
+        if (!bMatch) {
+            formSubmitEvent.addSyncError("OAHtmlMultiSelect select list changed");
+            return;  
+        }
         
         List<F> alAdd = new ArrayList<>();
         if (values != null) {

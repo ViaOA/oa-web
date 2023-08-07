@@ -3,6 +3,7 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.util.OACompare;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
@@ -14,9 +15,9 @@ import com.viaoa.web.html.input.InputText;
  *
  */
 public class OAInputText extends InputText implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-
     private final OAUIPropertyController oaUiControl;
 
+    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         String value;
@@ -65,12 +66,20 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         return oaUiControl.getConversion();
     }
     
+    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
+        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
+        
+        // make sure that it did not change
+        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
+            //qqqqqqqqqqqqqqqqq sync error
+        }
         
         final String val = getValue();
         if (OAString.isNotEqual(lastRefresh.value, val)) {
@@ -85,6 +94,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
+//qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         
@@ -110,6 +120,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         
         OAObjectInfo oi = getHub().getOAObjectInfo();
         OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
+        
         if (pi != null) {
             if (getMaxLength() == 0 && pi.getMaxLength() > 0) setMaxLength(pi.getMaxLength());
             if (getMinLength() == 0) setMinLength(pi.getMinLength());
@@ -117,7 +128,6 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
             if (getSize() < 1) {
                 setSize(pi.getDisplayLength());
             }
-            setRequired(pi.getRequired());
         }
     }
 

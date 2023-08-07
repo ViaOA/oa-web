@@ -23,6 +23,11 @@ import com.viaoa.web.util.OAWebUtil;
  */
 public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIMultiSelectController oaUiControl;
+
+    private static class LastRefresh {
+        Hub hubUsed;
+        final List<Object> alSelected = new ArrayList();
+    }
     private final LastRefresh lastRefresh = new LastRefresh();
 
     
@@ -38,8 +43,6 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
         if (!hub.getObjectClass().equals(typeAhead.getToClass())) {
             throw new IllegalArgumentException("hub and typeAhead.toClass must be the same");
         }
-        
-        
 
         oaUiControl = new OAUIMultiSelectController(hub) {
             @Override
@@ -63,10 +66,6 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     }
 
     
-    private static class LastRefresh {
-        Hub hubUsed;
-        final List<Object> alSelected = new ArrayList();
-    }
     
 
     @Override
@@ -81,10 +80,6 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
                 break;
             }
         }
-        if (!bMatch) {
-            formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect.A");
-            return;
-        }
         
         for (Object obj : lastRefresh.alSelected) {
             if (!lastRefresh.hubUsed.contains(obj)) {
@@ -93,7 +88,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
             }
         }
         if (!bMatch) {
-            formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect.B");
+            formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect selected list changed");
             return;
         }
         
@@ -107,6 +102,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
         for (String id : ids) {
             T obj = (T) ta.findObjectUsingId(id);
             if (obj != null) alAdd.add(obj);
+            else formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect could not find object for id="+id);
         }
 
         final List alRemove = new ArrayList();
@@ -130,7 +126,6 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
         return oaUiControl.getHub();
     }
 
-    
     @Override
     protected void beforeGetScript() {
         setMultiValue(true);

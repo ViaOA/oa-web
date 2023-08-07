@@ -5,9 +5,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.object.OAObject;
+import com.viaoa.object.OAObjectCacheDelegate;
 import com.viaoa.uicontroller.OAUIBaseController;
 import com.viaoa.uicontroller.OAUISelectController;
 import com.viaoa.util.OAConv;
+import com.viaoa.util.OAConverter;
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.HtmlCol;
 import com.viaoa.web.html.HtmlColGroup;
@@ -29,19 +32,48 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * adds style "table-layout: fixed"<br>
  * Can be wrapped in a div that scroll css, and has sticky column header.<br>
  */
-public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
-    private final OAUIBaseController oaUiControl;
-    private final List<Column> alColumn = new ArrayList<>();
-    private Hub hub;
+public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtmlComponentInterface {
 
+    private final OAUISelectController oaUiControl;
+    private final List<Column> alColumn = new ArrayList<>();
+
+    private static class LastRefresh {
+        Hub hubUsed;
+        OAObject objSelected;
+
+        // if hub is linked, then this is the current object that it's linked to and changing.
+        OAObject objLinkedTo;  
+    }
+    private final LastRefresh lastRefresh = new LastRefresh();
+    
+    
     private int submitRow=-1, submitCol=-1;
     private String submitKeys;
     
-    public OAHtmlTable(String id, Hub hub) {
+    public OAHtmlTable(String id, Hub<T> hub) {
         super(id);
-        this.hub = hub;
         
-        oaUiControl = new OAUISelectController(hub);
+        // used to interact between component with hub.
+        oaUiControl = new OAUISelectController(hub) {
+            @Override
+            protected void onCompleted(String completedMessage, String title) {
+                OAForm form = getForm();
+                if (form != null) {
+                    form.addMessage(completedMessage);
+                    form.addConsoleMessage(title + " - " + completedMessage);
+                }
+            }
+
+            @Override
+            protected void onError(String errorMessage, String detailMessage) {
+                OAForm form = getForm();
+                if (form != null) {
+                    form.addError(errorMessage);
+                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
+                }
+            }
+        };
+        
         setAjaxSubmit(true);
         getOAHtmlComponent().addClass("oatable");
         
@@ -183,6 +215,28 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             submitKeys = params[0];
         }
     }
+    
+    @Override
+    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
+        // verify that hubs "have not moved", when using detailHub, linkHub, etc
+        if (getHub().getRealHub() != lastRefresh.hubUsed) {
+            if (lastRefresh.objLinkedTo == null) return; // it was not linked, so dont change AO
+        }
+        
+        if (lastRefresh.hubUsed != getHub().getRealHub()) {
+            formSubmitEvent.addSyncError("OAHtmlTable list changed");
+        }
+        else {
+            Hub h = getHub().getLinkHub(true);
+            if (h != null) {
+                if (lastRefresh.objLinkedTo != h.getAO()) {
+                    formSubmitEvent.addSyncError("OAHtmlTable link to changed");
+                }
+            }
+        }
+    }
+
+    
 
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
@@ -194,7 +248,9 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             else if (submitKeys.indexOf(OAForm.Key_LEFT) >= 0) submitCol--;
             else if (submitKeys.indexOf(OAForm.Key_RIGHT) >= 0) submitCol++;
         }
-        hub.setPos(submitRow);
+        
+        Object obj = getHub().get(submitRow);
+        oaUiControl.onAOChange(lastRefresh.objLinkedTo, lastRefresh.objSelected, obj);
     }
     
     
@@ -310,21 +366,42 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
     }
     
     
+    public Hub<T> getHub() {
+        return oaUiControl.getHub();
+    }
+
+    public OAUISelectController getController() {
+        return oaUiControl;
+    }
+    
+    
     @Override
     protected void beforeGetScript() {
         setVisible(oaUiControl.isVisible());
         setEnabled(oaUiControl.isEnabled());
 
+        
+        lastRefresh.hubUsed = getHub().getRealHub();
+        lastRefresh.objSelected = (OAObject) getHub().getAO();
+        
+        Hub h = getHub().getLinkHub(true);
+        if (h != null) {
+            lastRefresh.objLinkedTo = (OAObject) h.getAO();
+        }
+        else lastRefresh.objLinkedTo = null;
+        
+        
         //rebuild the body rows
         getTBodyRows().clear();
         
         int row = 0;
-        for (Object obj : hub) {
+        final int pos = lastRefresh.hubUsed.getPos();
+        for (Object obj : lastRefresh.hubUsed) {
             final int r = row++;
             HtmlTR tr = new HtmlTR(getId()+"_"+r);
             addTBodyRow(tr);
 
-            if (r == hub.getPos()) {
+            if (r == pos) {
                 tr.addClass("oatableSelected");
             }
             
@@ -345,7 +422,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
                 td.setTabIndex(0);
                 String s;
                 
-                if (r == hub.getPos()) {
+                if (r == pos) {
                     if (column.comp instanceof HtmlElement) {
 //qqqqqqqqqqqq                        
                         ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
@@ -364,7 +441,7 @@ public class OAHtmlTable extends HtmlTable implements OAHtmlComponentInterface {
             }
         }
         
-        if (hub.getPos() < 0) {
+        if (pos < 0) {
             final int r = row;
             HtmlTR tr = new HtmlTR(getId()+"_"+r);
             tr.addStyle("display", "none");

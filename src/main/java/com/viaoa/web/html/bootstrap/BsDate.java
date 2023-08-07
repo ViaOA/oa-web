@@ -13,9 +13,9 @@ public class BsDate extends BsDateTime {
         this.typeDateTime = Type.Date;
     }
 
-    public OADate getDateValue() {
-        String val = getValue();
-        if (OAStr.isEmpty(val)) return null;
-        return new OADate(val, OADate.JsonFormat);
+    public void setValue(OADate date) {
+        if (date == null) super.setValue(null);
+        else super.setValue(date.toString(OADate.JsonFormat));
     }
+    
 }

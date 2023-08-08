@@ -692,6 +692,7 @@ public class OAForm extends OABase implements Serializable {
 
         sb.append("var cntAjaxSubmit = 0;\n");
         sb.append("function ajaxSubmit(cmdName) {\n");
+        sb.append("  if (cntAjaxSubmit > 50) return;\n");  //qqqqqqqqq need to add error handling/reporting
         sb.append("  cntAjaxSubmit++;\n");
         sb.append("  var bUseAsync = (cntAjaxSubmit == 1);\n");
         sb.append("  if (bUseAsync && cntAjaxSubmit == 1) {\n");

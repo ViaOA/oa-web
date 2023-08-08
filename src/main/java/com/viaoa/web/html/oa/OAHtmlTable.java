@@ -383,6 +383,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         
         lastRefresh.hubUsed = getHub().getRealHub();
         lastRefresh.objSelected = (OAObject) getHub().getAO();
+        final int pos = getHub().getPos();
         
         Hub h = getHub().getLinkHub(true);
         if (h != null) {
@@ -395,7 +396,6 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         getTBodyRows().clear();
         
         int row = 0;
-        final int pos = lastRefresh.hubUsed.getPos();
         for (Object obj : lastRefresh.hubUsed) {
             final int r = row++;
             HtmlTR tr = new HtmlTR(getId()+"_"+r);

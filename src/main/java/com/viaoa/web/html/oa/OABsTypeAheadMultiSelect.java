@@ -34,6 +34,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     public OABsTypeAheadMultiSelect(String id, Hub<T> hub, OATypeAhead<?, T> typeAhead) {
         super(id);
         setTypeAhead(typeAhead);
+        setMultiValue(true);
         
         if (typeAhead == null) throw new IllegalArgumentException("typeAhead cant be null");
         setTypeAhead(typeAhead);

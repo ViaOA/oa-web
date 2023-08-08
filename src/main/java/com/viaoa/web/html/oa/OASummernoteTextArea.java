@@ -11,13 +11,12 @@ import com.viaoa.web.html.summernote.SummernoteTextArea;
 import com.viaoa.web.util.OAWebUtil;
 
 /**
- * Binds HtmlTextArea to an Hub + propertyName
+ * Binds Summernote textarea to an Hub + propertyName
  *
  */
 public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlComponentInterface {
     private final OAUIPropertyController oaUiControl;
 
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         String value;
@@ -66,13 +65,13 @@ public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlCo
             return;
         }
         
-        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
         
         // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq sync error
+            formSubmitEvent.addSyncError("OASummernoteTextArea Id="+getId());
+            return;
         }
         
         final String val = getValue();
@@ -87,7 +86,6 @@ public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlCo
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
-//qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         

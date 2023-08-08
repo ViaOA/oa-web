@@ -80,7 +80,8 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq sync error
+            formSubmitEvent.addSyncError("OAHtmlTextArea Id="+getId());
+            return;
         }
         
         final String val = getValue();
@@ -95,7 +96,6 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
-//qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         

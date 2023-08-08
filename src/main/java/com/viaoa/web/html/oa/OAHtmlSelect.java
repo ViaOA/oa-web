@@ -87,13 +87,13 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
         }
         
         if (lastRefresh.hubUsed != getHub().getRealHub()) {
-            formSubmitEvent.addSyncError("OAHtmlSelect select list changed");
+            formSubmitEvent.addSyncError("OAHtmlSelect Id="+getId());
         }
         else {
             Hub h = getHub().getLinkHub(true);
             if (h != null) {
                 if (lastRefresh.objLinkedTo != h.getAO()) {
-                    formSubmitEvent.addSyncError("OAHtmlSelect select list changed");
+                    formSubmitEvent.addSyncError("OAHtmlSelect Id="+getId());
                 }
             }
         }

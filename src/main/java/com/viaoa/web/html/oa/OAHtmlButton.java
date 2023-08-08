@@ -26,7 +26,6 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface {
     private final OAUICommandController oaUiControl;
 
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         Hub hubUsed;
         OAObject hubUsedAO;
@@ -42,7 +41,7 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
             }
 
             @Override
-            protected boolean performCommand(OAObject obj) {
+            protected boolean performCommand(Hub hub, OAObject obj) {
                 if (command == Command.OtherUsesAO 
                         || command == Command.OtherUsesHub 
                         || command == Command.GoTo
@@ -54,7 +53,7 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
                     return OAHtmlButton.this.performCommand(obj);
                 }
                 else { 
-                    return super.performCommand(obj);
+                    return super.performCommand(hub, obj);
                 }
             }
 
@@ -84,10 +83,8 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
             Hub h = getHub();
             if (h != null) {
                 if (lastRefresh.hubUsed != h.getRealHub() || lastRefresh.hubUsedAO != h.getAO()) {
-                    formSubmitEvent.addSyncError("OAHtlButton sync error, hub.AO changed");
-                    if (oaUiControl.getCommand().getChangesAO()) {
-                        formSubmitEvent.cancel();
-                    }
+                    formSubmitEvent.addSyncError("OAHtlButton Id="+getId());
+                    return;
                 }
             }
         }
@@ -100,7 +97,7 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
      */
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
-        oaUiControl.onCommand(lastRefresh.hubUsedAO);
+        oaUiControl.onCommand(lastRefresh.hubUsed, lastRefresh.hubUsedAO);
     }
 
     /**
@@ -111,11 +108,9 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
         switch (oaUiControl.getCommand()) { 
             case NewManual:
                 obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
-                getHub().insert(obj, getHub().getPos());
                 break;
             case AddManual:
                 obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
-                getHub().add(obj);
                 break;
         }
         return obj;

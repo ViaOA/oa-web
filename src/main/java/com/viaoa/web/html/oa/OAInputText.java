@@ -17,7 +17,6 @@ import com.viaoa.web.html.input.InputText;
 public class OAInputText extends InputText implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
 
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         String value;
@@ -66,19 +65,18 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         return oaUiControl.getConversion();
     }
     
-    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
         
         // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq sync error
+            formSubmitEvent.addSyncError("OAInputText Id="+getId());
+            return;
         }
         
         final String val = getValue();
@@ -94,7 +92,6 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
-//qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         

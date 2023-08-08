@@ -33,7 +33,6 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * Can be wrapped in a div that scroll css, and has sticky column header.<br>
  */
 public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtmlComponentInterface {
-
     private final OAUISelectController oaUiControl;
     private final List<Column> alColumn = new ArrayList<>();
 
@@ -379,7 +378,6 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     protected void beforeGetScript() {
         setVisible(oaUiControl.isVisible());
         setEnabled(oaUiControl.isEnabled());
-
         
         lastRefresh.hubUsed = getHub().getRealHub();
         lastRefresh.objSelected = (OAObject) getHub().getAO();
@@ -413,7 +411,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
                 
 
     //qqqqqqqqqqqqqqqqqqqq                
-//dont use overflow for bsDT components qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+//dont use style:overflow for bsDT components qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 
 //qqqqqqq this is needed by date components popup .....
                 //  needs to be put on div ??
@@ -424,7 +422,6 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
                 
                 if (r == pos) {
                     if (column.comp instanceof HtmlElement) {
-//qqqqqqqqqqqq                        
                         ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
                     }
                     s = column.comp.getTableCellEditor(td, r, (r == submitRow && c == submitCol));
@@ -479,7 +476,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     protected String createTableScript() {
         String width = getWidth();
         boolean bHadWidth = OAStr.isNotEmpty(width);
-        if (!bHadWidth) {
+        if (!bHadWidth) {  // calculate width
             int w = 0;
             String units = null;
             boolean bBadUnits = false;

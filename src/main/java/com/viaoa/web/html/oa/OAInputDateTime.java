@@ -16,7 +16,6 @@ import com.viaoa.web.html.input.*;
 public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
 
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         OADateTime value;
@@ -64,13 +63,13 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
         
         // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq add sync error msg
+            formSubmitEvent.addSyncError("OAInputDateTime Id="+getId());
+            return;
         }
         
         final OADateTime dt = getDateTimeValue();
@@ -85,7 +84,6 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-        //qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = (OADateTime) oaUiControl.getValue(lastRefresh.objUsed);
         

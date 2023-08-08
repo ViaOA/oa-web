@@ -24,7 +24,6 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
 
-//qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objToUpdate;
         OAObject linkValue;
@@ -79,20 +78,16 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
         };
     }
 
-
-
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         setMultiValue(false);
         super.onSubmitAfterLoadValues(formSubmitEvent);  
         
-//qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objToUpdate == null) return;
         
         // make sure that it has not changed since it was sent to page
         if (OACompare.isNotEqual(lastRefresh.linkValue, (OAObject) oaUiControl.getValue(lastRefresh.objToUpdate))) {
-//qqqqqqvvvvvvvv add this to others             
-            formSubmitEvent.addSyncError("OABsTypeAhead value was changed");
+            formSubmitEvent.addSyncError("OABsTypeAhead Id="+getId());
             return;
         }
 
@@ -130,7 +125,6 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-//qqqqq 1: populate lastRefresh        
         lastRefresh.objToUpdate = (OAObject) getHub().getAO();
         lastRefresh.linkValue = (OAObject) oaUiControl.getValue(lastRefresh.objToUpdate);
 
@@ -141,8 +135,6 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
         setVisible(b);
 
         String s = getTypeAhead().getDisplayValue(lastRefresh.linkValue);
-
-        // set text.value
         setValue(s);
     }
     

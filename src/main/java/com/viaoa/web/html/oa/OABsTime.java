@@ -17,7 +17,6 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 public class OABsTime extends BsTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
 
-//qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         OATime value;
@@ -67,13 +66,12 @@ public class OABsTime extends BsTime implements OAHtmlComponentInterface, OAHtml
             return;
         }
         
-//qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
 
-        // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq
+            formSubmitEvent.addSyncError("OABsTime Id="+getId());
+            return;
         }
         
         final OATime time = getTimeValue();
@@ -88,7 +86,6 @@ public class OABsTime extends BsTime implements OAHtmlComponentInterface, OAHtml
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-//qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = (OATime) oaUiControl.getValue(lastRefresh.objUsed);
         

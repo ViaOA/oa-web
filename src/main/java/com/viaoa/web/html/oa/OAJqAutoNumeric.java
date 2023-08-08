@@ -4,6 +4,7 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.OACompare;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.jquery.JqAutoNumeric;
@@ -13,9 +14,8 @@ import com.viaoa.web.html.jquery.JqMaskedInput;
  * Binds JqAutoNumeric to an Hub + propertyName
  *
  */
-public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInterface {
+public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         Object value;
@@ -71,14 +71,12 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
             return;
         }
         
-        
-        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
 
-        // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq sync error
+            formSubmitEvent.addSyncError("OAJqAutoNumeric Id="+getId());
+            return;
         }
         
         final String val = getValue();
@@ -91,12 +89,9 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-        //qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValue(lastRefresh.objUsed);
         
-        
-
         boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
 
@@ -108,7 +103,6 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
         
         String val = oaUiControl.getValueAsString(lastRefresh.objUsed);
         setValue(val);
-        
                 
         OAObjectInfo oi = getHub().getOAObjectInfo();
         OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
@@ -120,11 +114,37 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
                 setSize(pi.getDisplayLength());
             }
             
-            /*qqqqqqqqqq  Min & Max values ??
+            /*qqqqq  Min & Max values ??
             if (pi.getmaxgetMax() == 0 && pi.getMaxLength() > 0) setMaxLength(pi.getMaxLength());
             if (getMin() == 0) setMinLength(pi.getMinLength());
             */
-            
         }
+    }
+
+    @Override
+    public String getTableCellRenderer(HtmlTD td, int row) {
+        OAObject obj = (OAObject) getHub().get(row);
+
+        String s;
+        if (obj == null) s = "";
+        else {
+            boolean b = obj.isVisible(getPropertyName());
+            if (!b) s = "";
+            else {
+                s = obj.getPropertyAsString(getPropertyName(), getFormat());
+                if (s == null) s = "";
+                else td.addClass("oaNoTextOverflow");
+            }
+        }
+        return s;
+    }
+    @Override
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+        String s = "<input type='text' id='"+getId()+"'";
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        s += ">";
+        // note: other settings will be added InputText
+        return s;
     }
 }

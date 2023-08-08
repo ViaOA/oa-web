@@ -37,7 +37,6 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
         Hub hubSelectUsed;
         final List<String> alSelectOptions = new ArrayList<>();
     }
-
     private final LastRefresh lastRefresh = new LastRefresh();
     
     /**
@@ -94,7 +93,7 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
         
         // make sure that hubSelect still matches guids that were sent.
         if (lastRefresh.hubSelectUsed.size() != lastRefresh.alSelectOptions.size()) {
-            formSubmitEvent.addSyncError("OAHtmlMultiSelect select list changed");
+            formSubmitEvent.addSyncError("OAHtmlMultiSelect Id="+getId());
             return;
         }
         
@@ -114,7 +113,7 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
             }
         }
         if (!bMatch) {
-            formSubmitEvent.addSyncError("OAHtmlMultiSelect select list changed");
+            formSubmitEvent.addSyncError("OAHtmlMultiSelect Id="+getId());
             return;  
         }
         

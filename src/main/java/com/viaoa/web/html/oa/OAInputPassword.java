@@ -4,7 +4,9 @@ import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.OACompare;
+import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputPassword;
@@ -13,16 +15,14 @@ import com.viaoa.web.html.input.InputPassword;
  * Binds Input Password to an Hub + propertyName
  *
  */
-public class OAInputPassword extends InputPassword implements OAHtmlComponentInterface {
+public class OAInputPassword extends InputPassword implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
 
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         String value;
     }
     private final LastRefresh lastRefresh = new LastRefresh();
-    
     
     public OAInputPassword(String id, Hub hub, String propName) {
         super(id);
@@ -53,7 +53,6 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
         return oaUiControl.getPropertyName();
     }
     
-
     public void setConversion(char conv) {
         oaUiControl.setConversion(conv);
     }
@@ -66,13 +65,13 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
         
         // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq sync error
+            formSubmitEvent.addSyncError("OAInputPassword Id="+getId());
+            return;
         }
         
         final String val = getValue();
@@ -87,11 +86,9 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-      //qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         
-
         
         boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
@@ -125,4 +122,34 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
             }
         }
     }
+    
+    @Override
+    public String getTableCellRenderer(HtmlTD td, int row) {
+        OAObject obj = (OAObject) getHub().get(row);
+
+        String s;
+        if (obj == null) s = "";
+        else {
+            boolean b = obj.isVisible(getPropertyName());
+            if (!b) s = "";
+            else {
+                s = obj.getPropertyAsString(getPropertyName());
+                if (s == null) s = "";
+                else td.addClass("oaNoTextOverflow");
+            }
+        }
+        if (OAStr.isNotEmpty(s)) s = oaUiControl.getIgnorePasswordValue();
+        return s;
+    }
+    @Override
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+        String s = "<input type='password' id='"+getId()+"'";
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        s += ">";
+        // note: other settings will be added InputText
+        return s;
+    }
+
+    
 }

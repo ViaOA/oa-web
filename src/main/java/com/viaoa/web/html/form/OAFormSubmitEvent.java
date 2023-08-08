@@ -52,7 +52,6 @@ public class OAFormSubmitEvent {
         this.response = response;
         this.bAjax = isAjax;
     }
-    
 
     public Map<String, String[]> getNameValueMap() {
         return hmNameValue;

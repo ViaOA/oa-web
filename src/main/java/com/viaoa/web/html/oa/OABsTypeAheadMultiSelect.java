@@ -89,7 +89,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
             }
         }
         if (!bMatch) {
-            formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect selected list changed");
+            formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect Id="+getId());
             return;
         }
         
@@ -103,7 +103,10 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
         for (String id : ids) {
             T obj = (T) ta.findObjectUsingId(id);
             if (obj != null) alAdd.add(obj);
-            else formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect could not find object for id="+id);
+            else {
+                formSubmitEvent.addSyncError("OABsTypeAheadMultiSelect could not find object for id="+id);
+                return;
+            }
         }
 
         final List alRemove = new ArrayList();

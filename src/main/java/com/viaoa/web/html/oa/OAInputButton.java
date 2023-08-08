@@ -24,7 +24,6 @@ import com.viaoa.web.html.input.InputButton;
 public class OAInputButton extends InputButton implements OAHtmlComponentInterface {
     private final OAUICommandController oaUiControl;
 
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         Hub hubUsed;
         OAObject hubUsedAO;
@@ -39,7 +38,7 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
                 return OAInputButton.this.getManualObject();
             }
             @Override
-            protected boolean performCommand(OAObject obj) {
+            protected boolean performCommand(Hub hub, OAObject obj) {
                 if (command == Command.OtherUsesAO 
                         || command == Command.OtherUsesHub 
                         || command == Command.GoTo
@@ -51,7 +50,7 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
                     return OAInputButton.this.performCommand(obj);
                 }
                 else { 
-                    return super.performCommand(obj);
+                    return super.performCommand(hub, obj);
                 }
             }
             @Override
@@ -80,10 +79,8 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
             Hub h = getHub();
             if (h != null) {
                 if (lastRefresh.hubUsed != h.getRealHub() || lastRefresh.hubUsedAO != h.getAO()) {
-                    formSubmitEvent.addSyncError("OAInputButton sync error, hub.AO changed");
-                    if (oaUiControl.getCommand().getChangesAO()) {
-                        formSubmitEvent.cancel();
-                    }
+                    formSubmitEvent.addSyncError("OAInputButton Id="+getId());
+                    return;
                 }
             }
         }
@@ -108,11 +105,9 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
         switch (oaUiControl.getCommand()) { 
             case NewManual:
                 obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
-                getHub().insert(obj, getHub().getPos());
                 break;
             case AddManual:
                 obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
-                getHub().add(obj);
                 break;
         }
         return obj;
@@ -133,8 +128,6 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
     public OAUICommandController getController() {
         return oaUiControl;
     }
-    
-    
     
     @Override
     protected void beforeGetScript() {

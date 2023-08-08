@@ -5,6 +5,7 @@ import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUIPropertyController;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAString;
+import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.jquery.JqMaskedInput;
@@ -13,15 +14,13 @@ import com.viaoa.web.html.jquery.JqMaskedInput;
  * Binds JqMaskedInput to an Hub + propertyName
  *
  */
-public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInterface {
+public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
     private final OAUIPropertyController oaUiControl;
-    //qqqqq 0: verify class        
     private static class LastRefresh {
         OAObject objUsed;
         String value;
     }
     private final LastRefresh lastRefresh = new LastRefresh();
-    
     
     public OAJqMaskedInput(String id, Hub hub, String propName) {
         super(id);
@@ -72,13 +71,13 @@ public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInt
             return;
         }
         
-        //qqqqq 2: compare that it was not changed by another        
         if (lastRefresh.objUsed == null) return;
         
         // make sure that it did not change
         Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            //qqqqqqqqqqqqqqqqq sync error
+            formSubmitEvent.addSyncError("OAJqMaskedInput Id="+getId());
+            return;
         }
         
         final String val = getValue();
@@ -93,7 +92,6 @@ public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInt
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         
-      //qqqqq 1: populate lastRefresh        
         lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
         lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
         
@@ -130,5 +128,32 @@ public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInt
         }        
         
     }
-//qqqqqqqqqqqqqqqqq table interface    
+
+    @Override
+    public String getTableCellRenderer(HtmlTD td, int row) {
+        OAObject obj = (OAObject) getHub().get(row);
+
+        String s;
+        if (obj == null) s = "";
+        else {
+            boolean b = obj.isVisible(getPropertyName());
+            if (!b) s = "";
+            else {
+                s = obj.getPropertyAsString(getPropertyName(), getFormat());
+                if (s == null) s = "";
+                else td.addClass("oaNoTextOverflow");
+            }
+        }
+        return s;
+    }
+    @Override
+    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+        String s = "<input type='text' id='"+getId()+"'";
+        s += " class='oaFitColumnSize'";
+        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'"; 
+        s += ">";
+        // note: other settings will be added InputText
+        return s;
+    }
+    
 }

@@ -44,7 +44,6 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
                 }
             }
         };
-        oaUiControl.setFormat(OADateTime.JsonFormat);
     }
 
     public Hub getHub() {

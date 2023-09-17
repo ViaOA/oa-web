@@ -63,13 +63,16 @@ public class InputButton extends InputElement {
     
 /*    
 
-If the image button is used to submit the form, this control doesn't submit its value — 
+If the "image" button is used to submit the form, this control doesn't submit its value — 
     instead, the X and Y coordinates of the click on the image are submitted 
 
 
 <input type="image" alt="Click me!" src="my-img.png" width="80" height="30" />
 
   acts as a submit button
+  
+  name/values submitted:
+  name.x=99   name.y=99
 
 */    
     /*    

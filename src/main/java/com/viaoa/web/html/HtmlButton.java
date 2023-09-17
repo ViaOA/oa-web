@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
-import com.viaoa.web.html.input.InputElement;
 
 /*
 Button that is similar to InputButton.
@@ -20,12 +19,6 @@ public class HtmlButton extends HtmlFormElement {
     
     public HtmlButton(String id, Type type) {
         super(id, (type == null || type == Type.Button) ? FormElementType.Button : (type == Type.Submit ? FormElementType.Submit : FormElementType.Reset));
-        OAHtmlComponent.InputType it;
-        if (type == null) it = OAHtmlComponent.InputType.Button;
-        else if (type == Type.Button) it = OAHtmlComponent.InputType.Button;
-        else if (type == Type.Submit) it = OAHtmlComponent.InputType.Submit;
-        else it = OAHtmlComponent.InputType.Reset;
-        htmlComponent.setType(it);
     }
 
     public String getButtonText() {
@@ -38,6 +31,14 @@ public class HtmlButton extends HtmlFormElement {
     public String getType() {
         return htmlComponent.getType();
     }
+
+    public String getValue() {
+        return htmlComponent.getValue();
+    }
+    public void setValue(String value) {
+        htmlComponent.setValue(value);
+    }
+    
     
     
     private static Set<String> hsSupported = new HashSet();  // lowercase
@@ -50,6 +51,4 @@ public class HtmlButton extends HtmlFormElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
-    
-    
 }

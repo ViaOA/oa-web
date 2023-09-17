@@ -171,9 +171,14 @@ public class HtmlElementPropertyEditor {
         form.add(txt);
 
         txt = new InputText("txtTitle") {
+            boolean bFlag;
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
-                oahtmlComp.setTitle(getValue());
+                String s = getValue();
+                if (OAStr.isNotEmpty(s) || bFlag) {
+                    oahtmlComp.setTitle(s);
+                    bFlag = true;
+                }
             }
             @Override
             protected String getAjaxScript(boolean bIsInitializing) {
@@ -299,6 +304,11 @@ public class HtmlElementPropertyEditor {
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 oahtmlComp.setVisible(getChecked());
+            }
+            @Override
+            protected String getAjaxScript(boolean bIsInitializing) {
+                setChecked(oahtmlComp.getVisible());
+                return super.getAjaxScript(bIsInitializing);
             }
         };
         chk.setLabelId("lblVisible");
@@ -772,10 +782,15 @@ public class HtmlElementPropertyEditor {
         form.add(txtNumber);
 
         txt = new InputText("txtInnerHtml") {
+            boolean bFlag;
             @Override
             public void onSubmitLoadValues(OAFormSubmitEvent formSubmitEvent) {
                 if (htmlComp.isSupported("innerHtml")) {
-                    oahtmlComp.setInnerHtml(getValue());
+                    String s = getValue();
+                    if (OAStr.isNotEmpty(s) || bFlag) {
+                        oahtmlComp.setInnerHtml(s);
+                        bFlag = true;
+                    }
                 }
             }
             @Override

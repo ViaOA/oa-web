@@ -6,11 +6,8 @@ import java.util.regex.Pattern;
 
 import com.viaoa.hub.Hub;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.uicontroller.OAUIBaseController;
 import com.viaoa.uicontroller.OAUISelectController;
 import com.viaoa.util.OAConv;
-import com.viaoa.util.OAConverter;
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.HtmlCol;
 import com.viaoa.web.html.HtmlColGroup;
@@ -74,9 +71,9 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         };
         
         setAjaxSubmit(true);
-        getOAHtmlComponent().addClass("oatable");
+        getOAHtmlComponent().addClass("oatable table table-bordered table-hover table-striped");
         
-        addStyle("table-layout", "fixed");
+        // addStyle("table-layout", "fixed");
     }
     
     public static class Column {
@@ -99,7 +96,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
      * Add a new column using an HTML Element.
      * @param title heading title
      * @param comp OAWeb component 
-     * @param width width of the column, using "rem" as the units.
+     * @param width width of the column, using "ch" as the units.
      */
     public void addColumn(String title, OAHtmlTableComponentInterface comp, int width) {
         if (comp instanceof HtmlElement) {
@@ -108,7 +105,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     
         HtmlCol htmlCol = new HtmlCol();
         if (width >= 0) {
-            htmlCol.setWidth(width+"rem");
+            htmlCol.setWidth(width+"ch");
         }
         
         HtmlTH htmlTh = new HtmlTH();
@@ -140,6 +137,8 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         }
         else tr = al.get(0); 
         tr.addTableData(htmlTh);
+        
+        htmlTh.addClass("table-primary");
     }
 
     public void addCounterColumn() {
@@ -152,8 +151,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     public void addCounterColumn(String title) {
         HtmlCol htmlCol = new HtmlCol();
         htmlCol.addClass("oatableColumnCount");
-        htmlCol.addStyle("width", "3rem");
-        // htmlCol.addStyle("max-width", "3rem");
+        htmlCol.addStyle("width", "3ch");
 
         HtmlTH htmlTh = new HtmlTH();
         htmlTh.setInnerHtml(title == null ? "" : title);
@@ -255,7 +253,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     
     @Override
     protected String getInitializeScript() {
-        addClass("oatable");
+        // addClass("oatable");
         
         StringBuilder sb = new StringBuilder();
         String js = super.getInitializeScript();
@@ -401,6 +399,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
 
             if (r == pos) {
                 tr.addClass("oatableSelected");
+                tr.addClass("table-success");
             }
             
             int col = 0;
@@ -409,6 +408,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
                 
                 HtmlTD td = new HtmlTD(getId() + "_" + r + "_" + c);
                 
+                for (String s : column.htmlCol.getClasses()) td.addClass(s);
 
     //qqqqqqqqqqqqqqqqqqqq                
 //dont use style:overflow for bsDT components qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq

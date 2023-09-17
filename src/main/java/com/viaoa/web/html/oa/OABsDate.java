@@ -43,7 +43,6 @@ public class OABsDate extends BsDate implements OAHtmlComponentInterface, OAHtml
                 }
             }
         };
-        oaUiControl.setFormat(OADate.JsonFormat);
     }
 
     public Hub getHub() {

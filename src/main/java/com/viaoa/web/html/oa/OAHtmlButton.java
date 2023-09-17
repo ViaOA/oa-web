@@ -97,7 +97,7 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
      */
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
-        oaUiControl.onCommand(lastRefresh.hubUsed, lastRefresh.hubUsedAO);
+        oaUiControl.onCommand();
     }
 
     /**

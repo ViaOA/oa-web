@@ -1756,6 +1756,10 @@ public class OAForm extends OABase implements Serializable {
         // note: order matters
         hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
         
+        
+        hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);//qqqqqqqqqq
+        
+        
         //qqqqqqqqqqq might want to add *theme css files        
         
         for (HtmlElement he : getAllHtmlElements()) {
@@ -1763,6 +1767,7 @@ public class OAForm extends OABase implements Serializable {
             comp.getRequiredCssNames(hsCssName);
         }
         
+//qqqqqqqqqqqqq        
         // include oajsp.css after components
         hsCssName.add(OAFormInsertDelegate.CSS_oaweb);
 

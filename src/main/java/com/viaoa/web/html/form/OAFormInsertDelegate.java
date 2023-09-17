@@ -44,6 +44,7 @@ public class OAFormInsertDelegate {
      */
     protected static final HashMap<String, String> hmJsFilePath = new HashMap<>();
     
+//qqqqqqqqqqq verify/update these qqqqqqqqqqqqqqq    
     
     static {
         registerRequiredCssName(CSS_jquery_ui, "vendor/jquery-ui-1.12.1/jquery-ui.css");
@@ -51,7 +52,12 @@ public class OAFormInsertDelegate {
         registerRequiredCssName(CSS_jquery_ui_theme, "vendor/jquery-ui-themes-1.12.1/themes/base/theme.css");
         registerRequiredCssName(CSS_jquery_timepicker, "vendor/jquery-timepicker/timepicker.css");
         registerRequiredCssName(CSS_bootstrap_treeview, "vendor/bootstrap-treeview/bootstrap-treeview.css");
-        registerRequiredCssName(CSS_bootstrap, "vendor/bootstrap-3.3.7/css/bootstrap.css");
+        
+        
+        registerRequiredCssName(CSS_bootstrap, "vendor/bootstrap-5.3.1/css/bootstrap.css");
+        //was: registerRequiredCssName(CSS_bootstrap, "vendor/bootstrap-3.3.7/css/bootstrap.css");
+        
+        
         registerRequiredCssName(CSS_bootstrap_theme, "vendor/bootstrap-3.3.7/css/bootstrap-theme.css");
         registerRequiredCssName(CSS_bootstrap_datetimepicker, "vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.css");
         registerRequiredCssName(CSS_bootstrap_tagsinput, "vendor/bootstrap-tagsinput/bootstrap-tagsinput.css");
@@ -59,7 +65,10 @@ public class OAFormInsertDelegate {
         registerRequiredCssName(CSS_bootstrap_select, "vendor/bootstrap-select/css/bootstrap-select.css");
         registerRequiredCssName(CSS_bootstrap_ladda, "vendor/bootstrap-spinner/ladda-themeless.css");
         registerRequiredCssName(CSS_summernote, "vendor/summernote/summernote.css");
-        registerRequiredCssName(CSS_oaweb, "vendor/viaoa/oaweb.css");
+        
+//qqqqqqqqqqqqqqqqqqqqqqqqqq using oawebTest.css qqqqqqqqqqqqq
+        
+        registerRequiredCssName(CSS_oaweb, "vendor/viaoa/oawebTest.css");
         registerRequiredCssName(CSS_croppie, "vendor/Croppie-2.6.2/croppie.css");
     }
     
@@ -89,7 +98,14 @@ public class OAFormInsertDelegate {
         registerRequiredJsName(JS_jquery_ui, "vendor/jquery-ui-1.12.1/jquery-ui.js");
         registerRequiredJsName(JS_jquery_maskedinput, "vendor/jquery-maskedinput/maskedinput.js");
         registerRequiredJsName(JS_jquery_timepicker, "vendor/jquery-timepicker/timepicker.js");
-        registerRequiredJsName(JS_bootstrap, "vendor/bootstrap-3.3.7/js/bootstrap.js");
+        
+        
+        //qqqqqqqqqqqqqqqqqqqqq
+        registerRequiredJsName(JS_bootstrap, "vendor/bootstrap-5.3.1/js/bootstrap.bundle.js");
+        
+        //was: registerRequiredJsName(JS_bootstrap, "vendor/bootstrap-3.3.7/js/bootstrap.js");
+        
+        
         registerRequiredJsName(JS_bootstrap_treeview, "vendor/bootstrap-treeview/bootstrap-treeview.js");
         registerRequiredJsName(JS_moment, "vendor/moment/moment.min.js");
         registerRequiredJsName(JS_bootstrap_datetimepicker, "vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.js");

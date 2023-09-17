@@ -1,7 +1,6 @@
 package com.viaoa.web.html.bootstrap;
 
 import com.viaoa.util.OADate;
-import com.viaoa.util.OAStr;
 
 /**
  * Create a bootstrap date text component.

@@ -201,14 +201,10 @@ public class BsDateTime extends InputText {
     }
     
     
-//qqqqqqqq might want to do this during the method onSubmitLoadValues    
-    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-
         String value = getValue();
         if (OAStr.isEmpty(value)) return;
-
         
         String fmt = getFormat();
         boolean b = true;

@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Control and Html A element.
+ * Html A element.
  * <p>
  * Uses setInnerHtml to change the text for the link.
  * 

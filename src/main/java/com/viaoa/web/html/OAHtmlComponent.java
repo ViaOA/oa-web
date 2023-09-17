@@ -87,10 +87,6 @@ public class OAHtmlComponent {
             return eventType;
         }
         
-        public boolean getUsesValue() {
-            boolean b = (this != File);
-            return b;
-        }
         public boolean getUsesChecked() {
             boolean b = (this == Radio || this == Checkbox); 
             return b;
@@ -123,17 +119,18 @@ public class OAHtmlComponent {
         return null;
     }
     
+
     // Types used for an Input Element
     public static enum InputType {
-        Button(FormElementType.Button),
+        Button(FormElementType.Button, true, false),
         CheckBox(FormElementType.Checkbox),
         Color(FormElementType.Text),
         Date(FormElementType.Text),
-        DateTimeLocal("datetime-local", FormElementType.Text),
+        DateTimeLocal("datetime-local", FormElementType.Text, true, true),
         Email(FormElementType.Text),
-        File(FormElementType.File),
+        File(FormElementType.File, false, false),
         Hidden(FormElementType.Text),
-        Image(FormElementType.Image),
+        Image(FormElementType.Image, false, false),   // submit names: name+".x", name+".y" where value is point x,y ... does not have value attribute
         Month(FormElementType.Text),
         Number(FormElementType.Text),
         Password(FormElementType.Text),
@@ -150,26 +147,29 @@ public class OAHtmlComponent {
         
         private String display;
         private FormElementType formElementType;
+        private boolean bUsesValue;
+        private boolean bUsesPrevValue;
         
         InputType() {
             display = name().toLowerCase();
         }
 
         InputType(FormElementType fet) {
-            display = name().toLowerCase();
-            this.formElementType = fet;
-        }
-        public FormElementType getFormElementType() {
-            return formElementType;
-            
-        }
-        InputType(String name, FormElementType fet) {
-            this.display = name;
-            this.formElementType = fet;
+            this(fet, true, true);
         }
 
-        InputType(String name) {
+        InputType(FormElementType fet, boolean bUsesValue, boolean bUsesPrevValue) {
+            this.display = name().toLowerCase();
+            this.formElementType = fet;
+            this.bUsesValue = bUsesValue;
+            this.bUsesPrevValue = bUsesPrevValue;
+        }
+        
+        InputType(String name, FormElementType fet, boolean bUsesValue, boolean bUsesPrevValue) {
             this.display = name;
+            this.formElementType = fet;
+            this.bUsesValue = bUsesValue;
+            this.bUsesPrevValue = bUsesPrevValue;
         }
         
         public boolean getSubmitsByDefault() {
@@ -181,7 +181,45 @@ public class OAHtmlComponent {
             return display;
         }
         
+        public boolean getUsesValue() {
+            return bUsesValue;
+        }
+        public boolean getUsesPrevValue() {
+            return bUsesPrevValue;
+        }
+        public FormElementType getFormElementType() {
+            return formElementType;
+        }
     }
+    
+    
+    protected boolean getUsesValue() {
+        InputType it = getInputType();
+        if (it != null) {
+            return it.getUsesValue();
+        }
+        
+        FormElementType fet = getFormElementType();
+        if (fet != null) {
+           return (fet != FormElementType.File);
+        }
+        return false;
+    }
+    
+    protected boolean getUsesPrevValue() {
+        InputType it = getInputType();
+        if (it != null) {
+            return it.getUsesPrevValue();
+        }
+        
+        FormElementType fet = getFormElementType();
+        if (fet != null) {
+           return (fet != FormElementType.File) && (fet != FormElementType.Select) && (fet != FormElementType.Button);
+        }
+        return false;
+    }
+    
+    
     private String type;  // input type attribute, see InputType 
 
     protected String value;  
@@ -540,7 +578,8 @@ public class OAHtmlComponent {
         return this.placeHolder;
     }
     public void setPlaceHolder(String placeHolder) {
-        this.bPlaceHolderChanged |= OAStr.isNotEqualNullEqualsBlank(this.placeHolder, placeHolder);
+        if (OAStr.isEmpty(placeHolder)) bPlaceHolderChanged = true;
+        else this.bPlaceHolderChanged |= OAStr.isNotEqualNullEqualsBlank(this.placeHolder, placeHolder);
         this.placeHolder = placeHolder;
     }
     
@@ -548,7 +587,8 @@ public class OAHtmlComponent {
         return this.pattern;
     }
     public void setPattern(String pattern) {
-        this.bPatternChanged |= OAStr.isNotEqualNullEqualsBlank(this.pattern, pattern);
+        if (OAStr.isEmpty(pattern)) bPatternChanged = true;
+        else this.bPatternChanged |= OAStr.isNotEqualNullEqualsBlank(this.pattern, pattern);
         if (bPatternChanged) setNeedsRefreshed(true);
         this.pattern = pattern;
     }
@@ -557,7 +597,8 @@ public class OAHtmlComponent {
         return this.title;
     }
     public void setTitle(String title) {
-        this.bTitleChanged |= OAStr.isNotEqualNullEqualsBlank(this.title, title);
+        if (OAStr.isEmpty(title)) bTitleChanged = true;
+        else this.bTitleChanged |= OAStr.isNotEqualNullEqualsBlank(this.title, title);
         this.title = title;
     }
     
@@ -609,6 +650,9 @@ public class OAHtmlComponent {
     public void setVisible(boolean b) {
         bVisibleChanged |= (b != this.bVisible);
         this.bVisible= b;
+    }
+    public void setVisibleChanged(boolean b) {
+        bVisibleChanged = b;
     }
     
     public boolean getRequired() {
@@ -1105,7 +1149,8 @@ public class OAHtmlComponent {
         return this.source;
     }
     public void setSource(String val) {
-        bImageChanged |= OAStr.isNotEqualNullEqualsBlank(this.source, val);
+        if (OAStr.isEmpty(val)) bImageChanged = true;
+        else bImageChanged |= OAStr.isNotEqualNullEqualsBlank(this.source, val);
         this.source = val;
     }
     public String getSrc() {
@@ -1405,7 +1450,7 @@ public class OAHtmlComponent {
             if (getSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName + "(function(event) {\n");
                 
-                if (formElementType != null && formElementType.getUsesValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
+                if (formElementType != null && getUsesPrevValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
                     sb.append("if (this.value === this.oaPrevValue) return false;\n");
                     sb.append("this.oaPrevValue = this.value;\n");
                 }
@@ -1435,7 +1480,7 @@ public class OAHtmlComponent {
             else if (getAjaxSubmit()) {
                 sb.append("$('#" + id + "')."+ eventName+"(function(event) {\n");
 
-                if (formElementType != null && formElementType.getUsesValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
+                if (formElementType != null && getUsesPrevValue() && formElementType.getDefaultEventType() == EventType.OnBlur) {
                     sb.append("if (this.value === this.oaPrevValue) return false;\n");
                     sb.append("this.oaPrevValue = this.value;\n");
                 }
@@ -1489,14 +1534,15 @@ public class OAHtmlComponent {
         
         final FormElementType fet = getFormElementType();        
 
-        if (fet != null && fet.getUsesValue()) {
+        if (getUsesValue()) {
             if (!this.bValueChangedByAjax) {
-                if (fet != FormElementType.StyledTextArea) {
-                    s = OAJspUtil.createJsString(s, '\'');
-                    sb.append("$('#" + id + "').val('"+s+"');\n");
-                    sb.append("$('#" + id + "')[0].oaPrevValue = $('#" + id + "').val();\n");
-                    lastAjaxSent = null;
+                s = OAJspUtil.createJsString(s, '\'');
+                sb.append("$('#" + id + "').val('"+s+"');\n");
+                if (getUsesPrevValue()) {
+//qqqqqqqqqqqqqqqqqqqqqqqq                    
+                    sb.append("$('#" + id + "')[0].oaPrevValue = $('#" + id + "').val(); //qqqqqqqqqqqqqqqqqqqqq\n");
                 }
+                lastAjaxSent = null;
             }
         }
         
@@ -1927,7 +1973,8 @@ public class OAHtmlComponent {
         return innerHtml;
     }
     public void setInnerHtml(String html) {
-        bInnerHtmlChanged |= OAStr.isNotEqualNullEqualsBlank(this.innerHtml, html);
+        if (OAStr.isEmpty(html)) bInnerHtmlChanged = true;
+        else bInnerHtmlChanged |= OAStr.isNotEqualNullEqualsBlank(this.innerHtml, html);
         this.innerHtml = html;
     }
     
@@ -2115,7 +2162,8 @@ public class OAHtmlComponent {
         return href;
     }
     public void setHref(String href) {
-        bHrefChanged = OAStr.isNotEqualNullEqualsBlank(this.href, href);
+        if (OAStr.isEmpty(href)) bHrefChanged = true;
+        else bHrefChanged = OAStr.isNotEqualNullEqualsBlank(this.href, href);
         this.href = href;
     }
 
@@ -2129,7 +2177,8 @@ public class OAHtmlComponent {
         return target;
     }
     public void setTarget(String target) {
-        bTargetChanged = OAStr.isNotEqualNullEqualsBlank(this.target, target);
+        if (OAStr.isEmpty(target)) bTargetChanged = true;
+        else bTargetChanged = OAStr.isNotEqualNullEqualsBlank(this.target, target);
         this.target = target;
     }
     

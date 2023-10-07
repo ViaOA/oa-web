@@ -1254,7 +1254,7 @@ public class OARestServlet extends HttpServlet {
 
 		if (OAString.isNotEmpty(jsonBody)) {
 			oaj = new OAJson();
-			ObjectMapper om = oaj.getObjectMapper();
+			ObjectMapper om = oaj.createObjectMapper();
 			nodeArray = om.createArrayNode();
 			/*
 			oajson = new OAJson();

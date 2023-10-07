@@ -13,6 +13,7 @@ package com.viaoa.jsp;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -1647,7 +1648,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 			return null;
 		}
 
-		ArrayList<OAObject> al = typeAhead.search(searchText);
+		List<OAObject> al = typeAhead.search(searchText);
 		if (al == null) {
 			return null;
 		}
@@ -1693,7 +1694,7 @@ public class OATextField implements OAJspComponent, OATableEditor, OAJspRequirem
 			return null;
 		}
 
-		ArrayList al = typeAhead.search(searchText);
+		List al = typeAhead.search(searchText);
 		if (al == null) {
 			return null;
 		}

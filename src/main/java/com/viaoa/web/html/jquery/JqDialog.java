@@ -4,9 +4,9 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Set;
 
-import com.viaoa.jsp.OAJspDelegate;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlElement;
+import com.viaoa.web.html.form.OAFormInsertDelegate;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /**
@@ -176,8 +176,8 @@ public class JqDialog extends HtmlElement {
 
     
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAJspDelegate.JS_jquery);
-        hsJsName.add(OAJspDelegate.JS_jquery_ui);
+        hsJsName.add(OAFormInsertDelegate.JS_jquery);
+        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
 
 /*qqqqqqqqqq        
         if (OAString.isNotEmpty(getToolTip())) {
@@ -194,7 +194,7 @@ public class JqDialog extends HtmlElement {
 
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
-        hsCssName.add(OAJspDelegate.CSS_jquery_ui);
+        hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
         
 /*qqqqqqqq        
         if (OAString.isNotEmpty(getToolTip())) {

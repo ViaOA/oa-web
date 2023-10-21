@@ -4,11 +4,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.viaoa.jsp.OAJspUtil;
 import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent.InputModeType;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+import com.viaoa.web.util.OAJspUtil;
 
 public class InputText extends InputElement {
     

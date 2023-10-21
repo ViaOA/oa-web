@@ -13,7 +13,6 @@ import com.viaoa.template.OATemplate;
 import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent;
-import com.viaoa.web.oldversion.OAWebComponent;
 import com.viaoa.web.server.OASession;
 
 /**
@@ -205,11 +204,13 @@ public class OAWebUtil {
         return sb.toString();
     }
 
+/*qqqqqq is this used?    
     public static Window getWindow(OAWebComponent component) {
         // TODO Auto-generated method stub
         return null;
     }
-
+*/
+    
     /**
      * Convert json string value to a properly escaped string.
      * <p>

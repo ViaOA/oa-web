@@ -2,7 +2,6 @@ package com.viaoa.web.html.bootstrap;
 
 import java.util.*;
 
-import com.viaoa.jsp.OAJspUtil;
 import com.viaoa.object.OAObject;
 import com.viaoa.object.OATypeAhead;
 import com.viaoa.util.OAStr;
@@ -11,6 +10,7 @@ import com.viaoa.web.html.form.OAFormInsertDelegate;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputText;
 import com.viaoa.web.server.OASession;
+import com.viaoa.web.util.OAJspUtil;
 import com.viaoa.web.util.OAWebUtil;
 /*
  https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md   

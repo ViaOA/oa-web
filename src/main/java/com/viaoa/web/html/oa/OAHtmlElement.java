@@ -96,10 +96,10 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         if (hubTable != null && hubTable != getHub()) {
             
             objx = hubTable.getAt(row);
-            if (obj != null) {
+            if (objx instanceof OAObject) {
                 String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
                 //qqqqqq will need support for many(/hub) as the return value ?? qqqqqq and make comma separated listing
-                objx = obj.getProperty(pp);
+                objx = ((OAObject)objx).getProperty(pp);
             }
         }
         else {
@@ -111,6 +111,7 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         
         if (objx instanceof Hub) {
             Hub h = (Hub) objx;
+            s = "";//qqqqqqqqqqqqqq
         }
         else if (objx instanceof OAObject) {
             OAObject obj = (OAObject) objx;

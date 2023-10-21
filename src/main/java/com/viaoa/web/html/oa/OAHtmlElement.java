@@ -8,8 +8,7 @@ import com.viaoa.web.html.HtmlElement;
 import com.viaoa.web.html.HtmlTD;
 
 /**
- * Used to set the inner html for any html element.
- * Has support for OATemplate.
+ * Used to set the inner html for any html element. Has support for OATemplate.
  * 
  * @author vince
  */
@@ -19,8 +18,7 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     private String format;
     private String template;
     private OATemplate oaTemplate;
-    
-    
+
     public OAHtmlElement(String id, Hub<F> hub, String propName) {
         super(id);
         this.hub = hub;
@@ -30,12 +28,15 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     public Hub getHub() {
         return hub;
     }
+
     public void setHub(Hub hub) {
         this.hub = hub;
     }
+
     public String getPropertyName() {
         return this.propName;
     }
+
     public void setPropertyName(String propName) {
         this.propName = propName;
     }
@@ -43,25 +44,27 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     public String getFormat() {
         return this.format;
     }
+
     public void setFormat(String format) {
         this.format = format;
     }
-    
+
     public String getTemplate() {
         return this.template;
     }
+
     public void setTemplate(String template) {
         if (this.template != template) oaTemplate = null;
         this.template = template;
-        
+
     }
-    
+
     @Override
     protected void beforeGetScript() {
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
-        
+
         OAObject obj = (OAObject) getHub().getAO();
 
         String val;
@@ -77,19 +80,40 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
                 return;
             }
             setVisible(obj.isVisible(getPropertyName()));
-            
+
             val = obj.getPropertyAsString(getPropertyName(), getFormat());
         }
         setInnerHtml(val);
     }
 
-    @Override
-    public String getTableCellRenderer(HtmlTD td, int row) {
-        OAObject obj = (OAObject) getHub().get(row);
+    //qqqqqqqqqqqqqqqqqqqq Change the other OA web components to use getTableCell* method that has the table hub in it. 
+    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqq  this one is the working example that uses getPropertypathBetweenHubs qqqqqq
 
-        String s;
-        if (obj == null) s = "";
+    @Override
+    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
+
+        Object objx;
+        if (hubTable != null && hubTable != getHub()) {
+            
+            objx = hubTable.getAt(row);
+            if (obj != null) {
+                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
+                //qqqqqq will need support for many(/hub) as the return value ?? qqqqqq and make comma separated listing
+                objx = obj.getProperty(pp);
+            }
+        }
         else {
+            objx = getHub().get(row);
+        }
+
+        
+        String s;
+        
+        if (objx instanceof Hub) {
+            Hub h = (Hub) objx;
+        }
+        else if (objx instanceof OAObject) {
+            OAObject obj = (OAObject) objx;
             boolean b = obj.isVisible(getPropertyName());
             if (!b) s = "";
             else {
@@ -97,11 +121,16 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
                 td.addClass("oaNoTextOverflow");
             }
         }
+        else {
+            s = "";
+        }
+        
         return s;
     }
+
     @Override
-    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
-        String s = getTableCellRenderer(td, row);
+    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
+        String s = getTableCellRenderer(hubTable, td, row);
         return s;
     }
 }

@@ -200,6 +200,7 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
     @Override
     public String getTableCellRenderer(HtmlTD td, int row) {
         if (row < 0) return "";
+        
         if (oaUiControl.getLinkToHub() == null) return "";
         OAObject objLinkTo = (OAObject) oaUiControl.getLinkToHub().get(row);
         if (objLinkTo == null) return "";

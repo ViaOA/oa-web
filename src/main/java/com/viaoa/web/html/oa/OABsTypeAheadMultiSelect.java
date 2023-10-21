@@ -172,8 +172,18 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     
     
     @Override
-    public String getTableCellRenderer(HtmlTD td, int row) {
-        OAObject obj = (OAObject) getHub().get(row);
+    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
+        OAObject obj;
+        if (hubTable != null && hubTable != getHub()) {
+            obj = (OAObject) hubTable.getAt(row);
+            if (obj != null) {
+                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
+                obj = (OAObject) obj.getProperty(pp);
+            }
+        }
+        else {
+            obj = (OAObject) getHub().get(row);
+        }
         String displayValue;
 
         if (obj == null) displayValue = "";
@@ -189,10 +199,21 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     }
 
     @Override
-    public String getTableCellEditor(HtmlTD td, int row, boolean bHasFocus) {
+    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
+        OAObject obj;
+        if (hubTable != null && hubTable != getHub()) {
+            obj = (OAObject) hubTable.getAt(row);
+            if (obj != null) {
+                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
+                obj = (OAObject) obj.getProperty(pp);
+            }
+        }
+        else {
+            obj = (OAObject) getHub().get(row);
+        }
         String s = "<input type='text' id='" + getId() + "'";
         s += " class='oaFitColumnSize'";
-        if (row < 0 || getHub().get(row) == null) s += " style='visibility: hidden;'";
+        if (obj == null) s += " style='visibility: hidden;'";
         s += ">";
         // note: other settings will be added oahtmlcomponent
         return s;

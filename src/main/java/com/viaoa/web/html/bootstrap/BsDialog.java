@@ -4,9 +4,9 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Set;
 
-import com.viaoa.jsp.OAJspDelegate;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.HtmlElement;
+import com.viaoa.web.html.form.OAFormInsertDelegate;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /**
@@ -164,12 +164,12 @@ public class BsDialog extends HtmlElement {
     }
     
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAJspDelegate.JS_bootstrap);
-        hsJsName.add(OAJspDelegate.JS_bootstrap);
+        hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
+        hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
     }
 
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
-        hsCssName.add(OAJspDelegate.CSS_bootstrap);
+        hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
     }
 }

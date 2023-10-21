@@ -3,11 +3,11 @@ package com.viaoa.web.html.jquery;
 import java.util.List;
 import java.util.Set;
 
-import com.viaoa.jsp.OAJspUtil;
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAFormInsertDelegate;
 import com.viaoa.web.html.input.InputText;
 import com.viaoa.web.server.OASession;
+import com.viaoa.web.util.OAJspUtil;
 
 /**
  * Uses JQuery autocomplete.

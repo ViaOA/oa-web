@@ -424,13 +424,13 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
                     if (column.comp instanceof HtmlElement) {
                         ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
                     }
-                    s = column.comp.getTableCellEditor(td, r, (r == submitRow && c == submitCol));
+                    s = column.comp.getTableCellEditor(getHub(), td, r, (r == submitRow && c == submitCol));
                     if (r == submitRow && c == submitCol && (column.comp instanceof HtmlFormElement)) {
                         ((HtmlFormElement) column.comp).setFocus();
                     }
                 }
                 else if (!column.htmlCol.getVisible() || column.htmlCol.getHidden()) s = "";
-                else s = column.comp.getTableCellRenderer(td, r);
+                else s = column.comp.getTableCellRenderer(getHub(), td, r);
                 
                 if (s == null) s = "";
                 td.setInnerHtml(s);
@@ -455,7 +455,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
                     ((HtmlElement) column.comp).getOAHtmlComponent().setNeedsRefreshed(true); // since it will be removed, and then re-added to the page/dom.
                 }
                 
-                String s = column.comp.getTableCellEditor(td, r, (r == submitRow && c == submitCol));
+                String s = column.comp.getTableCellEditor(getHub(), td, r, (r == submitRow && c == submitCol));
                 if (s == null) s = "";
                 td.setInnerHtml(s);
                 tr.addTableData(td);

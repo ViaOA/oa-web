@@ -933,7 +933,7 @@ public class OAForm extends OABase implements Serializable {
         for (FormProcess fp : alProcess) {
             OAProcess p = fp.p;
             if (!fp.bShowInDialog) continue;
-            if (!p.isDone()) {
+            if (!p.getDone()) {
                 cnt++;
                 if (!bBlock && p.getBlock()) {
                     if (!p.isBlockTimedout()) {
@@ -947,11 +947,11 @@ public class OAForm extends OABase implements Serializable {
             bHasProcess = true;
             String s = p.getName();
             
-            if (p.isDone()) {
+            if (p.getDone()) {
                 if (s == null) s = "";
                 s += " - Done";
             }
-            if (p.getCancelled()) {
+            if (p.getWasCancelled()) {
                 if (s == null) s = "";
                 s += " - Cancelled";
             }
@@ -964,7 +964,7 @@ public class OAForm extends OABase implements Serializable {
             step1 = p.getCurrentStep();
             step2 = p.getTotalSteps();
             
-            if (p.isDone()) {
+            if (p.getDone()) {
                 perc = 100;
             }
             else if (step1 > step2) perc = 100;

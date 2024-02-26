@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.viaoa</groupId>
     <artifactId>oa-web</artifactId>
-    <version>3.7.6</version>
+    <version>3.7.7</version>
     <packaging>jar</packaging>
 
 
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>com.viaoa</groupId>
             <artifactId>oa-core</artifactId>
-            <version>3.7.6</version>
+            <version>3.7.7</version>
         </dependency>
 
         <dependency>
@@ -177,7 +177,7 @@
                 </executions>
             </plugin>
 
-<!-- qqqqqqqqqqq required for maven central --> 
+            <!-- required for maven central -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -203,10 +203,22 @@
                     </execution>
                 </executions>
             </plugin>
-<!-- qqqqqqqqqqqq -->
 
-<!-- qqqq need to have this run when sending to maven central repo, a password window will popup when building -->
-
+            <!-- 
+               mavencentral deploy
+               run mvn "clean"
+               run mvn "deploy" 
+               
+                uses GnuGP windows
+                ** make sure tha gpg agent is running      
+                  * take out the "Qqq" in the next line
+                PS C:\Program Files (x86)\GnuPG\bin> gpgconf -Qqq-launch gpg-agent
+                PS C:\Program Files (x86)\GnuPG\bin> gpg-agent
+                gpg-agent[6632]: gpg-agent running and available
+                
+               need to have this run when sending to maven central repo, 
+                 note: a password window used to popup when building, but not nows 
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.viaoa</groupId>
     <artifactId>oa-web</artifactId>
-    <version>3.7.8</version>
+    <version>3.7.9</version>
     <packaging>jar</packaging>
 
 
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>com.viaoa</groupId>
             <artifactId>oa-core</artifactId>
-            <version>3.7.8</version>
+            <version>3.7.9</version>
         </dependency>
 
         <dependency>
@@ -206,18 +206,7 @@
 
             <!-- 
                mavencentral deploy
-               run mvn "clean"
-               run mvn "deploy" 
-               
-                uses GnuGP windows
-                ** make sure tha gpg agent is running      
-                  * take out the "Qqq" in the next line
-                PS C:\Program Files (x86)\GnuPG\bin> gpgconf -Qqq-launch gpg-agent
-                PS C:\Program Files (x86)\GnuPG\bin> gpg-agent
-                gpg-agent[6632]: gpg-agent running and available
-                
-               need to have this run when sending to maven central repo, 
-                 note: a password window used to popup when building, but not nows 
+               see oa-core pom.xml
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -17,6 +17,7 @@ import com.viaoa.web.html.HtmlTD;
 import com.viaoa.web.html.HtmlTH;
 import com.viaoa.web.html.HtmlTR;
 import com.viaoa.web.html.HtmlTable;
+import com.viaoa.web.html.OAHtmlComponent.OverflowType;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
@@ -106,6 +107,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         HtmlCol htmlCol = new HtmlCol();
         if (width >= 0) {
             htmlCol.setWidth(width+"ch");
+            // htmlCol.setOverflow(OverflowType.Hidden); // not needed, there is a CSS class to handle this
         }
         
         HtmlTH htmlTh = new HtmlTH();

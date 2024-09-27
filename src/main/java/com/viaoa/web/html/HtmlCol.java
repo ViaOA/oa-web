@@ -81,6 +81,9 @@ public class HtmlCol extends HtmlElement {
             if (!b) sb.append(" style='");
             sb.append("width:"+getWidth()+";");
             b = true;
+            
+   //qqqqqqqqqqq cut off qqqqqqqqqqqqqqqqqqqqqq         
+            
         }
 
         

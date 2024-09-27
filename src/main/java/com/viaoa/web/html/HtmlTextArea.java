@@ -117,6 +117,9 @@ public class HtmlTextArea extends HtmlFormElement {
     public void setWrap(String wrap) {
         htmlComponent.setWrap(wrap);
     }
+    public void setWrap(OAHtmlComponent.WrapType wrap) {
+        htmlComponent.setWrap(wrap);
+    }
 
     private static Set<String> hsSupported = new HashSet();  // lowercase
     static {

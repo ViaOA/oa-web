@@ -63,6 +63,9 @@ public class OAHtmlComponent {
     
     
     // see: onSubmitLoadValues  that loads submitted values.
+    /**
+     * Html Elements used by Forms.
+     */
     public static enum FormElementType {
         Text(EventType.OnBlur),   // value of input/text
         TextArea(EventType.OnBlur),   // value of input/text

@@ -16,12 +16,12 @@ textarea {
 
 public class HtmlTextArea extends HtmlFormElement {
     
-    public HtmlTextArea(String id) {
-        super(id, FormElementType.TextArea);
+    public HtmlTextArea(String selector) {
+        super(selector, FormElementType.TextArea);
     }
     
-    protected HtmlTextArea(final String id, final FormElementType formElementType) {
-        super(id, formElementType);
+    protected HtmlTextArea(final String selector, final FormElementType formElementType) {
+        super(selector, formElementType);
     }
     
     

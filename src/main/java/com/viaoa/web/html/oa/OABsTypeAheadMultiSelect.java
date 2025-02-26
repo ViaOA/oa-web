@@ -31,8 +31,8 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     private final LastRefresh lastRefresh = new LastRefresh();
 
     
-    public OABsTypeAheadMultiSelect(String id, Hub<T> hub, OATypeAhead<?, T> typeAhead) {
-        super(id);
+    public OABsTypeAheadMultiSelect(String selector, Hub<T> hub, OATypeAheadInputText<?, T> typeAhead) {
+        super(selector);
         setTypeAhead(typeAhead);
         setMultiValue(true);
         
@@ -97,7 +97,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
         // 2: update adds/removes
         String[] ids = getValue().split(",");
         
-        final OATypeAhead ta = getTypeAhead();
+        final OATypeAheadInputText ta = getTypeAhead();
 
         final List<T> alAdd = new ArrayList<>();
         for (String id : ids) {
@@ -131,7 +131,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     }
 
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         setMultiValue(true);
         
         OAForm form = getOAHtmlComponent().getForm();
@@ -149,7 +149,7 @@ public class OABsTypeAheadMultiSelect<T extends OAObject> extends BsTypeAhead im
     @Override
     protected String getAjaxScript(boolean bIsInitializing) {
         setMultiValue(true);
-        final OATypeAhead ta = getTypeAhead();
+        final OATypeAheadInputText ta = getTypeAhead();
         final StringBuilder sb = new StringBuilder();
         sb.append("$('#" + getId() + "').tagsinput('removeAll');\n");
 

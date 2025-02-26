@@ -19,8 +19,8 @@ all <input> attributes, by type:
  */
 public class InputElement extends HtmlFormElement {
 
-    public InputElement(String id, InputType type) {
-        super(id, type == null ? null : type.getFormElementType());
+    public InputElement(String selector, InputType type) {
+        super(selector, type == null ? null : type.getFormElementType());
         htmlComponent.setType(type);
     }
     

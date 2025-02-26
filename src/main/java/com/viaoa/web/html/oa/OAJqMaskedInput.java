@@ -22,8 +22,8 @@ public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInt
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAJqMaskedInput(String id, Hub hub, String propName) {
-        super(id);
+    public OAJqMaskedInput(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -64,7 +64,7 @@ public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInt
         return oaUiControl.getConversion();
     }
     
-    
+/*qqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -86,9 +86,9 @@ public class OAJqMaskedInput extends JqMaskedInput implements OAHtmlComponentInt
             lastRefresh.value = val;
         }
     }
-    
+*/    
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         

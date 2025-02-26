@@ -14,8 +14,8 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  */
 public class InputNumber extends InputRange {
 
-    public InputNumber(String id) {
-        super(id, InputType.Number);
+    public InputNumber(String selector) {
+        super(selector, InputType.Number);
         htmlComponent.setInputMode(InputModeType.Numeric);
     }
 }

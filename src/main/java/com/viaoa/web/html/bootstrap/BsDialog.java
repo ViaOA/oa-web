@@ -24,8 +24,8 @@ public class BsDialog extends HtmlElement {
     // list of button names. If selected, then the name/text will be set when onSubmit is called.
     private ArrayList<String> alButtons = new ArrayList<String>();  
     
-    public BsDialog(String id) {
-        super(id);
+    public BsDialog(String selector) {
+        super(selector);
         setVisible(false);
     }
     public void setModal(boolean b) {

@@ -15,6 +15,9 @@ import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.server.OASession;
 
+
+//qqqqqqqqqqqqqqq a lot of this has been replaced by OAStr methods
+
 /**
  * Utility used to convert dynamic data for internal text, so that it is html and javascript safe.
  * 
@@ -30,6 +33,11 @@ import com.viaoa.web.server.OASession;
  */
 public class OAWebUtil {
 
+    
+    
+    
+    
+    
     public static void debug(ServletContext application, OASession oasession, HttpServletRequest request, HttpServletResponse response) {
         System.out.print("realPath=" + application.getRealPath("test"));
         System.out.print(", servletPath=" + request.getServletPath());
@@ -71,6 +79,7 @@ public class OAWebUtil {
      * value='[data]'>
      * 
      * @return */
+    //qqqqqqqq moved to OAString    
     public static String createEmbeddedHtmlString(final String text, final char htmlQuoteChar) {
         String s;
         if (htmlQuoteChar == '\'') s = OAString.convert(text, "\'", "&#39;"); // &apos;  not yet supported
@@ -79,16 +88,19 @@ public class OAWebUtil {
         return s;
     }
 
+  //qqqqqqqq moved to OAString    
     /* Javascript code that is inside of JS &gt; Html example:
      * $('#id').html(" ..  <button onclick='embedded'>"); */
     public static String createEmbeddedJsString(final String text, final char jsQuoteChar) {
         return _createJsString(text, jsQuoteChar, true);
     }
 
+//qqqqqqqq moved to OAString    
     public static String createJsString(final String text, final char jsQuoteChar) {
         return _createJsString(text, jsQuoteChar, false);
     }
 
+// qqqqqqqqqq replace using OAStr.convertToHtml    
     /* First checks to see if it might be html. If so, returns text, else converts [NL] to <br> and < >
      * to html codes. */
     public static String convertToHtml(final String text) {
@@ -138,6 +150,8 @@ public class OAWebUtil {
 
     }
 
+    
+//qqqqqqqqqqqqqq moved to OAString    
     /* Converts a string to be used inside of a codegen Javascript screen
      * 
      * @param text
@@ -211,6 +225,8 @@ public class OAWebUtil {
     }
 */
     
+    
+//qqqqqqqqqqqqqqqqq use OAStr.escapeJSON    
     /**
      * Convert json string value to a properly escaped string.
      * <p>

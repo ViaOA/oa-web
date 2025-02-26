@@ -1,9 +1,8 @@
 package com.viaoa.web.html.input;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.object.*;
 import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent.InputModeType;
@@ -11,14 +10,13 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 import com.viaoa.web.util.OAJspUtil;
 
 public class InputText extends InputElement {
-    
-    public InputText(String id) {
-        super(id, InputType.Text);
-    }
 
+    public InputText(String selector) {
+        this(selector, InputType.Text);
+    }
     // used by subclasses to set the input type, ex: "tel"
-    protected InputText(String id, InputType type) {
-        super(id, type);
+    protected InputText(String selector, InputType type) {
+        super(selector, type);
     }
     
     
@@ -164,6 +162,7 @@ public class InputText extends InputElement {
     }
     
     
+/*qqqqqqqqqqq    
     @Override
     protected String getVerifyScript() {
         StringBuilder sb = null;
@@ -218,7 +217,7 @@ public class InputText extends InputElement {
         if (sb == null) return null;
         return sb.toString();
     }
-
+*/
 
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
@@ -241,4 +240,19 @@ public class InputText extends InputElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Change)) return;
+        
+        onClientChangeEvent(map.get("newValue"));
+    }
+    
+    protected void onClientChangeEvent(String newValue) {
+        getOAHtmlComponent().setValue(newValue);
+        getOAHtmlComponent().setValueChanged(false);
+    }
+
 }

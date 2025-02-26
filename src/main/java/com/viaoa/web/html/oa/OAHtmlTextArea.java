@@ -22,8 +22,8 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
     }
     private final LastRefresh lastRefresh = new LastRefresh();
 
-    public OAHtmlTextArea(String id, Hub hub, String propName) {
-        super(id);
+    public OAHtmlTextArea(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -69,7 +69,7 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
         return oaUiControl.getConversion();
     }
     
-    
+/*qqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -90,9 +90,9 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAHtmlComponentInter
             lastRefresh.value = val;
         }
     }
-    
+*/    
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 

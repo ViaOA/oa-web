@@ -24,8 +24,8 @@ public class InputImage extends InputElement {
     // Note: it submits value.x, value.y  if it's clicked 
     // OAForm will set the OAFormSubmitEvent.imageClickX/Y 
     
-    public InputImage(String id) {
-        super(id, InputType.Image);
+    public InputImage(String selector) {
+        super(selector, InputType.Image);
     }
     public String getSource() {
         return htmlComponent.getSource();

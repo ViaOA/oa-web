@@ -11,8 +11,8 @@ import com.viaoa.web.html.OAHtmlComponent.OverflowType;
 
 public class HtmlScrollPanel extends HtmlElement{
 
-    public HtmlScrollPanel(String id) {
-        super(id);
+    public HtmlScrollPanel(String selector) {
+        super(selector);
     }
 
     

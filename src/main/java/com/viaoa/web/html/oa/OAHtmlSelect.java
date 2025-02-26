@@ -5,140 +5,167 @@ import java.util.*;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUISelectController;
-import com.viaoa.util.OAConverter;
-import com.viaoa.util.OAStr;
-import com.viaoa.web.html.HtmlOption;
-import com.viaoa.web.html.HtmlSelect;
-import com.viaoa.web.html.HtmlTD;
+import com.viaoa.util.*;
+import com.viaoa.web.html.*;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
-
-// qqqqqqqqqqq need to add support for recursiveLinks
 
 /**
  * HtmlSelect to work with OAModel.
  * <p>
+ * 
  * Notes:<br>
  * setDisplay rows to change to/from dropdown (=1) or scrollinglist (> 1)<br>
- * Set ajaxSubmit=true if other components need to change when and item is selected.<br>
  * 
  * @author vince
  */
-public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    private final OAUISelectController oaUiControl;
+public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+    private final OAUISelectController controlUISelect;
     private String propName;
     private String format;
-    private String nullDescription = "";
+    private String nullDescription = ""; 
+    private String jsClient, jsSelected;
+    private volatile boolean bIgnoreSelected;
 
-    private static class LastRefresh {
-        Hub hubUsed;
-        OAObject objSelected;
-
-        // if hub is linked, then this is the current object that it's linked to and changing.
-        OAObject objLinkedTo;  
+    public OAHtmlSelect(String selector, Hub hub, String propName) {
+        this(selector, hub, propName, null);
     }
-    private final LastRefresh lastRefresh = new LastRefresh();
 
-    public OAHtmlSelect(String id, Hub<F> hub, String propName) {
-        super(id);
+    public OAHtmlSelect(String selector, Hub hub, String propName, Hub hubSelect) {
+        super(selector);
         this.propName = propName;
 
         // used to interact between component with hub.
-        oaUiControl = new OAUISelectController(hub) {
+        controlUISelect = new OAUISelectController(hub, propName, hubSelect, false) {
             @Override
-            protected void onCompleted(String completedMessage, String title) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addMessage(completedMessage);
-                    form.addConsoleMessage(title + " - " + completedMessage);
-                }
+            public void updateComponent(Object object) {
+                OAHtmlSelect.this.updateComponent(object);
             }
 
             @Override
-            protected void onError(String errorMessage, String detailMessage) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addError(errorMessage);
-                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
+            public void updateLabel(Object object) {
+                OAHtmlSelect.this.updateLabel(object);
+            }
+            @Override
+            public void add(Object obj) {
+                String s = (obj == null) ? getNullDescription() : getValueAsString(obj);
+                HtmlOption ho = new HtmlOption("id"+getOptions().size(), s);
+                getOptions().add(ho);
+                jsClient = OAStr.concat(jsClient, "comp.add('"+s+"', '"+ho.getValue()+"');", "\n");
+            }
+            @Override
+            public void insert(Object obj, int pos) {
+                if (OAStr.isNotEmpty(getNullDescription())) pos++;
+                String s = getValueAsString(obj);
+                HtmlOption ho = new HtmlOption("id"+getOptions().size(), s);
+                getOptions().add(pos, ho);
+                jsClient = OAStr.concat(jsClient, "comp.insert('"+s+"', '"+ho.getValue()+"', "+pos+");", "\n");
+                addSelected();
+            }
+            @Override
+            public void remove(int pos) {
+                if (OAStr.isNotEmpty(getNullDescription())) pos++;
+                getOptions().remove(pos);
+                jsClient = OAStr.concat(jsClient, "comp.remove("+pos+");", "\n");
+                addSelected();
+            }
+            
+            void addSelected() {
+                int[] poss = new int[] {};
+                if (hubSelect != null) {
+                    for (Object obj : hubSelect) {
+                        int p = hub.getPos(obj);
+                        poss = OAArray.add(poss,  p);
+                    }
+                }
+                else {
+                    poss = new int[hub.getPos()];
+                }
+                this.setSelected(poss);
+            }
+            
+            @Override
+            public void clear() {
+                getOptions().clear();
+                jsClient = OAStr.concat(jsClient, "comp.clear();", "\n");
+                addSelected();
+            }
+            @Override
+            public void newList() {
+                getOptions().clear();
+                jsClient = OAStr.concat(jsClient, "comp.clear();", "\n");
+                if (OAStr.isNotEmpty(nullDescription)) {
+                    this.add(null);
+                }
+                for (Object obj : getHub()) {
+                    this.add(obj);
+                }
+                addSelected();
+            }
+            @Override
+            public void changed(Object object) {
+                int pos = getHub().getPos(object);
+                if (OAStr.isNotEmpty(getNullDescription())) pos++;
+                this.remove(pos);
+                this.insert(object, pos);
+            }
+            @Override
+            public void setSelected(int[] poss) {
+                jsSelected = null;
+                String js = "";
+                int i = 0;
+                for (HtmlOption ho : getOptions()) {
+                    boolean b = OAArray.contains(poss, i);
+                    if (b && !bIgnoreSelected) {
+                        int x = OAStr.isNotEmpty(getNullDescription()) ? i + 1 : i;
+                        js = OAStr.concat(js, ""+x, ",");
+                    }
+                    ho.setSelected(b);
+                    i++;
+                }
+                if (!bIgnoreSelected) {
+                    if (bIgnoreSelected && OAStr.isEmpty(js) && OAStr.isNotEmpty(getNullDescription())) js = "0";
+                    jsSelected = "comp.setSelected(["+js+"]);";
                 }
             }
         };
+        if (hubSelect != null) setMultiple(true);
+        controlUISelect.reset();
+        controlUISelect.newList();
     }
 
+    @Override
+    public void close() {
+        super.close();
+        if (controlUISelect != null) controlUISelect.close();
+    }
+    
     public String getFormat() {
         return this.format;
     }
-
     public void setFormat(String format) {
         this.format = format;
     }
     
-    /* Called when form is submitted.<br> 
-     * Uses OAUISelectController to handle updating selected value. 
-     */
-    @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        final String[] values = getValues();
-        if (values == null || values.length == 0) return;
-        
-        // verify that hubs "have not moved", when using detailHub, linkHub, etc
-        if (getHub().getRealHub() != lastRefresh.hubUsed) {
-            if (lastRefresh.objLinkedTo == null) return; // it was not linked, so dont change AO
-        }
-        
-        if (lastRefresh.hubUsed != getHub().getRealHub()) {
-            formSubmitEvent.addSyncError("OAHtmlSelect Id="+getId());
-        }
-        else {
-            Hub h = getHub().getLinkHub(true);
-            if (h != null) {
-                if (lastRefresh.objLinkedTo != h.getAO()) {
-                    formSubmitEvent.addSyncError("OAHtmlSelect Id="+getId());
-                }
-            }
-        }
-        
-        if ("oanull".equals(values[0])) {
-            // change AO
-            // if hub is linked, then it will update the linkedTo object
-            oaUiControl.onAOChange(lastRefresh.objLinkedTo, lastRefresh.objSelected, null);
-        }
-        else {
-            if (lastRefresh.objSelected == null || (lastRefresh.objSelected.getGuid() != OAConverter.toInt(values[0]))) {
-                // if a different option was selected, find the object using the value (guid) and set the AO in hub,
-                //     ... if there's a linkToObject, then it will be updated during the hub.setAO
-                final int guidSelected = OAConverter.toInt(values[0]);
-                boolean bFound = false;
-                // look for object in hubUsed
-                for (F obj : (Hub<F>) lastRefresh.hubUsed) {
-                    if (obj == lastRefresh.objSelected) continue;
-                    if (obj.getGuid() == guidSelected) {
-                        oaUiControl.onAOChange(lastRefresh.objLinkedTo, lastRefresh.objSelected, obj);
-                        bFound = true;
-                        break;
-                    }
-                }
-                if (!bFound) {
-                    // (currency issue) object can have been removed from hubUsed, get from cache.
-                    F obj = OAObjectCacheDelegate.getUsingGuid(getHub().getObjectClass(), guidSelected);
-                    if (obj != null) {
-                        oaUiControl.onAOChange(lastRefresh.objLinkedTo, lastRefresh.objSelected, obj);
-                    }
-                }
-            }
-        }
+    public Hub getHub() {
+        return controlUISelect.getHub();
     }
-
-    public Hub<F> getHub() {
-        return oaUiControl.getHub();
-    }
-
     public OAUISelectController getController() {
-        return oaUiControl;
+        return controlUISelect;
     }
 
+    public String getNullDescription() {
+        return nullDescription;
+    }
+
+    public void setNullDescription(String s) {
+        this.nullDescription = s;
+    }
+    
+    
+    /*qqqqq
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
@@ -189,13 +216,6 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
         return alOption;
     }
 
-    public String getNullDescription() {
-        return nullDescription;
-    }
-
-    public void setNullDescription(String s) {
-        this.nullDescription = s;
-    }
 
     @Override
     public String getTableCellRenderer(HtmlTD td, int row) {
@@ -244,4 +264,82 @@ public class OAHtmlSelect<F extends OAObject> extends HtmlSelect implements OAHt
         s += "</select>";
         return s;
     }
+    */
+
+
+
+
+
+
+
+
+    /** 
+     * Called when a change is necessary for UI component. 
+     * */
+    public void updateComponent(Object object) {
+        setVisible(getController().isVisible());
+        setEnabled(getController().isEnabled());
+    }
+    
+
+    public void updateLabel(Object object) {
+        OAHtmlComponent lbl = getOAHtmlComponent().getLabelComponent();
+        if (lbl == null) return;
+        lbl.setVisible(getController().isVisible());
+        lbl.setEnabled(getController().isEnabled());
+    }
+    
+
+    
+    @Override
+    public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
+        String js = jsClient;
+        jsClient = null;
+
+        if (!getOAHtmlComponent().isInitialized()) js = null;
+        else {
+            if (OAStr.isNotEmpty(jsSelected)) js = OAStr.concat(js, jsSelected, "\n");
+        }
+        jsSelected = null;
+
+        bHasChanges |= OAStr.isNotEmpty(js);
+        String js1 = super.getJavaScriptForClient(hsVars, bHasChanges);
+        
+        js = OAStr.concat(js1, js, "\n");
+        return js;
+    }
+    
+    protected void onClientChangeEvent(int[] selectIndexes) {
+        
+        // qqqqq verify that it's allowed to be changed
+        super.onClientChangeEvent(selectIndexes);  // updates htmlOptions[]
+        
+        Hub hub = getHub();
+        Hub hubSelected = getController().getSelectHub();
+        bIgnoreSelected = true;
+        if (hubSelected != null) {
+            for (int pos : selectIndexes) {
+                Object obj = hub.getAt(pos);
+                hubSelected.add(obj);
+            }
+            for (Object obj : hubSelected) {
+                int pos = hub.getPos(obj);
+                if (!OAArray.contains(selectIndexes, pos)) {
+                    hubSelected.remove(obj);
+                }
+            }
+        }
+        else {
+            int pos = selectIndexes.length - 1;
+            if (pos >= 0) pos = selectIndexes[pos];
+            if (OAStr.isNotEmpty(getNullDescription())) pos--;
+            getHub().setPos(pos);
+        }
+        bIgnoreSelected = false;
+    }
+
 }
+
+
+
+

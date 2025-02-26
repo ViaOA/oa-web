@@ -17,6 +17,16 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 //  need to add support for recursiveLinks
 
+/*
+        NOTE qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+        NOTE qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+
+            this has been replaced by OAHtmlSelect.java
+
+        NOTE qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+        NOTE qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+*/
+
 /**
  * HtmlSelect to work with OAModel and allows for selecting multiple options.
  * <br>
@@ -46,8 +56,8 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
      * @param hubSelect  hub of selected items.
      * @param propName display property
      */
-    public OAHtmlMultiSelect(String id, Hub<F> hub, Hub<F> hubSelect, String propName) {
-        super(id);
+    public OAHtmlMultiSelect(String selector, Hub<F> hub, Hub<F> hubSelect, String propName) {
+        super(selector);
         this.hubSelect = hubSelect;
         this.propName = propName;
     
@@ -84,6 +94,7 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
 
     /* Called when form is submitted.<br> Uses OAUISelectController to handle updating selected  value. 
      */
+/*qqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         final String[] values = getValues();
@@ -159,7 +170,7 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
             lastRefresh.hubSelectUsed.remove(obj);
         }
     }
-
+*/
     public Hub<F> getHub() {
         return oaUiControl.getHub();
     }
@@ -174,7 +185,7 @@ public class OAHtmlMultiSelect<F extends OAObject> extends HtmlSelect implements
     
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 

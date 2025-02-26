@@ -1,9 +1,10 @@
 package com.viaoa.web.html;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.util.OAConv;
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
+import com.viaoa.web.html.oa.OATreeNodeData;
 
 /*
 Button that is similar to InputButton.
@@ -16,9 +17,15 @@ public class HtmlButton extends HtmlFormElement {
         Submit,
         Reset;
     }
+
+    public HtmlButton(String selector) {
+        this(selector, null);
+    }
     
-    public HtmlButton(String id, Type type) {
-        super(id, (type == null || type == Type.Button) ? FormElementType.Button : (type == Type.Submit ? FormElementType.Submit : FormElementType.Reset));
+    public HtmlButton(String selector, Type type) {
+        super(selector, 
+            (type == null || type == Type.Button) ? FormElementType.Button : (type == Type.Submit ? FormElementType.Submit : FormElementType.Reset)
+        );
     }
 
     public String getButtonText() {
@@ -51,4 +58,25 @@ public class HtmlButton extends HtmlFormElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+    
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (Event_Click.equals(type)) {
+            onClickEvent(map);
+        }
+    }
+
+    protected void onClickEvent(final Map<String, String> map) {
+        onClickEvent();
+    }
+    protected void onClickEvent() {
+        
+    }
+    
+    
+    
+    
+    
 }

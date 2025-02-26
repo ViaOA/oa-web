@@ -24,8 +24,8 @@ public class JqDialog extends HtmlElement {
     // list of button names. If selected, then the name/text will be set when onSubmit is called.
     private ArrayList<String> alButtons = new ArrayList<String>();  
     
-    public JqDialog(String id) {
-        super(id);
+    public JqDialog(String selector) {
+        super(selector);
         setVisible(false);
     }
     public void setModal(boolean b) {
@@ -176,8 +176,8 @@ public class JqDialog extends HtmlElement {
 
     
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAFormInsertDelegate.JS_jquery);
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
 
 /*qqqqqqqqqq        
         if (OAString.isNotEmpty(getToolTip())) {
@@ -194,7 +194,7 @@ public class JqDialog extends HtmlElement {
 
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
-        hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
+      //qqqqq hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
         
 /*qqqqqqqq        
         if (OAString.isNotEmpty(getToolTip())) {

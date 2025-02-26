@@ -39,8 +39,8 @@ public class BsDateTime extends InputText {
     protected Type typeDateTime;
     protected String format;
 
-    public BsDateTime(String id) {
-        super(id);
+    public BsDateTime(String selector) {
+        super(selector);
         this.typeDateTime = Type.DateTime;
     }
 
@@ -250,15 +250,15 @@ public class BsDateTime extends InputText {
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
         hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
-        hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_datetimepicker);
+        //qqqqq hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_datetimepicker);
     }
 
     @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAFormInsertDelegate.JS_jquery);
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
-        hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
-        hsJsName.add(OAFormInsertDelegate.JS_moment);
-        hsJsName.add(OAFormInsertDelegate.JS_bootstrap_datetimepicker);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
+      hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_moment);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_bootstrap_datetimepicker);
     }
 }

@@ -17,8 +17,8 @@ import com.viaoa.web.html.oa.OAHtmlTableComponentInterface;
 
 public class InputDate extends InputRange {
 
-    public InputDate(String id) {
-        super(id, InputType.Date);
+    public InputDate(String selector) {
+        super(selector, InputType.Date);
     }
 
     public void setValue(OADate date) {

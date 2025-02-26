@@ -12,8 +12,8 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 public class InputColor extends InputElement {
 
-    public InputColor(String id) {
-        super(id, InputType.Color);
+    public InputColor(String selector) {
+        super(selector, InputType.Color);
     }
 
     public String getValue() {

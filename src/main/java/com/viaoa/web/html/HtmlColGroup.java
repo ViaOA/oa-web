@@ -14,8 +14,8 @@ public class HtmlColGroup extends HtmlElement {
     public HtmlColGroup() {
         this(null);
     }
-    public HtmlColGroup(String id) {
-        super(id);
+    public HtmlColGroup(String selector) {
+        super(selector);
     }
 
     public void addCol(HtmlCol col) {

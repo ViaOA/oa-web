@@ -25,8 +25,8 @@ public class JqAutoNumeric extends InputText {
 
     protected AutoNum autoNum;
 
-    public JqAutoNumeric(String id) {
-        super(id);
+    public JqAutoNumeric(String selector) {
+        super(selector);
     }
 
     
@@ -118,6 +118,6 @@ public class JqAutoNumeric extends InputText {
     
     @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_autonumeric);
+        //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_autonumeric);
     }
 }

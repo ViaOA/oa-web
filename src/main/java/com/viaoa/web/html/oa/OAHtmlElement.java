@@ -3,26 +3,48 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.template.OATemplate;
+import com.viaoa.uicontroller.OAUIController;
 import com.viaoa.util.*;
-import com.viaoa.web.html.HtmlElement;
-import com.viaoa.web.html.HtmlTD;
+import com.viaoa.web.html.*;
 
 /**
  * Used to set the inner html for any html element. Has support for OATemplate.
  * 
  * @author vince
  */
-public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OAHtmlTableComponentInterface, OAHtmlComponentInterface {
+public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OAEditorInterface, OAHtmlTableComponentInterface, OAHtmlComponentInterface {
     private Hub hub;
     private String propName;
     private String format;
     private String template;
     private OATemplate oaTemplate;
 
-    public OAHtmlElement(String id, Hub<F> hub, String propName) {
-        super(id);
+    private final OAUIController controlUI;
+    
+    public OAHtmlElement(String selector, Hub<F> hub, String propName) {
+        super(selector);
         this.hub = hub;
         this.propName = propName;
+
+        controlUI = new OAUIController(hub, propName) {
+            @Override
+            public void updateComponent(Object object) {
+                String s = OAHtmlElement.this.getValueAsString(hub, object);
+                OAHtmlElement.this.setInnerHtml(s);
+                OAHtmlElement.this.setVisible(this.isVisible());
+            }
+            
+            @Override
+            public void updateLabel(Object object) {
+                OAHtmlComponent lbl = getOAHtmlComponent().getLabelComponent();
+                if (lbl == null) return;
+                lbl.setVisible(isVisible());
+
+                boolean b = this.isEnabled();
+                if (!b && getHub().getActiveObject() != null) b = true;
+                lbl.setEnabled(b);
+            }
+        };
     }
 
     public Hub getHub() {
@@ -60,7 +82,7 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     }
 
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         if (getHub() == null || getPropertyName() == null) {
             return;
         }
@@ -134,4 +156,12 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         String s = getTableCellRenderer(hubTable, td, row);
         return s;
     }
+
+    
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        if (controlUI == null) return null;
+        return controlUI.getValueAsString(obj);
+    }
+    
 }

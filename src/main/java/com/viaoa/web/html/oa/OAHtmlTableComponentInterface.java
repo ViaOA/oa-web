@@ -3,7 +3,12 @@ package com.viaoa.web.html.oa;
 import com.viaoa.hub.Hub;
 import com.viaoa.web.html.HtmlTD;
 
+
+// qqqqqqqqqqqq NOTE:  being replace with OATableEditorInterface
+
 public interface OAHtmlTableComponentInterface {
+    
+    
     
 //qqqqqqq remove these in web components    
     public default String getTableCellEditor(HtmlTD td, int row, boolean hasFocus) {

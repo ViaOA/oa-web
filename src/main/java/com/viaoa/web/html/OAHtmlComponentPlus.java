@@ -1,10 +1,10 @@
 package com.viaoa.web.html;
 
 
-public class OAHtmlComponentPlus extends OAHtmlComponent {
+public abstract class OAHtmlComponentPlus extends OAHtmlComponent {
     
-    public OAHtmlComponentPlus(String id) {
-        super(id);
+    public OAHtmlComponentPlus(String elementIdentifier) {
+        super(elementIdentifier);
     }
 
     

@@ -1,70 +1,105 @@
 package com.viaoa.web.html.oa;
 
+import java.util.*;
+
 import com.viaoa.hub.*;
-import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUIPropertyController;
-import com.viaoa.util.OACompare;
-import com.viaoa.util.OAString;
-import com.viaoa.web.html.HtmlTD;
-import com.viaoa.web.html.form.OAForm;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
+import com.viaoa.uicontroller.*;
+import com.viaoa.util.*;
+import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputText;
 
 /**
  * Binds InputText to an Hub + propertyName
- *
  */
-public class OAInputText extends InputText implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    private final OAUIPropertyController oaUiControl;
+public class OAInputText extends InputText implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+    private final OAUIController controlUI;
 
+    // extra properties
+    private int maxSize;
+    private boolean bMaxSizeChanged;
+    
+    
+    public OAInputText(String elementIdentifier, Hub hub, String propName) {
+        super(elementIdentifier);
+        
+        controlUI = new OAUIController(hub, propName) {
+            @Override
+            public void updateComponent(Object object) {
+                String s = this.getValueAsString(object);
+                OAInputText.this.setValue(s);
+                OAInputText.this.setEnabled(this.isEnabled());
+                OAInputText.this.setVisible(this.isVisible());
+            }
+            
+            @Override
+            public void updateLabel(Object object) {
+                OAHtmlComponent lbl = getOAHtmlComponent().getLabelComponent();
+                if (lbl == null) return;
+                lbl.setVisible(isVisible());
+
+                boolean b = this.isEnabled();
+                if (!b && getHub().getActiveObject() != null) b = true;
+                lbl.setEnabled(b);
+            }
+        };
+    }
+    
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        // qqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+        String val = controlUI.getValueAsString(obj);
+        return val;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        if (controlUI != null) controlUI.close();
+    }
+    
+    
+    public Hub getHub() {
+        return controlUI.getHub();
+    }
+    public String getPropertyName() {
+        return controlUI.getEndPropertyName();
+    }
+    public String getFormat() {
+        return controlUI.getFormat();
+    }
+    public void setFormat(String format) {
+        controlUI.setFormat(format);
+    }
+    
+    public void setConversion(char conv) {
+        controlUI.setConversion(conv);
+    }
+    public char getConversion() {
+        return controlUI.getConversion();
+    }
+
+    /**
+     * Allow size to grow to fit text, from original (attribute) size to this.maxSize.
+     */
+    public void setMaxSize(int x) {
+        this.bMaxSizeChanged |= this.bMaxSizeChanged || (x != this.maxSize);
+        this.maxSize = x;
+    }
+    public int getMaxSize() {
+        return maxSize;
+    }
+    
+    
+    
+/*qqqqq    
+ 
     private static class LastRefresh {
         OAObject objUsed;
         String value;
     }
     private final LastRefresh lastRefresh = new LastRefresh();
-    
-    public OAInputText(String id, Hub hub, String propName) {
-        super(id);
-        oaUiControl = new OAUIPropertyController(hub, propName) {
-            @Override
-            protected void onCompleted(String completedMessage, String title) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addMessage(completedMessage);
-                    form.addConsoleMessage(title + " - " + completedMessage);
-                }
-            }
-            @Override
-            protected void onError(String errorMessage, String detailMessage) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addError(errorMessage);
-                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
-                }
-            }
-        };
-    }
 
-    public Hub getHub() {
-        return oaUiControl.getHub();
-    }
-    public String getPropertyName() {
-        return oaUiControl.getPropertyName();
-    }
-    public String getFormat() {
-        return oaUiControl.getFormat();
-    }
-    public void setFormat(String format) {
-        oaUiControl.setFormat(format);
-    }
-    
-    public void setConversion(char conv) {
-        oaUiControl.setConversion(conv);
-    }
-    public char getConversion() {
-        return oaUiControl.getConversion();
-    }
-    
+
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -73,7 +108,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         if (lastRefresh.objUsed == null) return;
         
         // make sure that it did not change
-        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
+        Object objPrev = oaUiPropertyControl.getValue(lastRefresh.objUsed);
         if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
             formSubmitEvent.addSyncError("OAInputText Id="+getId());
             return;
@@ -81,35 +116,36 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         
         final String val = getValue();
         if (OAString.isNotEqual(lastRefresh.value, val)) {
-            oaUiControl.onSetProperty(lastRefresh.objUsed, val);
+            oaUiPropertyControl.onSetProperty(lastRefresh.objUsed, val);
             lastRefresh.value = val;
         }
     }
+*/    
     
-    
+    /*
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
-        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
-        lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
+        lastRefresh.objUsed = (OAObject) oaUiPropertyControl.getHub().getAO(); 
+        lastRefresh.value = oaUiPropertyControl.getValueAsString(lastRefresh.objUsed);
         
-        boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
+        boolean b = oaUiPropertyControl.isEnabled(lastRefresh.objUsed);
         setEnabled(bIsFormEnabled && b);
 
-        b = oaUiControl.isVisible(lastRefresh.objUsed);
+        b = oaUiPropertyControl.isVisible(lastRefresh.objUsed);
         setVisible(b);
         
-        b = oaUiControl.isRequired();
+        b = oaUiPropertyControl.isRequired();
         setRequired(b);
         
         if (getConversion() == 0) {
             OAObjectInfo oi = getHub().getOAObjectInfo();
             OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
             if (pi != null) {
-                if (pi.isUpper()) oaUiControl.setConversion('U');
-                else if (pi.isLower()) oaUiControl.setConversion('L');
+                if (pi.isUpper()) oaUiPropertyControl.setConversion('U');
+                else if (pi.isLower()) oaUiPropertyControl.setConversion('L');
             }
         }
         
@@ -156,7 +192,7 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         return s;
     }
     
-//qqqqqqqqqqqqq the other OA Web components need to have this code added qqqqqqqqqqqqqqqq     
+     
     @Override
     public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
         OAObject obj;
@@ -172,10 +208,40 @@ public class OAInputText extends InputText implements OAHtmlComponentInterface, 
         }
         
         String s = "<input type='text' id='"+getId()+"'";
-        s += " class='oaFitColumnSize'";
+        s += " class='oaFitColumnSize'";  //qqqqqqqqqqqq convert to kabob name
         if (obj == null) s += " style='visibility: hidden;'"; 
         s += ">";
         // note: other settings will be added by InputText
         return s;
     }
+*/
+
+    @Override
+    public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
+        boolean b = getOAHtmlComponent().getValueChanged();
+        String js = null;
+        if (bMaxSizeChanged) {
+            bMaxSizeChanged = false;
+            js = OAStr.concat(js, "comp.setMaxSize("+getMaxSize()+");", "\n");
+        }
+        else if (b) { // need to resize
+            js = OAStr.concat(js, "comp.adjustSize();", "\n");
+        }
+
+        bHasChanges |= OAStr.isNotEmpty(js);
+        
+        String s = super.getJavaScriptForClient(hsVars, bHasChanges);
+        
+        //qqqqqqqq was: String s = getOAHtmlComponent().getJavaScriptForClient(hsVars, bHasChanges);
+        js = OAStr.concat(s, js, "\n");
+        
+        return js;
+    }
+    
+    @Override
+    protected void onClientChangeEvent(String newValue) {
+        super.onClientChangeEvent(newValue);
+        controlUI.setValue(getValue());
+    }
+    
 }

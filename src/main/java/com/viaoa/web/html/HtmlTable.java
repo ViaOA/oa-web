@@ -51,8 +51,8 @@ public class HtmlTable extends HtmlElement {
     private final List<HtmlTR> alTBodyRow = new ArrayList<>();
     private String prevAjaxScript;
 
-    public HtmlTable(String id) {
-        super(id);
+    public HtmlTable(String selector) {
+        super(selector);
     }
 
     public boolean getEnabled() {
@@ -94,7 +94,7 @@ public class HtmlTable extends HtmlElement {
     }
 
     
-    
+/*qqqqqq    
     @Override
     protected String getAjaxScript(boolean bIsInitializing) {
         String html = createTableScript();
@@ -104,6 +104,7 @@ public class HtmlTable extends HtmlElement {
         
         return html;
     }
+*/    
     
     protected String createTableScript() {
         //qqqqqqqqqqqqqqqqq create a version that updates existing TRs, TDs        

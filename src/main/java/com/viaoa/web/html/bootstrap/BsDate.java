@@ -7,8 +7,8 @@ import com.viaoa.util.OADate;
  */
 public class BsDate extends BsDateTime {
 
-    public BsDate(String id) {
-        super(id);
+    public BsDate(String selector) {
+        super(selector);
         this.typeDateTime = Type.Date;
     }
 

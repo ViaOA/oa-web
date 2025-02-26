@@ -47,8 +47,8 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     private int submitRow=-1, submitCol=-1;
     private String submitKeys;
     
-    public OAHtmlTable(String id, Hub<T> hub) {
-        super(id);
+    public OAHtmlTable(String selector, Hub<T> hub) {
+        super(selector);
         
         // used to interact between component with hub.
         oaUiControl = new OAUISelectController(hub) {
@@ -192,6 +192,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     }
     
     
+/*    
     @Override
     protected void onSubmitBeforeLoadValues(OAFormSubmitEvent formSubmitEvent) {
         submitCol = submitRow = -1;
@@ -343,14 +344,14 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         sb.append("    return true;\n");
         sb.append("  }  \n");
 
-        /*
+        / *
         sb.append("  case 27: keys += '[ESC]';break;\n");
         sb.append("  case 8: keys += '[BACK]';break;\n");
         sb.append("  case 45: keys += '[INS]';break;\n");
         sb.append("  case 46: keys += '[DEL]';break;\n");
         
         sb.append("  default: keys += String.fromCharCode(event.which);break;\n");
-        */
+        * /
 
         sb.append("  $('#"+getId()+"_'+row+'_'+col).focus();\n");
         sb.append("  return false;\n");
@@ -363,7 +364,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
         
         return sb.toString();
     }
-    
+*/    
     
     public Hub<T> getHub() {
         return oaUiControl.getHub();
@@ -375,7 +376,7 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
     
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         setVisible(oaUiControl.isVisible());
         setEnabled(oaUiControl.isEnabled());
         
@@ -463,17 +464,18 @@ public class OAHtmlTable<T extends OAObject> extends HtmlTable implements OAHtml
                 tr.addTableData(td);
             }
         }
-        super.beforeGetScript();
+        super.beforeGetJavaScriptForClient();
     }
 
     
-    
+/*qqqqq    
     @Override
     protected String getAjaxScript(final boolean bIsInitializing) {
         if (bIsInitializing) return null; // getInitializeScript() already calls createTableScript 
         return createTableScript();
     }
     
+*/    
     @Override
     protected String createTableScript() {
         String width = getWidth();

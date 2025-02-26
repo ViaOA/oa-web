@@ -21,8 +21,8 @@ public class JqMaskedInput extends InputText {
     
     protected String inputMask;
 
-    public JqMaskedInput(String id) {
-        super(id);
+    public JqMaskedInput(String selector) {
+        super(selector);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class JqMaskedInput extends InputText {
 
     @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_maskedinput);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_maskedinput);
     }
     
 }

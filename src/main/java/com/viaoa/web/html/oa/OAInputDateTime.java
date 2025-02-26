@@ -22,8 +22,8 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAInputDateTime(String id, Hub hub, String propName) {
-        super(id);
+    public OAInputDateTime(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -58,6 +58,7 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
     }
 
     
+/*qqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -78,9 +79,9 @@ public class OAInputDateTime extends InputDateTime implements OAHtmlComponentInt
             lastRefresh.value = dt;
         }
     }
-    
+*/    
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         

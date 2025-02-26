@@ -18,12 +18,12 @@ public class JqPopup extends HtmlElement {
     private String type = "'fade'";
     
     
-    public JqPopup(String id) {
-        super(id);
+    public JqPopup(String selector) {
+        super(selector);
     }
 
-    public JqPopup(String id, String clickId) {
-        super(id);
+    public JqPopup(String selector, String clickId) {
+        super(selector);
         this.clickId = clickId;
         setup();
     }

@@ -27,8 +27,8 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  */
 public class InputFile extends InputElement {
 
-    public InputFile(String id) {
-        super(id, InputType.File);
+    public InputFile(String selector) {
+        super(selector, InputType.File);
     }
 
     public String getValue() {
@@ -86,13 +86,14 @@ public class InputFile extends InputElement {
         htmlComponent.setRequired(req);
     }
     
-    
+/*qqqqqqq    
     @Override
     public OutputStream onSubmitGetFileOutputStream(String fileName, String contentType) {
         return super.onSubmitGetFileOutputStream(fileName, contentType);
     }
-
+*/
     
+/*qqqqqqqqq    
     @Override
     protected String getVerifyScript() {
         StringBuilder sb = null;
@@ -113,13 +114,13 @@ public class InputFile extends InputElement {
             sb.append("}\n");
 
   
-            /*was
+            / *was
             sb.append("if ($('#"+getId()+"')[0].files && $('#"+getId()+"')[0].files.length > 0) {\n");
             sb.append("    if ($('#"+getId()+"')[0].files[0].size > "+getMaxFileSize()+") {\n");
             sb.append("        errors.push('File size over limit of "+getMaxFileSize()+"');\n");
             sb.append("    }\n");
             sb.append("}\n");
-             */            
+             * /            
         }
 
         if (isRequired()) {
@@ -149,7 +150,7 @@ public class InputFile extends InputElement {
         if (sb == null) return null;
         return sb.toString();
     }
-
+*/
 
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {

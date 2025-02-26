@@ -12,11 +12,11 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 public class InputRange extends InputElement {
     
-    public InputRange(String id) {
-        super(id, InputType.Range);
+    public InputRange(String selector) {
+        this(selector, InputType.Range);
     }
-    protected InputRange(String id, InputType type) {
-        super(id, type);
+    protected InputRange(String selector, InputType type) {
+        super(selector, type);
     }
 
     public String getValue() {

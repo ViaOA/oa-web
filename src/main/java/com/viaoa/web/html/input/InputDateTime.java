@@ -15,8 +15,8 @@ step="900" min="2023-01-01T00:00" max="2023-12-31T23:59"
 
 public class InputDateTime extends InputRange {
 
-    public InputDateTime(String id) {
-        super(id, InputType.DateTimeLocal);
+    public InputDateTime(String selector) {
+        super(selector, InputType.DateTimeLocal);
     }
 
     

@@ -20,7 +20,7 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  */
 public class InputReset extends InputSubmit {
 
-    public InputReset(String id) {
-        super(id, InputType.Reset);
+    public InputReset(String selector) {
+        super(selector, InputType.Reset);
     }
 }

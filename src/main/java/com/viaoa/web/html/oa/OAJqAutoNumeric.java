@@ -22,8 +22,8 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAJqAutoNumeric(String id, Hub hub, String propName) {
-        super(id);
+    public OAJqAutoNumeric(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -64,7 +64,7 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
         return oaUiControl.getConversion();
     }
     
-    
+/*qqqqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -83,9 +83,10 @@ public class OAJqAutoNumeric extends JqAutoNumeric implements OAHtmlComponentInt
         oaUiControl.onSetProperty(lastRefresh.objUsed, val);
         lastRefresh.value = val;
     }
+*/    
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         

@@ -12,8 +12,8 @@ import java.util.Set;
  */
 public class HtmlLink extends HtmlElement {
 
-    public HtmlLink(String id) {
-        super(id);
+    public HtmlLink(String selector) {
+        super(selector);
     }
 
     public boolean getEnabled() {

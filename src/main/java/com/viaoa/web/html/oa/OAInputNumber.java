@@ -22,8 +22,8 @@ public class OAInputNumber extends InputNumber implements OAHtmlComponentInterfa
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAInputNumber(String id, Hub hub, String propName) {
-        super(id);
+    public OAInputNumber(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -57,6 +57,7 @@ public class OAInputNumber extends InputNumber implements OAHtmlComponentInterfa
         oaUiControl.setFormat(format);
     }
     
+/*qqqqqqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -76,9 +77,10 @@ public class OAInputNumber extends InputNumber implements OAHtmlComponentInterfa
         oaUiControl.onSetProperty(lastRefresh.objUsed, val);
         lastRefresh.value = val;
     }
+*/    
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
        

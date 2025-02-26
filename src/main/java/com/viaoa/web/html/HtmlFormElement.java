@@ -20,8 +20,8 @@ https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
  */
 public class HtmlFormElement extends HtmlElement {
 
-    public HtmlFormElement(final String id, final FormElementType formElementType) {
-        super(id);
+    public HtmlFormElement(final String selector, final FormElementType formElementType) {
+        super(selector);
         htmlComponent.setFormElementType(formElementType);
     }
     

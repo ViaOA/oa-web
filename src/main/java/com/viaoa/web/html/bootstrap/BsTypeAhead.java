@@ -49,8 +49,8 @@ public class BsTypeAhead extends InputText {
         }
     }
     
-    public BsTypeAhead(String id) {
-        super(id);
+    public BsTypeAhead(String selector) {
+        super(selector);
     }
 
     public void setTypeAhead(OATypeAhead ta) {
@@ -74,7 +74,7 @@ public class BsTypeAhead extends InputText {
      * onGetJson method.  
      * @param search
      */
-    protected List<TypeAheadValue> getTypeAheadValues(final String search) {
+    public List<TypeAheadValue> getTypeAheadValues(final String search) {
         List<TypeAheadValue> al =  new ArrayList<>(); 
         
         OATypeAhead ta = getTypeAhead();
@@ -319,10 +319,10 @@ public class BsTypeAhead extends InputText {
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
         hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
-        hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_typeahead);
+        //qqqq hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_typeahead);
 
         if (getMultiValue()) {
-            hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_tagsinput);
+          //qqqq hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_tagsinput);
         }
     }
     
@@ -330,10 +330,10 @@ public class BsTypeAhead extends InputText {
     @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
         hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
-        hsJsName.add(OAFormInsertDelegate.JS_bootstrap_typeahead);
+      //qqqq hsJsName.add(OAFormInsertDelegate.JS_bootstrap_typeahead);
 
         if (getMultiValue()) {
-            hsJsName.add(OAFormInsertDelegate.JS_bootstrap_tagsinput);
+          //qqqq hsJsName.add(OAFormInsertDelegate.JS_bootstrap_tagsinput);
         }        
     }
 

@@ -23,8 +23,8 @@ public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlCo
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OASummernoteTextArea(String id, Hub hub, String propName) {
-        super(id);
+    public OASummernoteTextArea(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -58,7 +58,7 @@ public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlCo
         oaUiControl.setFormat(format);
     }
 
-    
+/*qqqqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -80,9 +80,10 @@ public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlCo
             lastRefresh.value = val;
         }
     }
+*/    
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 

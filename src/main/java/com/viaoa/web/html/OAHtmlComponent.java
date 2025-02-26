@@ -9,13 +9,11 @@ package com.viaoa.web.html;
 import java.io.OutputStream;
 import java.util.*;
 
-import com.viaoa.web.html.form.OAFormInsertDelegate;
-import com.viaoa.web.html.form.OAForm;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
-import com.viaoa.web.server.OASession;
-import com.viaoa.web.util.OAJspUtil;
 import com.viaoa.object.OAObject;
 import com.viaoa.util.*;
+import com.viaoa.web.html.form.*;
+import com.viaoa.web.server.OASession;
+import com.viaoa.web.util.*;
 
 
 // https://html.spec.whatwg.org/#toc-editing    
@@ -49,18 +47,51 @@ import com.viaoa.util.*;
  * 
  * @author vvia
  */
-public class OAHtmlComponent {
+public abstract class OAHtmlComponent {
     private static final long serialVersionUID = 1L;
+    
+    private final ElementIdentifierType elementIdentifierType;
+    
+    public enum ElementIdentifierType {
+        Unknown,
+        Id,
+        DataOAName,  /* data-oa-name */
+        HtmlSelector
+    }
+    private String elementIdentifier;
 
-    protected String id;
-    protected OAForm form;
+    
+    protected String id;  // is selector begins with '#' and does not have any '.'
+    protected String dataOAName; // data-oa-name
+    protected String htmlSelector;
+    
     
     protected String name;
-    private boolean bDebug;
+    
+    // Server-side sequential ID 
+    private static int ServerAssignSeqId;
+    protected final int serverAssignedId = ++ServerAssignSeqId;
+
+    protected String componentClassName;
+    
+/*qqqqqqq remove, will do this in HtmlElement    
+    protected OAHtmlComponent hcParent;
+    protected List<OAHtmlComponent> alChildren;
+*/
+    
+    
+    protected OAForm form;
+    
+    public boolean bDebug;
 
     // true if the page needs refreshed (to call oaForm.getScript)
     private boolean bNeedsRefreshed; 
+
+    private boolean bIsInitialized;
     
+    public boolean isInitialized() {
+        return bIsInitialized;
+    }
     
     // see: onSubmitLoadValues  that loads submitted values.
     /**
@@ -226,8 +257,9 @@ public class OAHtmlComponent {
     private String type;  // input type attribute, see InputType 
 
     protected String value;  
-    protected String[] values; 
+//qqqq remove, not in html    protected String[] values; 
     
+    protected OAHtmlComponent ohcLabel;  
     protected String labelId;  // Id of label element
     protected String floatLabel;  // display text above input control, once data has been entered.  Works with placeholder.
     protected String placeHolder; // works with input types: text, search, url, tel, email, and password
@@ -242,17 +274,16 @@ public class OAHtmlComponent {
     protected boolean bReadOnly;
     
     /**
-     *  uses HTML "hidden" attribute, does not use space ... 
+     *  uses HTML "hidden" attribute, does take up space ... 
      *  same CSS display: none ... does not take up space
      *  WARNING: for input elements, if this is true, then the element will not be submitted.
-     *  note: forms with input:hidden elements are be submitted. 
+     *    note: forms with input:hidden elements are be submitted. 
      */
     protected boolean bHidden;    
     
     
     protected boolean bVisible=true;  // uses CSS visibility:visible|hidden, ... does take up space
     
-    protected boolean bRequired;
     private boolean bFocus;
     protected String forwardUrl;
     protected boolean bSubmit, bAjaxSubmit;
@@ -272,23 +303,17 @@ public class OAHtmlComponent {
      */
     protected String list; // id of dataList element 
     protected List<String> dataList; 
+    protected boolean bRequired;
 
-    protected Map<String, String> hmStyle;
+    protected Map<String, String> hmStyle; // Map<style, value>, where style is kabob-case (ex: max-height).
     private List<String> alStyleAdd;
     private List<String> alStyleRemove;
 
     protected Set<String> hsClass;
     protected Set<String> hsClassAdd;
     protected Set<String> hsClassRemove;
-
-    protected String confirmMessage;
     
-    protected String height; // ex:  200px,  12em
-    protected String width; // ex:  200px,  12em
-    protected String minHeight; // ex:  200px,  12em
-    protected String minWidth; // ex:  200px,  12em
-    protected String maxHeight; // ex:  200px,  12em
-    protected String maxWidth; // ex:  200px,  12em
+    protected String confirmMessage;
     
     // number of chars for text, password
     protected int minLength;
@@ -348,7 +373,6 @@ public class OAHtmlComponent {
         }
     }
     
-    protected String overflow;  // overflow visible, hidden, scroll, auto, etc
     protected String source; // img src
     
 
@@ -493,6 +517,7 @@ public class OAHtmlComponent {
     private boolean bReadOnlyChanged;
     private boolean bHiddenChanged;
     private boolean bVisibleChanged;
+    private boolean bValueChanged;  // 20241214
     private boolean bValueChangedByAjax;
     private boolean bDataListChanged;
     private boolean bCursorChanged;
@@ -514,12 +539,60 @@ public class OAHtmlComponent {
     private boolean bAccessKeyChanged;
     private boolean bHrefChanged;
     private boolean bTargetChanged;
+    private boolean bMultipleChanged;
     
     
-    public OAHtmlComponent(String id) {
-        this.id = id;
-    }
+    public OAHtmlComponent(String elementIdentifier) {
+        if (OAStr.isEmpty(elementIdentifier)) {
+            this.elementIdentifierType = ElementIdentifierType.Unknown; 
+            return;
+        }
+        
+        if (elementIdentifier.charAt(0) == '#' && elementIdentifier.indexOf('.') < 0) { 
+            this.elementIdentifierType = ElementIdentifierType.Id;
+            elementIdentifier = OAStr.substring(elementIdentifier, 1);
+        }
+        else if (elementIdentifier.indexOf('[') >= 0 || elementIdentifier.indexOf(' ') >= 0) { 
+            this.elementIdentifierType = ElementIdentifierType.HtmlSelector;
+        }
+        else this.elementIdentifierType = ElementIdentifierType.DataOAName;
+        this.elementIdentifier = elementIdentifier;
 
+        if (this.elementIdentifierType == ElementIdentifierType.DataOAName ) setDataOAName(elementIdentifier);
+        else if (this.elementIdentifierType == ElementIdentifierType.Id ) setId(elementIdentifier);
+        else if (this.elementIdentifierType == ElementIdentifierType.HtmlSelector ) setDataOAName(elementIdentifier);
+    }
+    
+    public OAHtmlComponent(ElementIdentifierType elementIdentifierType, String elementIdentifier) {
+        this.elementIdentifierType = elementIdentifierType == null ? ElementIdentifierType.Unknown : elementIdentifierType;
+        this.elementIdentifier = elementIdentifier;
+        
+        if (this.elementIdentifierType == ElementIdentifierType.DataOAName ) setDataOAName(elementIdentifier);
+        else if (this.elementIdentifierType == ElementIdentifierType.Id ) setId(elementIdentifier);
+        else if (this.elementIdentifierType == ElementIdentifierType.HtmlSelector ) setHtmlSelector(elementIdentifier);
+    }
+    
+    
+    
+    public ElementIdentifierType getElementIdentifierType() {
+        return this.elementIdentifierType;
+    }
+    public String getElementIdentifier() {
+        return elementIdentifier;
+    }
+    
+    
+    public String getHtmlSelector() {
+        return htmlSelector;
+    }
+    public void setHtmlSelector(String htmlSelector) {
+        this.htmlSelector = htmlSelector;
+    }
+    
+    public int getServerAssignedId() {
+        return serverAssignedId;
+    }
+    
     public String getId() {
         return id;
     }
@@ -527,6 +600,43 @@ public class OAHtmlComponent {
         if (OAStr.isNotEqualNullEqualsBlank(this.id, id)) setNeedsRefreshed(true);
         this.id = id;
     }
+    
+    public String getDataOAName() {
+        return dataOAName;
+    }
+    public void setDataOAName(String dn) {
+        this.dataOAName = dn;
+    }
+    
+    
+    
+    
+//qqqqqqqqqqqqqqqqqqqqqqqqq might want hier in HtmlElment only
+    // qqqqqq need to add Parent to it, etc
+    
+/*qq    
+    public OAHtmlComponent getParent() {
+        return hcParent;
+    }
+    public void setParent(OAHtmlComponent he) {
+        this.hcParent = he;
+    }
+    public List<OAHtmlComponent> getChildren() {
+        return alChildren;
+    }
+    public void addChild(OAHtmlComponent hc) {
+        if (alChildren == null) alChildren = new ArrayList();
+        if (!alChildren.contains(hc)) alChildren.add(hc);
+    }
+    public void removeChild(OAHtmlComponent hc) {
+        if (alChildren == null) return;
+        alChildren.remove(hc);
+    }
+*/    
+    
+    
+    
+
     
     public OAForm getForm() {
         return this.form;
@@ -544,6 +654,15 @@ public class OAHtmlComponent {
         this.name = name;
     }
 
+    /** name of Java Class that is using this htmlComponent.  ex: "OAInputText" */
+    public String getComponentClassName() {
+        return componentClassName;
+    }
+    public void setComponentClassName(String cn) {
+        this.componentClassName = cn;
+    }
+    
+    
     public String getType() {
         return type;
     }
@@ -555,6 +674,14 @@ public class OAHtmlComponent {
         setType(type == null ? InputType.Text.getDisplay() : type.getDisplay());
     }
     
+    public OAHtmlComponent getLabelComponent() {
+        return ohcLabel;
+    }
+    public void setLabelComponent(OAHtmlComponent ohc) {
+        ohcLabel = ohc;
+    }
+    
+    /** @deprecated use getLabelComponent */
     public String getLabelId() {
         return labelId;
     }
@@ -628,7 +755,8 @@ public class OAHtmlComponent {
     }
 
     /**
-     * HTML attr.  If true, then space is NOT used on the page. same as CSS display:none
+     * HTML attr.  If true, then space is NOT used on the page. 
+     *   This will also set CSS display:none , since the html attribute "hidden" can be overwritten in styles
      */
     public boolean getHidden() {
         return bHidden;
@@ -639,6 +767,9 @@ public class OAHtmlComponent {
     public void setHidden(boolean b) {
         bHiddenChanged |= (b != this.bHidden);
         this.bHidden = b;
+    }
+    public void setHiddenChanged(boolean b) {
+        bHiddenChanged = b;
     }
 
     /**
@@ -662,11 +793,13 @@ public class OAHtmlComponent {
         return bRequired;
     }
     public boolean isRequired() {
-        return bRequired;
+        return getRequired();
     }
     public void setRequired(boolean required) {
-        bRequiredChanged |= this.bRequired != required;
-        this.bRequired = required;
+        bRequiredChanged = bRequiredChanged || required != this.bRequired;
+        bRequired = required;
+        if (!required) removeClass("oa-required");
+        else removeClass("oa-required");
     }
 
     public void setFocus(boolean b) {
@@ -689,13 +822,22 @@ public class OAHtmlComponent {
     }
     public void setValue(String value) {
         if (OAStr.isEqual(this.value, value, false, true)) return;
+        this.bValueChanged = true;
         this.value = value;
-        this.bValueChangedByAjax = false;
+        this.bValueChangedByAjax = false;  //qqqqqq old 
     }
+    public boolean getValueChanged() {
+        return this.bValueChanged;
+    }
+    //qqqqqqqq remove this type of old code qqqqqqqqqqqqqqqq
     public boolean getValueChangedByAjax() {
         return this.bValueChangedByAjax;
     }
+    public void setValueChanged(boolean b) {
+        this.bValueChanged = b;;
+    }
 
+/*qqqqq remove, not in html    
     public String[] getValues() {
         return this.values;
     }
@@ -705,7 +847,7 @@ public class OAHtmlComponent {
         this.values = values;
         this.bValueChangedByAjax = false;
     }
-    
+*/    
     
     public String getForwardUrl() {
         return this.forwardUrl;
@@ -829,6 +971,7 @@ public class OAHtmlComponent {
             case Reset:
                 break;
             case Select:
+                /*qqqqqq
                 setValues(ss);
                 if (ss != null && ss.length == 1) setValue(ss[0]);
                 else setValue(null);
@@ -852,6 +995,8 @@ public class OAHtmlComponent {
                         ho.setSelected(bx);
                     }
                 } 
+                */
+                break;
             case File:
                 // value not used, multipart-form processes the uploaded file(s) 
                 break;
@@ -918,138 +1063,47 @@ public class OAHtmlComponent {
         bDataListChanged = true;
     }
 
-    public String getStyle(String name) {
-        if (OAStr.isEmpty(name)) return null;
-        if (hmStyle == null) return  null;
-        String s = hmStyle.get(name);
-        return s;
-    }
-    public List<String> getStyles() {
-        List<String> al = new ArrayList();
-        if (hmStyle != null) {
-            for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
-                String sx = ex.getKey();
-                al.add(sx);
-            }
-        }
-        return al;
-    }
-
-    public void addStyle(final String name, final String value) {
-        if (OAStr.isEmpty(name)) return;
-        if (OAStr.isEmpty(value)) {
-            removeStyle(name);
-            return;
-        }
-        if (name.equals("width")) this.width = value;
-        if (name.equals("height")) this.height = value;
-        
-        if (hmStyle == null) hmStyle = new HashMap<String, String>();
-        else {
-            String s = hmStyle.get(name);
-            if (s != null && s.equals(value)) return;
-        }
-        hmStyle.put(name, value);
-        if (alStyleAdd == null) alStyleAdd = new ArrayList();
-        alStyleAdd.add(name);
-        if (alStyleRemove != null) alStyleRemove.remove(name);
-    }
     
-    public void removeStyle(final String name) {
-        if (OAStr.isEmpty(name)) return;
-        if (hmStyle == null) return;
-        if (hmStyle.get(name) == null) return;
-
-        hmStyle.remove(name);
-        if (alStyleRemove == null) alStyleRemove = new ArrayList();
-        alStyleRemove.add(name);
-        if (alStyleAdd != null) alStyleAdd.remove(name);
-    }
     
-    protected String getStyleJs(final boolean bIsInitializing) {
-        ArrayList<String> al = new ArrayList<String>();
-
-        if (bIsInitializing) {
-            if (hmStyle != null) {
-                for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
-                    String sx = ex.getKey();
-                    String v = ex.getValue();
-                    al.add("'"+sx + "':'" + v + "'");
-                }
-            }
-        }
-        else {
-            if (alStyleAdd != null) {
-                for (String name : alStyleAdd) {
-                    String val = hmStyle.get(name);
-                    al.add("'"+name + "':'" + val + "'");
-                }
-            }
-        
-            if (alStyleRemove != null) {
-                for (String name : alStyleRemove) {
-                    al.add("'"+name + "':'initial'");
-                    //was: al.add("'"+name + "':'inherit'");
-                }
-            }        
-        }
-        if (alStyleAdd != null) alStyleAdd.clear();
-        if (alStyleRemove != null) alStyleRemove.clear();
-        
-        String css = null;
-        for (String s : al) {
-            if (css == null) css = "{";
-            else css += ",";
-            css += s;
-        }
-        if (css != null) css += "}";
-        return css;
-    }
 
     public String getHeight() {
-        return this.height;
+        return hmStyle.get("height");
     }
     
     public void setHeight(String val) {
-        this.height = val;
         addStyle("height", val);
     }
     public String getWidth() {
-        return this.width;
+        return hmStyle.get("width");
     }
     public void setWidth(String val) {
         addStyle("width", val);
-        this.width = val;
     }
     
     public String getMinHeight() {
-        return this.minHeight;
+        return hmStyle.get("min-height");
     }
     public void setMinHeight(String val) {
         addStyle("min-height", val);
-        this.minHeight = val;
     }
     public String getMinWidth() {
-        return this.minWidth;
+        return hmStyle.get("min-width");
     }
     public void setMinWidth(String val) {
         addStyle("min-width", val);
-        this.minWidth = val;
     }
     
     public String getMaxHeight() {
-        return this.maxHeight;
+        return hmStyle.get("max-height");
     }
     public void setMaxHeight(String val) {
         addStyle("max-height", val);
-        this.maxHeight = val;
     }
     public String getMaxWidth() {
-        return this.maxWidth;
+        return hmStyle.get("max-width");
     }
     public void setMaxWidth(String val) {
         addStyle("max-width", val);
-        this.maxWidth = val;
     }
 
     public int getMinLength() {
@@ -1129,12 +1183,12 @@ public class OAHtmlComponent {
         this.imageWidth = val;
     }
 
+    // overflow: visible, hidden, scroll, auto, etc
+    // text-overflow: ellipsis
     public String getOverflow() {
-        return overflow;
+        return hmStyle.get("overflow");
     }
     public void setOverflow(String overflow) {
-        this.overflow = overflow;
-        
         addStyle("overflow", overflow);
         if (OAStr.isEmpty(overflow)) {
             removeStyle("text-overflow");
@@ -1163,28 +1217,33 @@ public class OAHtmlComponent {
         setSource(val);
     }
 
-
+    
+    
+    
     public void addClass(final String name) {
         if (OAStr.isEmpty(name)) return;
         if (hsClass == null) hsClass = new HashSet<>();
         else if (hsClass.contains(name)) return;
         hsClass.add(name);
+
+        if (hsClassRemove != null) {
+            hsClassRemove.remove(name); 
+        }
         
         if (hsClassAdd == null) hsClassAdd = new HashSet<>();
-        hsClass.add(name);
-        if (hsClassRemove != null) hsClassRemove.remove(name); 
+        hsClassAdd.add(name);
     }
     public void removeClass(final String name) {
         if (OAStr.isEmpty(name)) return;
-        if (hsClass == null) return;
-        hsClass.remove(name);
+        if (hsClass != null) {
+            hsClass.remove(name);
+        }
         
         if (hsClassAdd != null) {
-            if (hsClassAdd.remove(name)) return;
+            hsClassAdd.remove(name);
         }
         if (hsClassRemove == null) hsClassRemove = new HashSet<>();
         hsClassRemove.add(name);
-        if (hsClassAdd != null) hsClassAdd.remove(name); 
     }
 
     public List<String> getClasses() {
@@ -1196,46 +1255,155 @@ public class OAHtmlComponent {
         }
         return al;
     }
-
     
-    protected String getClassJs(final boolean bIsInitializing) {
-        String s = null;
-        Iterator itx;
+    public String getClassJs(final boolean bIsInitialized) {
+        if (hsClass == null && hsClassRemove == null) return null;
         
-        if (bIsInitializing) {
+        List<String> al = new ArrayList<String>();
+
+        if (!bIsInitialized) {
             if (hsClass != null) {
-                itx = hsClass.iterator();
-                for ( ; itx.hasNext() ;  ) {
-                    String sx = (String) itx.next();
-                    if (s == null) s = "";
-                    s += "$('#"+id+"').addClass('"+sx+"');";
+                for (String c : hsClass) {
+                    al.add("ele.classList.add('" + c  + "');");
+                }
+            }
+        }
+        else if (hsClassAdd != null) {
+            for (String c : hsClassAdd) {
+                al.add("ele.classList.add('" + c  + "');");
+            }
+        }
+        
+        if (hsClassRemove != null) {
+            for (String c : hsClassRemove) {
+                al.add("ele.classList.remove('" + c  + "');");
+            }
+        }
+
+        if (hsClassAdd != null) hsClassAdd.clear();
+        if (hsClassRemove != null) hsClassRemove.clear();
+        
+        String js = null;
+        for (String s : al) {
+            js = OAStr.concat(js, s, "\n");
+        }
+        return js;
+    }
+
+    public String getStyle(String name) {
+        if (OAStr.isEmpty(name)) return null;
+        if (hmStyle == null) return  null;
+        String s = hmStyle.get(name);
+        return s;
+    }
+    public List<String> getStyles() {
+        List<String> al = new ArrayList();
+        if (hmStyle != null) {
+            for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
+                String sx = ex.getKey();
+                al.add(sx);
+            }
+        }
+        return al;
+    }
+
+    public void addStyle(final String name, final String value) {
+        if (OAStr.isEmpty(name)) return;
+        if (OAStr.isEmpty(value)) {
+            removeStyle(name);
+            return;
+        }
+        
+        if (hmStyle == null) hmStyle = new HashMap<String, String>();
+        else {
+            String s = hmStyle.get(name);
+            if (s != null && s.equals(value)) return;
+        }
+        hmStyle.put(name, value);
+        if (alStyleAdd == null) alStyleAdd = new ArrayList();
+        alStyleAdd.add(name);
+        if (alStyleRemove != null) alStyleRemove.remove(name);
+    }
+    
+    public void removeStyle(final String name) {
+        if (OAStr.isEmpty(name)) return;
+        if (hmStyle == null) return;
+        if (hmStyle.get(name) == null) return;
+
+        hmStyle.remove(name);
+        if (alStyleRemove == null) alStyleRemove = new ArrayList();
+        alStyleRemove.add(name);
+        if (alStyleAdd != null) alStyleAdd.remove(name);
+    }
+    
+    public void clearStyles() {
+        if (hmStyle == null) return;
+        for (String s : hmStyle.keySet()) {
+            if (alStyleRemove == null) alStyleRemove = new ArrayList();
+            if (!alStyleRemove.contains(s)) alStyleRemove.add(s);
+        }
+        hmStyle.clear();
+        if (alStyleAdd != null) alStyleAdd.clear();
+    }
+    
+    protected String getStyleJs(final boolean bIsInitialized) {
+        List<String> al = new ArrayList<String>();
+
+        if (!bIsInitialized) {
+            if (hmStyle != null) {
+                for (Map.Entry<String, String> ex : hmStyle.entrySet()) {
+                    String n = ex.getKey(); // camel-case
+                    String v = ex.getValue();
+                    n = OAStr.convertToHungarian(n, "-");
+                    if (v == null) al.add("ele.style."+n+" = null;");
+                    else al.add("ele.style."+n+" = '"+ OAStr.escapeJS(v, '\'') + "';");
                 }
             }
         }
         else {
-            if (hsClassAdd != null) {
-                itx = hsClassAdd.iterator();
-                for ( ; itx.hasNext() ;  ) {
-                    String sx = (String) itx.next();
-                    if (s == null) s = "";
-                    s += "$('#"+id+"').addClass('"+sx+"');";
+            if (alStyleAdd != null) {
+                for (String n : alStyleAdd) {
+                    String v = hmStyle.get(n);
+                    n = OAStr.convertToHungarian(n, "-");
+                    al.add("ele.style['"+n+"'] = '"+ OAStr.escapeJS(v, '\'') + "';");
                 }
             }
-            
-            if (hsClassRemove != null) {
-                itx = hsClassRemove.iterator();
-                for ( ; itx.hasNext() ;  ) {
-                    String sx = (String) itx.next();
-                    if (s == null) s = "";
-                    s += "$('#"+id+"').removeClass('"+sx+"');";
+        
+            if (alStyleRemove != null) {
+                for (String n : alStyleRemove) {
+                    // al.add(n + ":initial");
+                    n = OAStr.convertToHungarian(n, "-");
+                    al.add("ele.style['"+n+"'] = '';");
                 }
-            }     
+            }        
         }
-        if (hsClassAdd != null) hsClassAdd.clear();
-        if (hsClassRemove != null) hsClassRemove.clear();
-        return s;
-    }
+        if (alStyleAdd != null) alStyleAdd.clear();
+        if (alStyleRemove != null) alStyleRemove.clear();
 
+        // other styles        
+        if (bCursorChanged || (!bIsInitialized && OAStr.isNotEmpty(getCursor()))) {
+            bCursorChanged = false;
+            String s2 = getCursor();
+            if (OAStr.isEmpty(s2)) s2 = CursorType.Default.getDisplay();
+            al.add("ele.style['cursor'] = '"+ s2 + "';");
+        }
+        if (bVisibleChanged || (!bIsInitialized && !getVisible())) {
+            bVisibleChanged = false;
+            String s2;
+            if (isVisible()) s2 = "visible";
+            else s2 = "hidden";
+            al.add("ele.style['visibility'] = '"+ s2 + "';");
+        }
+
+        String js = null;
+        for (String s : al) {
+            js = OAStr.concat(js, s, "\n");
+        }
+        return js;
+    }
+    
+    
+    
     public String getInputMode() {
         return inputMode;
     }
@@ -1361,7 +1529,7 @@ public class OAHtmlComponent {
         return this.bMultiple;
     }
     public void setMultiple(boolean b) {
-        if (this.bMultiple != b) setNeedsRefreshed(true);
+        bMultipleChanged |= (this.bMultiple != b);
         this.bMultiple = b;
     }
     
@@ -1369,7 +1537,12 @@ public class OAHtmlComponent {
     /**
      * Called by OAForm.
      */
-    public void beforeGetScript() {
+    protected void beforeGetScript() {
+        OAHtmlComponent och = getLabelComponent();
+        if (och != null) {
+            och.setVisible(this.getVisible());
+            och.setHidden(this.getHidden());
+        }
     }
     
     /**
@@ -1382,7 +1555,396 @@ public class OAHtmlComponent {
      */
     public void afterPageLoad() {
     }
+
     
+    /**
+     * Get HtmlElement changes for Attributes and Styles
+     */
+    public String getJSONChanges(final boolean bIsInitialized) {
+        final StringBuilder sb = new StringBuilder();
+        if (bEnabledChanged) {
+            sb.append(String.format("disabled: %b,", !getEnabled()));
+            bEnabledChanged = false;
+        }
+
+/*qqqq        
+        if (getMultiple()) sb.append("$('#" + id + "').attr('multiple', 'multiple');\n");
+        else if (formElementType == FormElementType.File) {
+            sb.append("$('#" + id + "').removeAttr('multiple');\n");
+        }
+*/
+        
+        
+        if (getNeedsRefreshed()) {
+            setNeedsRefreshed(false);
+        }
+        
+        
+/* qqqqqq todo, from old ajax code
+
+qqqqqqq add/remove single style or class qqqqqqqqq
+
+        if (!bIsInitializing && bFileUploaded) {
+            sb.append("$('#"+id+"')[0].value = null;\n");
+            lastAjaxSent = null;
+        }
+
+
+        // tooltip
+        if (bToolTipChanged || (bIsInitializing && OAStr.isNotEmpty(getToolTipText()))) {
+            bToolTipChanged = false;
+            String prefix = null;
+            String tt = getToolTipText();
+            if (OAString.isNotEmpty(tt)) {
+                if (bIsInitializing || !bToolTipChangedInit) {
+                    bToolTipChangedInit = true;
+                    sb.append("$('#" + id + "').tooltip();\n");
+                }
+                tt = OAJspUtil.createJsString(tt, '\'');
+    
+                sb.append("$('#" + id + "').data('bs.tooltip').options.title = '" + tt + "';\n");
+                sb.append("$('#" + id + "').data('bs.tooltip').options.placement = 'top';\n");
+            }
+            else {
+                sb.append("$('#" + id + "').tooltip('destroy');\n");
+            }
+        }
+
+qqqqqqqqqqqq need to find and set Label hidden, visible
+   need to have a way to find label, oa-data-name ..
+
+
+        if (bRequiredChanged || (bIsInitializing && getRequired())) {
+            bRequiredChanged = false;
+            if (isRequired()) {
+                sb.append("$('#" + id + "').addClass('oaRequired');\n");
+                sb.append("$('#" + id + "').prop('required', true);\n");
+                // sb.append("$('#" + id + "').attr('required', 'required');\n");
+            }
+            else {
+                sb.append("$('#" + id + "').removeClass('oaRequired');\n");
+                sb.append("$('#" + id + "').prop('required', false);\n");
+                // sb.append("$('#" + id + "').removeAttr('required');\n");
+            }
+        }
+
+ */
+
+        
+        
+        
+        
+        if (bValueChanged) {
+            sb.append(String.format("value: '%s',", OAStr.escapeJSON(OAStr.notNull(getValue()))));
+            bValueChanged = false;
+        }
+
+        String s = getInnerHtml();
+        if (bInnerHtmlChanged || (!bIsInitialized && OAStr.isNotEmpty(s))) {
+            sb.append(String.format("innerHTML: '%s',", OAStr.escapeJSON(OAStr.notNull(s)))); 
+            bInnerHtmlChanged = false;
+        }
+        
+        if (bAccessKeyChanged || (!bIsInitialized && getAccessKey() != 0)) {
+            bAccessKeyChanged = false;
+            sb.append(String.format("accesskey: '%s',", getAccessKey())); 
+        }
+        
+        if (bWrapChanged || (!bIsInitialized && OAStr.isNotEmpty(getWrap()))) {
+            bWrapChanged = false;
+            s = getWrap();
+            if (OAStr.isEmpty(s)) s = "soft";
+            sb.append(String.format("wrap: '%s',", s)); 
+        }
+
+        if (bAcceptChanged || (!bIsInitialized && OAStr.isNotEmpty(getAccept()))) {
+            bAcceptChanged = false;
+            s = getAccept();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("accept: %s,", s)); 
+        }
+        
+        if (bCaptureChanged || (!bIsInitialized && OAStr.isNotEmpty(getCapture()))) {
+            bCaptureChanged = false;
+            s = getCapture();
+
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("capture: %s,", s)); 
+        }
+        
+        if (bAutoCompleteChanged || (!bIsInitialized && OAStr.isNotEmpty(getAutoComplete()))) {
+            bAutoCompleteChanged = false;
+            s = getAutoComplete();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("autocomplete: %s,", s)); 
+        }
+
+        if (bListChanged || (!bIsInitialized && OAStr.isNotEmpty(getList()))) {
+            bListChanged = false;
+            s = getList();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("list: %s,", s)); 
+        }
+        
+        if (bLengthsChanged || (!bIsInitialized && (getSize() > 0 || getMinLength() > 0 || getMaxLength() > 0))) {
+            bLengthsChanged = false;
+            
+            if (getSize() > 0) {
+                sb.append(String.format("size: %d,", getSize())); 
+            }
+            if (getMinLength() > 0) {
+                sb.append(String.format("minlength: %d,", getMinLength())); 
+            }
+            if (getMaxLength() > 0) {
+                sb.append(String.format("maxlength: %d,", getMaxLength())); 
+            }
+            
+            if (getCols() > 0) {
+                sb.append(String.format("cols: %d,", getCols())); 
+            }
+            if (getRows() > 0) {
+                sb.append(String.format("rows: %d,", getRows())); 
+            }
+        }
+        
+        if (bHrefChanged || (!bIsInitialized && OAStr.isNotEmpty(getHref()))) {
+            bHrefChanged = false;
+            s = getHref();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("href: %s,", s)); 
+        }
+
+        
+        if (bTargetChanged || (!bIsInitialized && OAStr.isNotEmpty(getTarget()))) {
+            bHrefChanged = false;
+            s = getTarget();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("target: %s,", s)); 
+        }
+
+        if (bMinChanged || (!bIsInitialized && OAStr.isNotEmpty(getMin()))) {
+            bMinChanged = false;
+            s = getMin();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("min: %s,", s)); 
+        }
+        if (bMaxChanged || (!bIsInitialized && OAStr.isNotEmpty(getMax()))) {
+            bMaxChanged = false;
+            s = getMin();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("max: %s,", s)); 
+        }
+    
+        if (bPlaceHolderChanged || (!bIsInitialized && OAStr.isNotEmpty(getPlaceHolder()))) {
+            bPlaceHolderChanged = false;
+            s = getPlaceHolder();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("placeholder: %s,", s)); 
+        }
+        
+        if (bPatternChanged || (!bIsInitialized && OAStr.isNotEmpty(getPattern()))) {
+            bPatternChanged = false;
+            s = getPattern();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("pattern: %s,", s)); 
+        }
+        if (bTitleChanged || (!bIsInitialized && OAStr.isNotEmpty(getTitle()))) {
+            bTitleChanged = false;
+            s = getTitle();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("title: %s,", s)); 
+        }
+        
+        if (bImageChanged || (!bIsInitialized && (OAStr.isNotEmpty(getSource()) || getImageWidth() > 0 || getImageHeight() > 0))) {
+            bImageChanged = false;
+            
+            s = getSource();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("src: %s,", s)); 
+            
+            if (getImageWidth() > 0) sb.append(String.format("width: %d,", getImageWidth()));
+            if (getImageHeight() > 0) sb.append(String.format("height: %d,", getImageHeight()));
+        }
+        
+        if (bReadOnlyChanged || (!bIsInitialized && isReadOnly())) {
+            bReadOnlyChanged = false;
+            sb.append(String.format("readOnly: %b,", isReadOnly())); 
+        }
+        
+        if (bHiddenChanged || (!bIsInitialized && getHidden())) {
+            bHiddenChanged = false;
+            boolean b = isHidden();
+            sb.append(String.format("hidden: %b,", b)); // set the html attribute
+        }
+
+        if (bRequiredChanged || (!bIsInitialized && getRequired())) {
+            bRequiredChanged = false;
+            sb.append(String.format("required: %b,", isRequired()));  // directly set HtmlElement.required 
+        }
+
+        if (bAltChanged || (!bIsInitialized && OAStr.isNotEmpty(getAlt()))) {
+            bAltChanged = false;
+            s = getAlt();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("alt: %s,", s)); 
+        }
+        
+        if (bStepChanged || (!bIsInitialized && OAStr.isNotEmpty(getStep()) ) ) {
+            bStepChanged = false;
+            s = getStep();
+            if (s == null) s = "";
+            else s = "'"+s+"'";
+            sb.append(String.format("step: %s,", s)); 
+        }
+
+        if (bCheckedChanged || (!bIsInitialized && isChecked())) {
+            bCheckedChanged = false;
+            sb.append(String.format("checked: %b,", isChecked())); 
+        }
+        
+        if (bSpellCheckChanged || (!bIsInitialized && isSpellCheck())) {
+            bSpellCheckChanged = false;
+            sb.append(String.format("spellchecked: %b,", isSpellCheck())); 
+        }
+        
+        if (bMultipleChanged || (!bIsInitialized && getMultiple())) {
+            sb.append(String.format("multiple: %s,", bMultiple?"true":"null"));
+            bMultipleChanged = false;
+        }        
+        
+        
+        if (sb.length() == 0) return null;
+        sb.setCharAt(sb.length()-1, ' ');
+        return sb.toString();
+    }
+
+    
+    /**
+     * @param hsVars
+     * @param bHasChanges if true, then this JS vars: comp and ele need to be set up.
+     */
+    public String getJavaScriptForClient(final Set<String> hsVars, final boolean bHasChanges) {
+        StringBuilder sb = new StringBuilder();
+
+        final String jsClass =  getClassJs(bIsInitialized);
+        final String jsStyle =  getStyleJs(bIsInitialized);
+        
+        if (!bIsInitialized) {
+            sb.append("ele = "+getJavaScriptForGetElement()+";\n");
+            sb.append("comp = new OA."+getComponentClassName()+"(ele, "+serverAssignedId+");\n");
+            sb.append("OAClient.registerComponentFromServer("+serverAssignedId+", comp);\n");
+            
+            List<HtmlOption> alOptions = getOptions();
+            if (alOptions != null && alOptions.size() > 0) {
+                String s = getOptionsJs(alOptions);
+                sb.append("ele.innerHTML = `" + s + "`;\n");
+            }
+        }        
+        else if (bHasChanges || bFocus || OAStr.isNotEmpty(jsClass) || OAStr.isNotEmpty(jsStyle)) {
+            sb.append("comp = OAClient.getRegisteredComponent("+serverAssignedId+");");
+            sb.append("  // " + getDataOANameFullPath() +"\n"); //qqqqqqqqqqqqqqqqqqqqq
+            sb.append("ele = comp.element;\n");
+        }
+
+    
+        // there can be problem with hidden get "trumped" by other styles
+        boolean b = (bHiddenChanged || (!bIsInitialized && getHidden()));
+        boolean b2 = b && getHidden();
+        
+        final String json = getJSONChanges(bIsInitialized);        
+        if (json != null) {
+            sb.append(String.format("jsonObj = [{ id: %d, changes: { ", serverAssignedId));
+            sb.append(json);
+            sb.append("} } ];\n");
+            sb.append("OAClient.updateElementsFromServer(jsonObj);\n");
+        }
+        if (b) { 
+            if (b2) sb.append("ele.style.setProperty('display', 'none', 'important');\n");
+            else { // thanks chatgpt
+                sb.append("ele.style.setProperty('display', '', 'important');\n");
+                sb.append("ele.style.removeProperty('display');\n");
+            }
+        }
+        
+        if (bFocus) {
+            bFocus = false;
+            sb.append("ele.focus();\n");
+        }
+
+        if (OAStr.isNotEmpty(jsClass)) {
+            sb.append(jsClass);
+            sb.append("\n");
+        }
+        
+        if (OAStr.isNotEmpty(jsStyle)) {
+            sb.append(jsStyle);
+            sb.append("\n");
+        }
+        
+        //qqqqqqqqq need to get Label visible, hidden to match control
+/*qqqqqqqqqqq Data and Options            
+        if (bInitJavaScript || bDataListChanged) {
+            bDataListChanged = false;
+            List<String> dataList = getDataList();
+            if (dataList != null) {
+                sb.append("$('#" + id + "DataList').remove();\n");
+                sb.append("$('#" + id + "').attr('list', '"+id+"DataList');\n");
+        
+                String list = "<datalist id='"+getId()+"DataList'>";
+                for (String option : dataList) {
+                    option = OAJspUtil.createJsString(option, '\'');                
+                    list += "<option value='"+option+"'>";
+                }
+                list += "</datalist>";
+                sb.append("$('#" + id + "').append('" + list + "');\n");
+            }
+        }
+
+        if (bIsInitializing || bOptionsChanged) {
+            bOptionsChanged = false;
+            List<HtmlOption> al = getOptions();
+            if (al != null && al.size() > 0) {
+                String list = getOptionsJs(al);
+                sb.append("$('#" + id + "').html('" + OAJspUtil.createJsString(list, '\'') + "');\n");
+            }
+        }
+*/
+
+        bIsInitialized = true;
+        
+        /*qqq remove
+        if (getChildren() != null) {
+            for (OAHtmlComponent hc : getChildren()) {
+                String s = hc.getJavaScriptForClient();
+                if (OAStr.isNotEmpty(s)) sb.append(s);
+            }
+        }
+        */
+        
+        
+        String js = sb.toString();
+        
+        return js;
+    }
+    
+    
+    
+    
+    
+    /*qqqqqqqq   some of this needs to be used qqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
     public String getInitializeScript() {
         lastAjaxSent = null;
         bValueChangedByAjax = false;
@@ -1430,21 +1992,23 @@ public class OAHtmlComponent {
         }
         else confirm = "";
 
+        // / **qqqqqqqqq need to find element property to assign the Label's htmlelement
         s = getLabelId();
         if (OAStr.isNotEmpty(s)) {
             sb.append("$('#" + s + "').attr('for', '"+id+"');\n");
             // note:  the property is: "htmlFor"
         }
+        // * /
         
         getDataListJs(sb);
 
-        /*qqqqqq called by form, used in it's internal oasubmit method
+        // / *qqqqqq called by form, used in it's internal oasubmit method
         s = getVerifyScript();
         if (OAString.isNotEmpty(s)) {
             sb.append("\n");
             sb.append(s);
         }
-        */
+        // * /
 
         String eventName = getCalcEventName();
         if (OAStr.isNotEmpty(eventName)) {
@@ -1524,11 +2088,16 @@ public class OAHtmlComponent {
         String js = sb.toString();
         return js;
     }
-
+    */
+    /*
     public String getVerifyScript() {
         return null;
     }
+    */
+    
+    
 
+/* qqqqqqqqqqqqqqqqqqqqqqq OLD ... removing now    
     public String getAjaxScript(final boolean bIsInitializing) {
         final StringBuilder sb = new StringBuilder(1024);
 
@@ -1710,6 +2279,7 @@ public class OAHtmlComponent {
         }
         
         if (bPatternChanged || (bIsInitializing && OAStr.isNotEmpty(getPattern()))) {
+            bPatternChanged = false;
             if (OAString.isEmpty(getPattern())) {
                 sb.append("$('#" + id + "').removeAttr('pattern');\n");
             }
@@ -1720,6 +2290,7 @@ public class OAHtmlComponent {
         }
 
         if (bTitleChanged || (bIsInitializing && OAStr.isNotEmpty(getTitle()))) {
+            bTitleChanged = false;
             if (OAString.isEmpty(getTitle())) {
                 sb.append("$('#" + id + "').removeAttr('title');\n");
             }
@@ -1733,7 +2304,7 @@ public class OAHtmlComponent {
             bImageChanged = false;
             sb.append("$('#" + id + "').attr('src', '"+getSource()+"');\n");
             if (getImageWidth() > 0) sb.append("$('#" + id + "').attr('width', "+getImageWidth()+");\n");
-            if (getImageHeight() > 0) sb.append("$('#" + id + "').attr('width', "+getImageHeight()+");\n");
+            if (getImageHeight() > 0) sb.append("$('#" + id + "').attr('height', "+getImageHeight()+");\n");
         }
             
         // tooltip
@@ -1764,7 +2335,7 @@ public class OAHtmlComponent {
         if (bEnabledChanged || (bIsInitializing && !getEnabled())) {
             bEnabledChanged = false;
             s = getEnabledScript();
-            if (OAString.isNotEmpty(s)) sb.append(s);
+            if (OAString.isNotEmpty(s)) sb.append(s + "\n");
         }
 
         if (bReadOnlyChanged || (bIsInitializing && isReadOnly())) {
@@ -1778,6 +2349,7 @@ public class OAHtmlComponent {
                 // sb.append("$('#" + id + "').removeAttr('readonly');\n");
             }
         }
+
         
         // HTML hidden attribute does not take up space
         if (bHiddenChanged || (bIsInitializing && getHidden())) {
@@ -1791,6 +2363,7 @@ public class OAHtmlComponent {
                 // sb.append("$('#" + id + "').removeAttr('hidden');\n");
             }
             
+            / *
             if (OAStr.isNotEmpty(getLabelId())) {
                 if (isHidden()) {
                     sb.append("$('#" + getLabelId() + "').prop('hidden', true);\n");
@@ -1801,6 +2374,7 @@ public class OAHtmlComponent {
                     // sb.append("$('#" + getLabelId() + "').removeAttr('hidden');\n");
                 }
             }
+            * /
         }
         
         // CSS visible=false does take up space
@@ -1812,7 +2386,7 @@ public class OAHtmlComponent {
             else {
                 sb.append("$('#"+id+"').css('visibility', 'hidden');\n");
             }
-            
+            / *
             if (OAStr.isNotEmpty(getLabelId())) {
                 if (isVisible()) {
                      sb.append("$('#"+getLabelId()+"').css('visibility', 'visible');\n");
@@ -1821,6 +2395,7 @@ public class OAHtmlComponent {
                     sb.append("$('#"+getLabelId()+"').css('visibility', 'hidden');\n");
                 }
             }
+            * /
         }
 
         if (bRequiredChanged || (bIsInitializing && getRequired())) {
@@ -1921,7 +2496,8 @@ public class OAHtmlComponent {
         this.bValueChangedByAjax = false;
         return js;
     }
-
+*/
+    
     public String getOptionsJs(final List<HtmlOption> al) {
         String list = "";
         boolean bInOptGroup = false;
@@ -1934,15 +2510,15 @@ public class OAHtmlComponent {
                     list += "</optgroup>";
                 }
                 bInOptGroup = true;
-                list += "<optgroup label='"+s+"'";
+                list += "<optgroup label='" + OAStr.escapeJS(s,'\'') + "'";
                 if (!ho.getEnabled()) list += " disabled";
                 list += ">";
             }
             else {
-                list += "<option value='"+ho.getValue()+"'";
+                list += "<option value='" + OAStr.escapeJS(ho.getValue(), '\'') + "'";
                 if (!ho.getEnabled()) list += " disabled";
                 if (ho.getSelected()) list += " selected";
-                list += ">"+s;
+                list += ">"+OAStr.escapeJS(s, '\'');
             }
 
             if (ho instanceof HtmlOptionGroup) {
@@ -1981,7 +2557,7 @@ public class OAHtmlComponent {
         this.innerHtml = html;
     }
     
-    
+    /*
     protected void getFloatLabelJs(StringBuilder sb) {
         sb.append("$('#" + id + "').addClass('oaFloatLabel');\n");
 
@@ -2000,28 +2576,46 @@ public class OAHtmlComponent {
         sb.append("$('#" + id + " + span').html('" + OAJspUtil.createJsString(getFloatLabel(), '\'') + "');\n");
     }
 
-    protected String getEnabledScript() {
+    public String getEnabledScript() {
         StringBuilder sb = new StringBuilder(64);
         final String lblId = getLabelId();
-        if (getEnabled()) {
-            if (OAString.isNotEmpty(lblId)) {
-                sb.append("$('#" + lblId + "').prop('disabled', false);\n");
-                // sb.append("$('#" + lblId + "').removeAttr('disabled');\n");
-            }
-            sb.append("$('#" + id + "').prop('disabled', false);\n");
-            // sb.append("$('#" + id + "').removeAttr('disabled');\n");
+        
+        if (OAString.isNotEmpty(lblId)) {
+            sb.append(String.format("document.querySelector('#%s').disabled = %b;", lblId, !getEnabled()));
         }
-        else {
-            if (OAString.isNotEmpty(lblId)) {
-                sb.append("$('#" + lblId + "').prop('disabled', true);\n");
-                // sb.append("$('#" + lblId + "').attr('disabled', 'disabled');\n");
-            }
-            sb.append("$('#" + id + "').prop('disabled', true);\n");
-            // sb.append("$('#" + id + "').attr('disabled', 'disabled');\n");
-        }
+//qqqqq was:        sb.append(String.format("%s.disabled = %b;", getQuerySelector(), !getEnabled()));
         return sb.toString();
     }
+*/
+   
+    
 
+    protected abstract String getJavaScriptForGetElement();
+    public abstract String getDataOANameFullPath();
+    
+    /* was: moved to HtmlElement
+    public String getJavaScriptForGetElement() {
+        if (OAStr.isNotEmpty(id)) return String.format("document.getElementById('%s')", id);
+        
+        if (!OAStr.isEmpty(getDataOAName())) {
+            String dnp = "";
+            OAHtmlComponent comp = this;
+            for ( ;comp!= null; comp=comp.getParent()) {
+                if (OAStr.isNotEmpty(comp.getId())) {
+                    dnp = OAStr.prepend(dnp, "#"+comp.getId(), ".");
+                    break;
+                }
+                else dnp = OAStr.prepend(dnp, comp.getDataOAName(), "."); 
+            }
+            return String.format("OAClient.getElement('%s')", dnp);
+        }
+        
+        if (OAStr.isNotEmpty(htmlSelector)) return String.format("document.querySelector('%s')", htmlSelector);
+        
+        return null;
+    }
+    */
+    
     
     public String getValidationRules() {
         return null;
@@ -2032,13 +2626,13 @@ public class OAHtmlComponent {
     }
     
     public void getRequiredJsNames(final Set<String> hsJsName) {
-        hsJsName.add(OAFormInsertDelegate.JS_jquery);
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
+        //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery);
+        //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
         hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
     }
 
     public void getRequiredCssNames(final Set<String> hsCssName) {
-        hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
+        //qqqqq hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
         hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
     }
 
@@ -2069,6 +2663,10 @@ public class OAHtmlComponent {
         this.checked = chk;
         this.bValueChangedByAjax = false;
     }
+    public void setCheckedChanged(boolean b) {
+        this.bCheckedChanged = b;
+    }
+    
 
     // Text values in input elements (not password) Text in <textarea> elements.
     public boolean getSpellCheck() {
@@ -2192,5 +2790,6 @@ public class OAHtmlComponent {
     public boolean isSupported(String name) {
         return true;
     }
+    
     
 }

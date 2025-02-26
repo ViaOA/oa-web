@@ -24,8 +24,8 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAInputPassword(String id, Hub hub, String propName) {
-        super(id);
+    public OAInputPassword(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -59,7 +59,8 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
     public char getConversion() {
         return oaUiControl.getConversion();
     }
-    
+
+/*qqqqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (getHub() == null || getPropertyName() == null) {
@@ -80,9 +81,10 @@ public class OAInputPassword extends InputPassword implements OAHtmlComponentInt
             lastRefresh.value = val;
         }
     }
+*/    
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
         

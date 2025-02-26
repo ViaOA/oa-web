@@ -1,8 +1,8 @@
 package com.viaoa.web.html.input;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 /*
@@ -14,27 +14,15 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 */ 
  
 public class InputRadio extends InputElement {
-
+    private InputRadioGroup inputRadioGroup;
+    
     /**
      * A group of radio buttons need to use the same name, but each should have it's own unique Id;
      * @param name used by the other group of radio buttons.
      * @param value that is submitted if this radio is selected.
      */
-    public InputRadio(String id, String name, String value) {
-        super(id, InputType.Radio);
-        setName(name);
-        setValue(value);
-    }
-
-    public InputRadio(String id, String name) {
-        this(id, name, id);
-    }
-    
-    public String getValue(String value) {
-        return htmlComponent.getValue();
-    }
-    public void setValue(String value) {
-        htmlComponent.setValue(value);
+    public InputRadio(String selector) {
+        super(selector, InputType.Radio);
     }
 
     public boolean getChecked() {
@@ -50,7 +38,6 @@ public class InputRadio extends InputElement {
 
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
-        hsSupported.add("value");
         hsSupported.add("checked");
     }
     public boolean isSupported(String name) {
@@ -58,6 +45,37 @@ public class InputRadio extends InputElement {
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
 
+    public InputRadioGroup getInputRadioGroup() {
+        return inputRadioGroup;
+    }
+    public void setInputRadioGroup(InputRadioGroup irg) {
+        this.inputRadioGroup = irg;
+        irg.add(this);
+    }
+    
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Checked)) return;
+        onClientCheckedEvent();
+    }
+    
+    protected void onClientCheckedEvent() {
+        this.setChecked(true);
+        this.getOAHtmlComponent().setCheckedChanged(false);
+        
+        if (inputRadioGroup != null) {
+            for (InputRadio ir : inputRadioGroup.getInputRadios()) {
+                if (ir != this) {
+                    ir.setChecked(false);
+                    ir.getOAHtmlComponent().setCheckedChanged(false);
+                }
+            }
+            inputRadioGroup.setCheckedInputRadio(this);
+        }
+    }
+    
 }
 
 

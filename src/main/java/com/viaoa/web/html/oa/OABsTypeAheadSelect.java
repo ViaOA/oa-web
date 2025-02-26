@@ -33,8 +33,8 @@ public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentI
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OABsTypeAheadSelect(String id, OATypeAhead typeAhead) {
-        super(id);
+    public OABsTypeAheadSelect(String selector, OATypeAheadInputText typeAhead) {
+        super(selector);
 
         if (typeAhead == null) throw new IllegalArgumentException("typeAhead cant be null");
         if (typeAhead.getHub() == null) throw new IllegalArgumentException("typeAhead hub cant be null");
@@ -112,7 +112,7 @@ public class OABsTypeAheadSelect extends BsTypeAhead implements OAHtmlComponentI
     
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         setMultiValue(false);
         
         OAForm form = getOAHtmlComponent().getForm();

@@ -40,8 +40,8 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
      * @param id html element id of input:text 
      * @param typeAhead has hub and properties to use 
      */
-    public OABsTypeAhead(String id, OATypeAhead typeAhead) {
-        super(id);
+    public OABsTypeAhead(String selector, OATypeAheadInputText typeAhead) {
+        super(selector);
         
         if (typeAhead == null) throw new IllegalArgumentException("typeAhead cant be null");
         setTypeAhead(typeAhead);
@@ -120,7 +120,7 @@ public class OABsTypeAhead extends BsTypeAhead implements OAHtmlComponentInterfa
     
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();

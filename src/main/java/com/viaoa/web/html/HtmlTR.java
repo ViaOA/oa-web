@@ -20,8 +20,8 @@ public class HtmlTR extends HtmlElement {
     public HtmlTR() {
         this(null);
     }
-    public HtmlTR(String id) {
-        super(id);
+    public HtmlTR(String selector) {
+        super(selector);
     }
 
     public void addTableData(HtmlTD td) {

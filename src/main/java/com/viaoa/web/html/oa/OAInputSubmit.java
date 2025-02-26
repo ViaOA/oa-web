@@ -31,8 +31,8 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAInputSubmit(String id, Hub hub, OAUICommandController.Command command) {
-        super(id);
+    public OAInputSubmit(String selector, Hub hub, OAUICommandController.Command command) {
+        super(selector);
         oaUiControl = new OAUICommandController(hub, command) {
             @Override
             protected Object getManualObject() {
@@ -73,7 +73,7 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
         };
     }
 
-    
+/*qqqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (oaUiControl.getCommand().getChangesAO()) {
@@ -86,16 +86,19 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
             }
         }
     }
+*/
     
     /**
      * Called by OAForm whenever this button causes the submit (/ajaxSubmit).
      * <br>
      * By default, this will call OAUICommandController.onCommand, and should be overwritten if using any of the "manual" commands.
      */
+/*qqqqqqq    
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
         oaUiControl.onCommand();
     }
+*/    
     
     /**
      * Override to get manual object, for commands NewManual, AddManual, ManualChangeAO
@@ -130,7 +133,7 @@ public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterfa
     }
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 

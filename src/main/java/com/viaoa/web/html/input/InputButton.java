@@ -36,8 +36,8 @@ public class InputButton extends InputElement {
     }
     
     
-    public InputButton(String id) {
-        super(id, InputType.Button);
+    public InputButton(String selector) {
+        super(selector, InputType.Button);
     }
 
     public String getButtonText() {
@@ -55,11 +55,12 @@ public class InputButton extends InputElement {
     public void setValue(String value) {
         htmlComponent.setValue(value);
     }
-    
+/*qqqqqq    
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
         super.onSubmit(formSubmitEvent);
     }
+*/    
     
 /*    
 

@@ -11,8 +11,8 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 public class InputTel extends InputText {
 
-    public InputTel(String id) {
-        super(id, InputType.Tel);
+    public InputTel(String selector) {
+        super(selector, InputType.Tel);
         htmlComponent.setInputMode(InputModeType.Tel);
     }
 

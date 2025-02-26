@@ -1,17 +1,23 @@
 package com.viaoa.web.html;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.util.*;
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 
+/**
+ * Html Select element that has collection of options to match html structure.
+ */
 public class HtmlSelect extends HtmlFormElement {
-    // Note: Values[] has all of the selected items qqqqqqqqqqqqqqqqqqqqqqqqqqq    
     // Note: html select element does not support readonly, use disabled
-    
-    public HtmlSelect(String id) {
-        super(id, FormElementType.Select);
+    // Note: to find selected, loop through getOptions and check for "selected" property
+
+    public HtmlSelect(String selector) {
+        this(selector, FormElementType.Select);
+    }
+
+    public HtmlSelect(String selector, FormElementType ft) {
+        super(selector, ft);
     }
     
     /**
@@ -55,18 +61,15 @@ public class HtmlSelect extends HtmlFormElement {
         return htmlComponent.getOptions();
     }
     
+    /** 
+     * Note: for multiselect, this will be the most recent selected option only.
+     * To find all, look at options.selected 
+     */
     public String getValue() {
         return htmlComponent.getValue();
     }
     public void setValue(String value) {
         htmlComponent.setValue(value);
-    }
-
-    public String[] getValues() {
-        return htmlComponent.getValues();
-    }
-    public void setValues(String[] values) {
-        htmlComponent.setValues(values);
     }
 
     public boolean getRequired() {
@@ -93,6 +96,46 @@ public class HtmlSelect extends HtmlFormElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+    
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Change)) return;
+        
+        String s = map.get("selectedIndexes");
+        if (s == null) return;
+        int[] indexes;
+        if (s.trim().length() == 0) {
+            indexes = new int[0];
+        }
+        else {
+            String[] ss = s.split(",");
+            indexes = new int[ss.length];
+            for (int i=0; i<ss.length; i++) {
+                indexes[i] = OAConv.toInt(ss[i]);
+            }
+        }
+        onClientChangeEvent(indexes);
+    }
+    
+    protected void onClientChangeEvent(int[] selectIndexes) {
+        int x = getOAHtmlComponent().getOptions().size();
+        String newValue = "";
+        for (int i=0; i<x; i++) {
+            boolean b = false;
+            for (int j : selectIndexes) {
+                if (j == i) {
+                    b = true;
+                    break;
+                }
+            }
+            HtmlOption ho = getOAHtmlComponent().getOptions().get(i);
+            ho.setSelected(b);
+            newValue = ho.getValue();
+        }
+        getOAHtmlComponent().setValue(newValue);
+        getOAHtmlComponent().setValueChanged(false);
+    }
 }
 
- 

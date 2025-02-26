@@ -1,12 +1,13 @@
 package com.viaoa.web.html;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
+import com.viaoa.util.OAStr;
 
 public class HtmlImg extends HtmlElement {
 
-    public HtmlImg(String id) {
-        super(id);
+    public HtmlImg(String selector) {
+        super(selector);
     }
 
     public String getSource() {
@@ -59,4 +60,18 @@ public class HtmlImg extends HtmlElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+    
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Click)) return;
+        onClickEvent(map);
+    }
+    
+    protected void onClickEvent(final Map<String, String> map) {
+        
+    }
+    
+    
 }

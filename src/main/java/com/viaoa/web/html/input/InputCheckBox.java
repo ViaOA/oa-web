@@ -1,7 +1,11 @@
 package com.viaoa.web.html.input;
 
 import java.util.*;
+
+import com.viaoa.hub.Hub;
+import com.viaoa.util.*;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
+import com.viaoa.web.html.oa.OAEditorInterface;
 
 /*
  <input type="checkbox" id="chk1" name="chk1" value="first" checked />
@@ -28,15 +32,15 @@ public class InputCheckBox extends InputElement {
      * @param name used by the other group of radio buttons.
      * @param value that is submitted if this radio is selected.
      */
-    public InputCheckBox(String id, String name, String value) {
-        super(id, InputType.CheckBox);
+    public InputCheckBox(String selector, String name, String value) {
+        super(selector, InputType.CheckBox);
         setValue(value);
     }
-    public InputCheckBox(String id, String value) {
-        this(id, id, value);
+    public InputCheckBox(String selector, String value) {
+        this(selector, selector, value);
     }
-    public InputCheckBox(String id) {
-        this(id, id, id);
+    public InputCheckBox(String selector) {
+        this(selector, selector, selector);
     }
     
     
@@ -65,5 +69,19 @@ public class InputCheckBox extends InputElement {
     public boolean isSupported(String name) {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+    
+    
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Change)) return;
+        onClientChangeEvent(OAConv.toBoolean(map.get("newValue")));
+    }
+    
+    protected void onClientChangeEvent(boolean newValue) {
+        setChecked(newValue);
+        getOAHtmlComponent().setCheckedChanged(false);
     }
 }

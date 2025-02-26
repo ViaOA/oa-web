@@ -20,10 +20,10 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  */
 public class InputTime extends InputRange {
 
-    public InputTime(String id) {
-        super(id, InputType.Time);
+    public InputTime(String selector) {
+        super(selector, InputType.Time);
     }
-
+    
     public void setValue(OATime time) {
         if (time == null) super.setValue(null);
         else super.setValue(time.toString(OATime.JsonFormat));

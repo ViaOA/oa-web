@@ -52,8 +52,8 @@ public class HtmlCol extends HtmlElement {
     public HtmlCol() {
         this(null);
     }
-    public HtmlCol(String id) {
-        super(id);
+    public HtmlCol(String selector) {
+        super(selector);
     }
 
     public int getSpan() {

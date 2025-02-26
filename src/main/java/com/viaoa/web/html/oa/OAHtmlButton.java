@@ -1,10 +1,12 @@
 package com.viaoa.web.html.oa;
 
+import java.util.*;
+
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
 import com.viaoa.uicontroller.OAUICommandController;
 import com.viaoa.uicontroller.OAUICommandController.Command;
-import com.viaoa.util.OADate;
+import com.viaoa.util.*;
 import com.viaoa.web.html.HtmlButton;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
@@ -12,13 +14,13 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 /**
  * HtmlButton to work with OAModel.
  * <p>
- * Like all of the OAWeb Components, this uses an OAHtmlComponent to interact with html page, and an
+ * Uses OAHtmlComponent to interact with html page, and an
  * OAUICommandController to interact with Model OAObject & Hub.
  * <p>
  * Similar to OAInputButton
  * <p>
  * Overwrite method performCommand for manual/custom commands.<br>
- * Overwrite method getManualObject if command requires one for
+ * Overwrite method getManualObject if command requires one
  * 
  * @see OAInputButton
  * @author vince
@@ -32,8 +34,13 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
     }
     private final LastRefresh lastRefresh = new LastRefresh();
 
-    public OAHtmlButton(String id, Hub hub, Type type, OAUICommandController.Command command) {
-        super(id, type);
+    public OAHtmlButton(String selector, Hub hub, OAUICommandController.Command command) {
+        this(selector, hub, Type.Button, command);
+    }
+    
+    
+    public OAHtmlButton(String selector, Hub hub, Type type, OAUICommandController.Command command) {
+        super(selector, type);
         oaUiControl = new OAUICommandController(hub, command) {
             @Override
             protected Object getManualObject() {
@@ -77,6 +84,7 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
         };
     }
 
+/*qqqqq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (oaUiControl.getCommand().getChangesAO()) {
@@ -89,17 +97,19 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
             }
         }
     }
+*/
 
     /**
      * Called by OAForm whenever this button causes the submit (/ajaxSubmit). <br>
      * By default, this will call OAUICommandController.onCommand, and should be overwritten if using
      * any of the "manual" commands.
      */
+/*qqqqqqqq    
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
         oaUiControl.onCommand();
     }
-
+*/
     /**
      * Override to get manual object, for commands NewManual, AddManual, ManualChangeAO
      */
@@ -119,7 +129,7 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
     /**
      * Override if Command is OtherUsesAO, OtherUsesHub, ManualChangeAO, GoTo, HubSearch, Search, Select
      * 
-     * @return true if command was preformed, false if it's ignored/skipped.
+     * @return true if command was performed, false if it's ignored/skipped.
      */
     protected boolean performCommand(OAObject obj) {
         return true;
@@ -133,8 +143,9 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
         return oaUiControl;
     }
 
+/*qqqqq    
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 
@@ -148,4 +159,32 @@ public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface
         b = oaUiControl.isVisible();
         setVisible(b);
     }
+*/
+    
+    
+    @Override
+    public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
+        boolean b = oaUiControl.isEnabled();
+        setEnabled(b);
+
+        b = oaUiControl.isVisible();
+        setVisible(b);
+        
+        String js = super.getJavaScriptForClient(hsVars, bHasChanges);
+        return js;
+    }
+
+    /**
+     * This will call UICommandController to process the command.
+     * It will call method performCommand, so overwrite it instead of this method.
+     */
+    @Override
+    protected void onClickEvent() {
+        super.onClickEvent();
+        getController().onCommand();
+    }
+    
+    
+    
 }
+

@@ -14,8 +14,8 @@ import com.viaoa.web.util.OAJspUtil;
  */
 public class BsTagsInput extends InputText {
 
-    public BsTagsInput(String id) {
-        super(id);
+    public BsTagsInput(String selector) {
+        super(selector);
     }
 
     
@@ -53,12 +53,12 @@ public class BsTagsInput extends InputText {
     
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
-        hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_tagsinput);
+      //qqqqq hsCssName.add(OAFormInsertDelegate.CSS_bootstrap_tagsinput);
     }
     
     @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
         hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
-        hsJsName.add(OAFormInsertDelegate.JS_bootstrap_tagsinput);
+      //qqqqq hsJsName.add(OAFormInsertDelegate.JS_bootstrap_tagsinput);
     }
 }

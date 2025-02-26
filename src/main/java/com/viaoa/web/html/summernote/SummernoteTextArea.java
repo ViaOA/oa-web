@@ -29,8 +29,8 @@ textarea {
  */
 public class SummernoteTextArea extends HtmlTextArea {
 
-    public SummernoteTextArea(String id) {
-        super(id, FormElementType.StyledTextArea);
+    public SummernoteTextArea(String selector) {
+        super(selector, FormElementType.StyledTextArea);
     }
 
     @Override
@@ -129,14 +129,14 @@ public class SummernoteTextArea extends HtmlTextArea {
     @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
         hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
-        hsCssName.add(OAFormInsertDelegate.CSS_summernote);
+//qqqq        hsCssName.add(OAFormInsertDelegate.CSS_summernote);
     }
 
     @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
-        hsJsName.add(OAFormInsertDelegate.JS_jquery);
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
-        hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
-        hsJsName.add(OAFormInsertDelegate.JS_summernote);
+      //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery);
+      //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
+      hsJsName.add(OAFormInsertDelegate.JS_bootstrap);
+      //qqqq  hsJsName.add(OAFormInsertDelegate.JS_summernote);
     }
 }

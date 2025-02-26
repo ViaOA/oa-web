@@ -24,8 +24,8 @@ public class InputEmail extends InputText {
     }
     
     
-    public InputEmail(String id) {
-        super(id, InputType.Email);
+    public InputEmail(String selector) {
+        super(selector, InputType.Email);
         htmlComponent.setInputMode(InputModeType.Email);
     }
 

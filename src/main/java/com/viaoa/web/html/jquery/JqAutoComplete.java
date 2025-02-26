@@ -18,8 +18,8 @@ import com.viaoa.web.util.OAJspUtil;
  */
 public abstract class JqAutoComplete extends InputText {
 
-    public JqAutoComplete(String id) {
-        super(id);
+    public JqAutoComplete(String selector) {
+        super(selector);
     }
     
     @Override

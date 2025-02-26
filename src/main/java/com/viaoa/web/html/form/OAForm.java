@@ -398,7 +398,7 @@ public class OAForm extends OABase implements Serializable {
     protected void beforeGetScript() {
         for (HtmlElement he : getAllHtmlElements()) {
             OAHtmlComponent comp = he.getOAHtmlComponent();
-            comp.beforeGetScript();
+//qqqqq            comp.beforeGetScript();
         }
     }
     
@@ -1642,7 +1642,7 @@ public class OAForm extends OABase implements Serializable {
     }
 
     /**
-     * This is used to for a http (or ajax) request go directly to a component for processing. 
+     * This is used for a http (or ajax) request go directly to a component for processing. 
      */
     public String processGetJson(OASession session) throws Exception {
         if (this.session == null) this.session = session;
@@ -1754,7 +1754,7 @@ public class OAForm extends OABase implements Serializable {
         final Set<String> hsCssName = new LinkedHashSet<>();
 
         // note: order matters
-        hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
+        //qqqq hsCssName.add(OAFormInsertDelegate.CSS_jquery_ui);
         
         
         hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);//qqqqqqqqqq
@@ -1796,12 +1796,12 @@ public class OAForm extends OABase implements Serializable {
         final Set<String> hsJsName = new LinkedHashSet<>();
         
         // note: order matters
-        hsJsName.add(OAFormInsertDelegate.JS_jquery); 
-        hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
+        //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery); 
+        //qqqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);
 
         
         if (addValidation) {
-            hsJsName.add(OAFormInsertDelegate.JS_jquery_validation);
+            //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_validation);
         }
 
         for (String name : alRequiredJsName) {

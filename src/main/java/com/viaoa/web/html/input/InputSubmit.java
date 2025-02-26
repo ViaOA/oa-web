@@ -22,8 +22,8 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 */
 public class InputSubmit extends InputElement {
 
-    public InputSubmit(String id) {
-        super(id, InputType.Submit);   
+    public InputSubmit(String selector) {
+        super(selector, InputType.Submit);   
     }
     
     protected InputSubmit(String id, InputType type) {
@@ -45,11 +45,12 @@ public class InputSubmit extends InputElement {
         htmlComponent.setValue(value);
     }
     
+/*qqqq    
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
         super.onSubmit(formSubmitEvent);
     }
-    
+*/    
     
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {

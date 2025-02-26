@@ -13,8 +13,8 @@ public class HtmlTH extends HtmlTD {
     public HtmlTH() {
         this(null);
     }
-    public HtmlTH(String id) {
-        super(id, "th");
+    public HtmlTH(String selector) {
+        super(selector, "th");
     }
 
 }

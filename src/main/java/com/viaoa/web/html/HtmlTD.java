@@ -23,12 +23,11 @@ public class HtmlTD extends HtmlElement {
     public HtmlTD() {
         this(null);
     }
-    public HtmlTD(String id) {
-        super(id);
-        this.tagName = "td";
+    public HtmlTD(String selector) {
+        this(selector, "td");
     }
-    protected HtmlTD(String id, String tagName) {
-        super(id);
+    protected HtmlTD(String selector, String tagName) {
+        super(selector);
         this.tagName = tagName;
     }
 

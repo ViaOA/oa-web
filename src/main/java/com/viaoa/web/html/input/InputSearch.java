@@ -5,8 +5,8 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 public class InputSearch extends InputText {
     
-    public InputSearch(String id) {
-        super(id, InputType.Search);
+    public InputSearch(String selector) {
+        super(selector, InputType.Search);
         htmlComponent.setInputMode(InputModeType.Search);
     }
 

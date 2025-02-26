@@ -9,8 +9,8 @@ import com.viaoa.util.OATime;
  */
 public class BsTime extends BsDateTime {
 
-    public BsTime(String id) {
-        super(id);
+    public BsTime(String selector) {
+        super(selector);
         this.typeDateTime = Type.Time;
     }
     

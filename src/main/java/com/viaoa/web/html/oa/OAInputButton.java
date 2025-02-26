@@ -8,6 +8,17 @@ import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputButton;
 
+
+
+
+
+
+
+//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated using OAHtmlButton
+
+
+
+
 /**
  * InputButton that works with OAModel. 
  * <p>
@@ -30,8 +41,8 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
     }
     private final LastRefresh lastRefresh = new LastRefresh();
     
-    public OAInputButton(String id, Hub hub, OAUICommandController.Command command) {
-        super(id);
+    public OAInputButton(String selector, Hub hub, OAUICommandController.Command command) {
+        super(selector);
         oaUiControl = new OAUICommandController(hub, command) {
             @Override
             protected Object getManualObject() {
@@ -72,7 +83,7 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
         };
     }
 
-    
+/*qq    
     @Override
     protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
         if (oaUiControl.getCommand().getChangesAO()) {
@@ -85,18 +96,19 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
             }
         }
     }
-    
+*/    
     
     /**
      * Called by OAForm whenever this button causes the submit (/ajaxSubmit).
      * <br>
      * By default, this will call OAUICommandController.onCommand, and should be overwritten if using any of the "manual" commands.
      */
+/*qqqqqqqqqq    
     @Override
     protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
         oaUiControl.onCommand();
     }
-    
+*/    
     /**
      * Override to get manual object, for commands NewManual, AddManual, ManualChangeAO
      */
@@ -130,7 +142,7 @@ public class OAInputButton extends InputButton implements OAHtmlComponentInterfa
     }
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 

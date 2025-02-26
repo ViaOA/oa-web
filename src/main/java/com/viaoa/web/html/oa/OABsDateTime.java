@@ -24,8 +24,8 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
     private final LastRefresh lastRefresh = new LastRefresh();
 
 
-    public OABsDateTime(String id, Hub hub, String propName) {
-        super(id);
+    public OABsDateTime(String selector, Hub hub, String propName) {
+        super(selector);
         oaUiControl = new OAUIPropertyController(hub, propName) {
             @Override
             protected void onCompleted(String completedMessage, String title) {
@@ -82,7 +82,7 @@ public class OABsDateTime extends BsDateTime implements OAHtmlComponentInterface
     
     
     @Override
-    protected void beforeGetScript() {
+    public void beforeGetJavaScriptForClient() {
         OAForm form = getOAHtmlComponent().getForm();
         final boolean bIsFormEnabled = form == null || form.getEnabled();
 

@@ -2,9 +2,9 @@ package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.uicontroller.*;
 import com.viaoa.util.*;
-import com.viaoa.web.html.HtmlTD;
+import com.viaoa.web.html.*;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputTime;
@@ -13,141 +13,65 @@ import com.viaoa.web.html.input.InputTime;
  * Binds InputTime to a Hub + propertyName
  *
  */
-public class OAInputTime extends InputTime implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    private final OAUIPropertyController oaUiControl;
-    private static class LastRefresh {
-        OAObject objUsed;
-        OATime value;
-    }
-    private final LastRefresh lastRefresh = new LastRefresh();
+public class OAInputTime extends InputTime implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+    private final OAUIController controlUI;
 
-    public OAInputTime(String selector, Hub hub, String propName) {
-        super(selector);
-        oaUiControl = new OAUIPropertyController(hub, propName) {
+    public OAInputTime(String elementIdentifier, Hub hub, String propName) {
+        super(elementIdentifier);
+        
+        controlUI = new OAUIController(hub, propName) {
             @Override
-            protected void onCompleted(String completedMessage, String title) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addMessage(completedMessage);
-                    form.addConsoleMessage(title + " - " + completedMessage);
-                }
+            public void updateComponent(Object object) {
+                String s = this.getValueAsString(object);
+                OAInputTime.this.setValue(s);
+                OAInputTime.this.setEnabled(this.isEnabled());
+                OAInputTime.this.setVisible(this.isVisible());
             }
+            
             @Override
-            protected void onError(String errorMessage, String detailMessage) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addError(errorMessage);
-                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
-                }
+            public void updateLabel(Object object) {
+                OAHtmlComponent lbl = getOAHtmlComponent().getLabelComponent();
+                if (lbl == null) return;
+                lbl.setVisible(isVisible());
+
+                boolean b = this.isEnabled();
+                if (!b && getHub().getActiveObject() != null) b = true;
+                lbl.setEnabled(b);
             }
         };
+        controlUI.setFormat("HH:mm:ss"); // or HH:mm
+    }
+    
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        String val = controlUI.getValueAsString(obj);
+        return val;
     }
 
+    @Override
+    public void close() {
+        super.close();
+        if (controlUI != null) controlUI.close();
+    }
+    
+    
     public Hub getHub() {
-        return oaUiControl.getHub();
+        return controlUI.getHub();
     }
     public String getPropertyName() {
-        return oaUiControl.getPropertyName();
+        return controlUI.getEndPropertyName();
     }
+    
     public String getFormat() {
-        return oaUiControl.getFormat();
+        return controlUI.getFormat();
     }
     public void setFormat(String format) {
-        oaUiControl.setFormat(format);
-    }
-
-    
-/*qqqqqqqq    
-    @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        if (getHub() == null || getPropertyName() == null) {
-            return;
-        }
-        
-        if (lastRefresh.objUsed == null) return;
-        
-        // make sure that it did not change
-        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
-        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            formSubmitEvent.addSyncError("OAInputText Id="+getId());
-            return;
-        }
-        
-        final OATime dt = getTimeValue();
-        if (OACompare.isNotEqual(lastRefresh.value, dt)) {
-            oaUiControl.onSetProperty(lastRefresh.objUsed, dt);
-            lastRefresh.value = dt;
-        }
-    }
-*/    
-    
-    @Override
-    public void beforeGetJavaScriptForClient() {
-        OAForm form = getOAHtmlComponent().getForm();
-        final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
-        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
-        lastRefresh.value = (OATime) oaUiControl.getValue(lastRefresh.objUsed);
-        
-        boolean b = oaUiControl.isEnabled();
-        setEnabled(bIsFormEnabled && b);
-
-        b = oaUiControl.isVisible();
-        setVisible(b);
-        
-        b = oaUiControl.isRequired();
-        setRequired(b);
-        
-        setValue(lastRefresh.value);
+        controlUI.setFormat(format);
     }
 
     @Override
-    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-
-        String s;
-        if (obj == null) s = "";
-        else {
-            boolean b = obj.isVisible(getPropertyName());
-            if (!b) s = "";
-            else {
-                s = obj.getPropertyAsString(getPropertyName(), getFormat());
-                if (s == null) s = "";
-                else td.addClass("oaNoTextOverflow");
-            }
-        }
-        return s;
+    protected void onClientChangeEvent(String newValue) {
+        super.onClientChangeEvent(newValue);
+        controlUI.setValue(getValue());
     }
-
-    @Override
-    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-        String s = "<input id='"+getId()+"'";
-        s += " class='oaFitColumnSize'";
-        if (obj == null) s += " style='visibility: hidden;'"; 
-        s += ">";
-        // note: other settings will be added oahtmlcomponent
-        return s;
-    }
-
 }

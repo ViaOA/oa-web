@@ -1,8 +1,8 @@
 package com.viaoa.web.html;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 
 /*
@@ -138,6 +138,20 @@ public class HtmlTextArea extends HtmlFormElement {
     public boolean isSupported(String name) {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
+    }
+
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Change)) return;
+        
+        onClientChangeEvent(map.get("newValue"));
+    }
+    
+    protected void onClientChangeEvent(String newValue) {
+        getOAHtmlComponent().setValue(newValue);
+        getOAHtmlComponent().setValueChanged(false);
     }
 
 }

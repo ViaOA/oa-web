@@ -161,7 +161,7 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
         if (controlUI == null) return null;
-        return controlUI.getValueAsString(obj);
+        return controlUI.getValueAsString(obj, null, 200);
     }
     
 }

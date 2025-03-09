@@ -254,5 +254,4 @@ public class InputText extends InputElement {
         getOAHtmlComponent().setValue(newValue);
         getOAHtmlComponent().setValueChanged(false);
     }
-
 }

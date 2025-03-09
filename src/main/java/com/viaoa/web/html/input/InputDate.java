@@ -1,5 +1,7 @@
 package com.viaoa.web.html.input;
 
+import java.util.Map;
+
 import com.viaoa.object.OAObject;
 import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
@@ -53,4 +55,18 @@ public class InputDate extends InputRange {
         return new OADate(val, OADate.JsonFormat);
     }
 
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Change)) return;
+        
+        onClientChangeEvent(map.get("newValue"));
+    }
+    
+    protected void onClientChangeEvent(String newValue) {
+        getOAHtmlComponent().setValue(newValue);
+        getOAHtmlComponent().setValueChanged(false);
+    }
+    
 }

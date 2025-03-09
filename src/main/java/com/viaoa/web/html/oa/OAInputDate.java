@@ -1,154 +1,72 @@
 package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
-import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUIPropertyController;
-import com.viaoa.util.*;
-import com.viaoa.web.html.HtmlTD;
-import com.viaoa.web.html.form.OAForm;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
+import com.viaoa.uicontroller.*;
+import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputDate;
 
 /**
  * Binds InputDate to a Hub + propertyName
- *
  */
-public class OAInputDate extends InputDate implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    private final OAUIPropertyController oaUiControl;
-    
-    private static class LastRefresh {
-        OAObject objUsed;
-        OADate value;
-    }
-    private final LastRefresh lastRefresh = new LastRefresh();
+public class OAInputDate extends InputDate implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+    private final OAUIController controlUI;
 
-    public OAInputDate(String selector, Hub hub, String propName) {
-        super(selector);
-        oaUiControl = new OAUIPropertyController(hub, propName) {
+    public OAInputDate(String elementIdentifier, Hub hub, String propName) {
+        super(elementIdentifier);
+        
+        controlUI = new OAUIController(hub, propName) {
             @Override
-            protected void onCompleted(String completedMessage, String title) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addMessage(completedMessage);
-                    form.addConsoleMessage(title + " - " + completedMessage);
-                }
+            public void updateComponent(Object object) {
+                String s = this.getValueAsString(object);
+                OAInputDate.this.setValue(s);
+                OAInputDate.this.setEnabled(this.isEnabled());
+                OAInputDate.this.setVisible(this.isVisible());
             }
+            
             @Override
-            protected void onError(String errorMessage, String detailMessage) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addError(errorMessage);
-                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
-                }
+            public void updateLabel(Object object) {
+                OAHtmlComponent lbl = getOAHtmlComponent().getLabelComponent();
+                if (lbl == null) return;
+                lbl.setVisible(isVisible());
+
+                boolean b = this.isEnabled();
+                if (!b && getHub().getActiveObject() != null) b = true;
+                lbl.setEnabled(b);
             }
         };
+        controlUI.setFormat("yyyy-MM-dd");
     }
+    
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        String val = controlUI.getValueAsString(obj);
+        return val;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        if (controlUI != null) controlUI.close();
+    }
+    
     
     public Hub getHub() {
-        return oaUiControl.getHub();
+        return controlUI.getHub();
     }
     public String getPropertyName() {
-        return oaUiControl.getPropertyName();
+        return controlUI.getEndPropertyName();
     }
+    
     public String getFormat() {
-        return oaUiControl.getFormat();
+        return controlUI.getFormat();
     }
     public void setFormat(String format) {
-        oaUiControl.setFormat(format);
+        controlUI.setFormat(format);
     }
 
-    
-/*qqqqqq    
     @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        if (getHub() == null || getPropertyName() == null) {
-            return;
-        }
-        
-      //qqqqq 2: compare that it was not changed by another        
-        if (lastRefresh.objUsed == null) return;
-        
-        // make sure that it did not change
-        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
-        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            formSubmitEvent.addSyncError("OAInputDate Id="+getId());
-            return;
-        }
-        
-        final OADate date = getDateValue();
-        if (OACompare.isNotEqual(lastRefresh.value, date)) {
-            oaUiControl.onSetProperty(lastRefresh.objUsed, date);
-            lastRefresh.value = date;
-        }
-    }
-*/    
-    
-    @Override
-    public void beforeGetJavaScriptForClient() {
-        OAForm form = getOAHtmlComponent().getForm();
-        final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
-        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
-        lastRefresh.value = (OADate) oaUiControl.getValue(lastRefresh.objUsed);
-        
-        boolean b = oaUiControl.isEnabled();
-        setEnabled(bIsFormEnabled && b);
-
-        b = oaUiControl.isVisible();
-        setVisible(b);
-        
-        b = oaUiControl.isRequired();
-        setRequired(b);
-        
-        setValue(lastRefresh.value);
-    }
-
-        
-    @Override
-    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-
-        String s;
-        if (obj == null) s = "";
-        else {
-            boolean b = obj.isVisible(getPropertyName());
-            if (!b) s = "";
-            else {
-                s = obj.getPropertyAsString(getPropertyName(), getFormat());
-                if (s == null) s = "";
-                td.addClass("oaNoTextOverflow");
-            }
-        }
-        return s;
-    }
-    @Override
-    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-        String s = "<input id='"+getId()+"'";
-        s += " class='oaFitColumnSize'";
-        if (obj == null) s += " style='visibility: hidden;'"; 
-        s += ">";
-        // note: other settings will be added oahtmlcomponent
-        return s;
+    protected void onClientChangeEvent(String newValue) {
+        super.onClientChangeEvent(newValue);
+        controlUI.setValue(getValue());
     }
 }

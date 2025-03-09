@@ -480,9 +480,9 @@ public abstract class OAHtmlComponent {
     
     public static enum WrapType {
         Default("soft"),
-        Soft(),
-        Hard(),
-        Off();
+        Soft(),  // wraps based on width
+        Hard(),  // adds linebreaks char(s)
+        Off();  // Deprecated, Use: style="white-space: pre; overflow-x: auto;"
         
         protected String display;
         

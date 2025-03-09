@@ -19,7 +19,7 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * 
  * @author vince
  */
-public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface, OAEditorInterface {
     private final OAUISelectController controlUISelect;
     private String propName;
     private String format;
@@ -79,7 +79,8 @@ public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface
                     }
                 }
                 else {
-                    poss = new int[hub.getPos()];
+                    int pos = hub.getPos();
+                    if (pos >= 0) poss = new int[pos];
                 }
                 this.setSelected(poss);
             }
@@ -336,6 +337,12 @@ public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface
             getHub().setPos(pos);
         }
         bIgnoreSelected = false;
+    }
+
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        String s = controlUISelect.getValueAsString(hubFrom, obj);
+        return s;
     }
 
 }

@@ -373,6 +373,10 @@ public class OATable extends HtmlElement {
         
         String js = String.format("ele2 = ele.querySelector(':scope [data-oa-name=\"%s\"]');\n", oaDataName);
         js += String.format("tc = new OA.OATableColumn('%s', %d, ele2);\n", tc.columnName, tc.colCharWidth);
+        
+        js += String.format("tc.styles='max-width:%dch';", tc.colCharWidth);
+        // js += "tc.classes = \n";
+        
         js += "comp.addColumn(tc);\n";
         
         Change c = new Change(ChangeType.newColumn, js);

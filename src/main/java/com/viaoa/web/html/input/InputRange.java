@@ -90,6 +90,16 @@ public class InputRange extends InputElement {
         htmlComponent.setFloatLabel(floatLabel);
     }
     
+    /**
+     * The display width of the text field, number of characters wide.
+     */
+    public int getSize() {
+        return htmlComponent.getSize();
+    }
+
+    public void setSize(int val) {
+        htmlComponent.setSize(val);
+    }
     
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
@@ -97,6 +107,7 @@ public class InputRange extends InputElement {
         hsSupported.add("placeholder");
         hsSupported.add("readonly");
         hsSupported.add("required");
+        hsSupported.add("size");
         hsSupported.add("min");
         hsSupported.add("max");
         hsSupported.add("step");

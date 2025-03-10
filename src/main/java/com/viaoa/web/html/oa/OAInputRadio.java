@@ -14,7 +14,7 @@ import com.viaoa.web.html.input.InputRadio;
  * Binds Input Radio to an Hub + propertyName
  *
  */
-public class OAInputRadio extends InputRadio implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAInputRadio extends InputRadio {
     private final OAUIController controlUI;
     private Object selectValue;
     

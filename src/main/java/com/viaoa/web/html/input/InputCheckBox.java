@@ -5,7 +5,7 @@ import java.util.*;
 import com.viaoa.hub.Hub;
 import com.viaoa.util.*;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.html.oa.OAEditorInterface;
+import com.viaoa.web.html.oa.OATableColumnInterface;
 
 /*
  <input type="checkbox" id="chk1" name="chk1" value="first" checked />
@@ -69,19 +69,5 @@ public class InputCheckBox extends InputElement {
     public boolean isSupported(String name) {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
-    }
-    
-    
-    @Override
-    public void onClientEvent(final String type, final Map<String, String> map) {
-        super.onClientEvent(type, map);
-        
-        if (OAStr.isNotEqual(type, Event_Change)) return;
-        onClientChangeEvent(OAConv.toBoolean(map.get("newValue")));
-    }
-    
-    protected void onClientChangeEvent(boolean newValue) {
-        setChecked(newValue);
-        getOAHtmlComponent().setCheckedChanged(false);
     }
 }

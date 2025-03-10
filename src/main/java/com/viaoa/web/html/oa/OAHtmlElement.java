@@ -12,7 +12,7 @@ import com.viaoa.web.html.*;
  * 
  * @author vince
  */
-public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OAEditorInterface, OAHtmlTableComponentInterface, OAHtmlComponentInterface {
+public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OATableColumnInterface {
     private Hub hub;
     private String propName;
     private String format;
@@ -108,58 +108,12 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
         setInnerHtml(val);
     }
 
-    //qqqqqqqqqqqqqqqqqqqq Change the other OA web components to use getTableCell* method that has the table hub in it. 
-    //qqqqqqqqqqqqqqqqqqqqqqqqqqqqq  this one is the working example that uses getPropertypathBetweenHubs qqqqqq
-
-    @Override
-    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
-
-        Object objx;
-        if (hubTable != null && hubTable != getHub()) {
-            
-            objx = hubTable.getAt(row);
-            if (objx instanceof OAObject) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                //qqqqqq will need support for many(/hub) as the return value ?? qqqqqq and make comma separated listing
-                objx = ((OAObject)objx).getProperty(pp);
-            }
-        }
-        else {
-            objx = getHub().get(row);
-        }
-
-        
-        String s;
-        
-        if (objx instanceof Hub) {
-            Hub h = (Hub) objx;
-            s = "";//qqqqqqqqqqqqqq
-        }
-        else if (objx instanceof OAObject) {
-            OAObject obj = (OAObject) objx;
-            boolean b = obj.isVisible(getPropertyName());
-            if (!b) s = "";
-            else {
-                s = obj.getPropertyAsString(getPropertyName(), getFormat());
-                td.addClass("oaNoTextOverflow");
-            }
-        }
-        else {
-            s = "";
-        }
-        
-        return s;
-    }
-
-    @Override
-    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
-        String s = getTableCellRenderer(hubTable, td, row);
-        return s;
-    }
-
-    
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         if (controlUI == null) return null;
         return controlUI.getValueAsString(obj, null, 200);
     }

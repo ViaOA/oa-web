@@ -13,7 +13,7 @@ import com.viaoa.web.html.input.InputTime;
  * Binds InputTime to a Hub + propertyName
  *
  */
-public class OAInputTime extends InputTime implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAInputTime extends InputTime implements OATableColumnInterface {
     private final OAUIController controlUI;
 
     public OAInputTime(String elementIdentifier, Hub hub, String propName) {
@@ -44,6 +44,10 @@ public class OAInputTime extends InputTime implements OAEditorInterface, OAHtmlC
     
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         String val = controlUI.getValueAsString(obj);
         return val;
     }

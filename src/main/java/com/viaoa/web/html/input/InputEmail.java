@@ -6,7 +6,7 @@ import java.util.Set;
 import com.viaoa.web.html.OAHtmlComponent.InputModeType;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
-/*
+/* Not used yet .....qqqqqqqqqqqqq
 
 <input id="email" type="email" name="email" inputmode="email" value="jsmith@gmail.com">
 

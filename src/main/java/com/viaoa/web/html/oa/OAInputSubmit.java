@@ -22,7 +22,7 @@ import com.viaoa.web.html.input.InputSubmit;
  *  
  * @author vince
  */
-public class OAInputSubmit extends InputSubmit implements OAHtmlComponentInterface {
+public class OAInputSubmit extends InputSubmit {
     private final OAUICommandController oaUiControl;
 
     private static class LastRefresh {

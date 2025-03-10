@@ -13,17 +13,16 @@ tabindex=0 for both table and it's wrapper
 
 dont allow hub.row to be changed if table is not enabled
 
-qqqqqq create a "renumber" js for the number column, giving a starting row number
-
-
 */
 
 /**
- * HtmlTable to work with OAModel.
+ * Creates a table listing. Columns are added by adding HtmlElements.
+ * Supports keyboard navigation and editors.
  * <p>
- * 
- * 
- * @author vince
+ * Notes:<br>
+ * see styles in oa-web.css <br>
+ * adds style "table-layout: fixed"<br>
+ * Can be wrapped in a div that scroll css, and has sticky column header.<br>
  */
 public class OATable extends HtmlElement {
 
@@ -67,6 +66,7 @@ public class OATable extends HtmlElement {
                     return ""+(pos+1);
                 }
             };
+            he.setFormat("#,###");
             OATableColumn tc = new OATableColumn(he, "#", 5, "");
             addColumn("spanCount", tc);
         }
@@ -80,7 +80,7 @@ public class OATable extends HtmlElement {
     }
 
     
-    private static class MySelectCheckBox extends InputCheckBox implements OAEditorInterface {
+    private static class MySelectCheckBox extends InputCheckBox implements OATableColumnInterface {
         private final Hub hub;
         private final Hub hubSelect;
         public MySelectCheckBox(Hub hub, Hub hubSelect) {
@@ -336,12 +336,12 @@ public class OATable extends HtmlElement {
     
     
     protected static class OATableColumn {
-        OAEditorInterface editor; 
+        OATableColumnInterface editor; 
         String columnName;
         int colCharWidth;
         String propertyPath;
 
-        public OATableColumn(OAEditorInterface editor, String columnName, int colCharWidth, String propertyPath) {
+        public OATableColumn(OATableColumnInterface editor, String columnName, int colCharWidth, String propertyPath) {
             this.editor = editor;
             this.columnName = columnName;
             this.colCharWidth = colCharWidth;
@@ -350,7 +350,7 @@ public class OATable extends HtmlElement {
     }
 
     
-    public void addColumn(String oaDataName, OAEditorInterface editor, String columnName, int colCharWidth, String propertyPath) {
+    public void addColumn(String oaDataName, OATableColumnInterface editor, String columnName, int colCharWidth, String propertyPath) {
         OATableColumn tc = new OATableColumn(editor, columnName, colCharWidth, propertyPath);
         addColumn(oaDataName, tc);
     }

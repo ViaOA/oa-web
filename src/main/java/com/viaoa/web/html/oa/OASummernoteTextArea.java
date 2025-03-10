@@ -14,7 +14,7 @@ import com.viaoa.web.util.OAWebUtil;
  * Binds Summernote textarea to an Hub + propertyName
  *
  */
-public class OASummernoteTextArea extends SummernoteTextArea implements OAHtmlComponentInterface {
+public class OASummernoteTextArea extends SummernoteTextArea {
     private final OAUIPropertyController oaUiControl;
 
     private static class LastRefresh {

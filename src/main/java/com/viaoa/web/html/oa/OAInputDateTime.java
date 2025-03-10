@@ -14,7 +14,7 @@ import com.viaoa.web.html.input.*;
  * 
  * Note: only works with:  input type="datetime-local", and not type="datetime"
  */
-public class OAInputDateTime extends InputDateTime implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAInputDateTime extends InputDateTime implements OATableColumnInterface {
     private final OAUIController controlUI;
 
     public OAInputDateTime(String elementIdentifier, Hub hub, String propName) {
@@ -45,6 +45,10 @@ public class OAInputDateTime extends InputDateTime implements OAEditorInterface,
     
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         String val = controlUI.getValueAsString(obj);
         return val;
     }

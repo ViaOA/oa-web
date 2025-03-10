@@ -1,39 +1,35 @@
 package com.viaoa.web.html.oa;
 
-import java.util.Set;
+import java.util.*;
 
 import com.viaoa.hub.*;
-import com.viaoa.object.*;
+import com.viaoa.object.OAObject;
 import com.viaoa.uicontroller.*;
-import com.viaoa.util.OACompare;
-import com.viaoa.util.OAStr;
+import com.viaoa.util.*;
 import com.viaoa.web.html.*;
-import com.viaoa.web.html.form.OAForm;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
-import com.viaoa.web.html.input.InputNumber;
-
+import com.viaoa.web.html.input.InputText;
 
 /**
- * Binds Input Number to an Hub + propertyName
+ * Binds InputText to an Hub + propertyName
  */
-public class OAInputNumber extends InputNumber implements OATableColumnInterface {
+public class OAInputRange extends InputText implements OATableColumnInterface {
     private final OAUIController controlUI;
-    
+
     // extra properties
     private int maxSize;
     private boolean bMaxSizeChanged;
     
     
-    public OAInputNumber(String elementIdentifier, Hub hub, String propName) {
+    public OAInputRange(String elementIdentifier, Hub hub, String propName) {
         super(elementIdentifier);
         
         controlUI = new OAUIController(hub, propName) {
             @Override
             public void updateComponent(Object object) {
                 String s = this.getValueAsString(object);
-                OAInputNumber.this.setValue(s);
-                OAInputNumber.this.setEnabled(this.isEnabled());
-                OAInputNumber.this.setVisible(this.isVisible());
+                OAInputRange.this.setValue(s);
+                OAInputRange.this.setEnabled(this.isEnabled());
+                OAInputRange.this.setVisible(this.isVisible());
             }
             
             @Override
@@ -48,7 +44,7 @@ public class OAInputNumber extends InputNumber implements OATableColumnInterface
             }
         };
     }
-
+    
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
         if (obj instanceof OAObject) {
@@ -78,7 +74,7 @@ public class OAInputNumber extends InputNumber implements OATableColumnInterface
     public void setFormat(String format) {
         controlUI.setFormat(format);
     }
-
+    
     /**
      * Allow size to grow to fit text, from original (attribute) size to this.maxSize.
      */
@@ -111,7 +107,7 @@ public class OAInputNumber extends InputNumber implements OATableColumnInterface
         
         return js;
     }
-
+    
     @Override
     protected void onClientChangeEvent(String newValue) {
         super.onClientChangeEvent(newValue);

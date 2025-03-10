@@ -39,10 +39,10 @@ public class InputFile extends InputElement {
     }
 
     public String[] getValues() {
-        return htmlComponent.getValues();
+        return null;//qqqq htmlComponent.getValues();
     }
     public void setValues(String[] values) {
-        htmlComponent.setValues(values);
+        //qqqqqqq htmlComponent.setValues(values);
     }
 
 

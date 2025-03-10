@@ -469,8 +469,10 @@ public class OAForm extends OABase implements Serializable {
 
         for (HtmlElement he : getAllHtmlElements()) {
             OAHtmlComponent comp = he.getOAHtmlComponent();
+            /*qqq
             String s = comp.getVerifyScript();
             if (!OAString.isEmpty(s)) p(sb, "  " + s, indent);
+            */
         }
 
         // 20171104 add jquery.validate
@@ -719,7 +721,7 @@ public class OAForm extends OABase implements Serializable {
         boolean b = true;
         for (HtmlElement he : getAllHtmlElements()) {
             OAHtmlComponent comp = he.getOAHtmlComponent();
-            String s = comp.getInitializeScript();
+            String s = "";//qqqqqqqqqqq comp.getInitializeScript();
 
             if (debugNow) p(sb, "$('#"+comp.getId()+"').addClass('oaDebug');", indent);
             // else p(sb, "$('#"+comp.getId()+"').removeClass('oaDebug');", indent);
@@ -750,7 +752,7 @@ public class OAForm extends OABase implements Serializable {
 
             for (HtmlElement he : getAllHtmlElements()) {
                 OAHtmlComponent comp = he.getOAHtmlComponent();
-                String s = comp.getVerifyScript();
+                String s = "";//qqqqqqqqqq comp.getVerifyScript();
     
                 s = comp.getValidationRules();
                 if (OAString.isNotEmpty(s)) {
@@ -769,7 +771,7 @@ public class OAForm extends OABase implements Serializable {
             b = false;
             for (HtmlElement he : getAllHtmlElements()) {
                 OAHtmlComponent comp = he.getOAHtmlComponent();
-                String s = comp.getVerifyScript();
+                String s = "";//qqqqqqqqq comp.getVerifyScript();
     
                 s = comp.getValidationMessages();
                 if (OAString.isNotEmpty(s)) {
@@ -869,13 +871,13 @@ public class OAForm extends OABase implements Serializable {
             String s;
             final boolean b = (alAddHtmlElement.contains(he) || he.getNeedsReloaded());
             if (b) {
-                s = comp.getInitializeScript();
+                s = ""; //qqqqqqqq comp.getInitializeScript();
                 if (!OAString.isEmpty(s)) p(sb, s + "", 1);
                 //qqqqqqq this needs to embedded in the init script                
                 //  s = comp.getVerifyScript();
                 // if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             }
-            s = comp.getAjaxScript(b || bIsInitializing);
+            s = ""; //qqqqqqqq  comp.getAjaxScript(b || bIsInitializing);
             
             if (!OAString.isEmpty(s)) p(sb, s + "", 1);
             if (debugNow != bLastDebug) {
@@ -1215,7 +1217,7 @@ public class OAForm extends OABase implements Serializable {
         if (al.contains(he)) return;
         al.add(he);
 
-        List<HtmlElement> alx = he.getHtmlElements();
+        List<HtmlElement> alx = null;//qqqqqqq he.getHtmlElements();
         if (alx == null) return;
         
         for (HtmlElement hex : alx) {

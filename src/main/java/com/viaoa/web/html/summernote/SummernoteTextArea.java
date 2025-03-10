@@ -33,7 +33,6 @@ public class SummernoteTextArea extends HtmlTextArea {
         super(selector, FormElementType.StyledTextArea);
     }
 
-    @Override
     protected String getInitializeScript() {
         final StringBuilder sb = new StringBuilder();
 
@@ -83,7 +82,6 @@ public class SummernoteTextArea extends HtmlTextArea {
     private boolean bWasEnabled;
     private boolean bWasSpellCheck;
 
-    @Override
     protected String getAjaxScript(boolean bIsInitializing) {
         final StringBuilder sb = new StringBuilder();
      
@@ -126,13 +124,11 @@ public class SummernoteTextArea extends HtmlTextArea {
         return sb.toString();
     }
     
-    @Override
     public void getRequiredCssNames(Set<String> hsCssName) {
         hsCssName.add(OAFormInsertDelegate.CSS_bootstrap);
 //qqqq        hsCssName.add(OAFormInsertDelegate.CSS_summernote);
     }
 
-    @Override
     public void getRequiredJsNames(Set<String> hsJsName) {
       //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery);
       //qqqq hsJsName.add(OAFormInsertDelegate.JS_jquery_ui);

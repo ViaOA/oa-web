@@ -1,6 +1,7 @@
 package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
+import com.viaoa.object.OAObject;
 import com.viaoa.uicontroller.*;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputDate;
@@ -8,7 +9,7 @@ import com.viaoa.web.html.input.InputDate;
 /**
  * Binds InputDate to a Hub + propertyName
  */
-public class OAInputDate extends InputDate implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAInputDate extends InputDate implements OATableColumnInterface {
     private final OAUIController controlUI;
 
     public OAInputDate(String elementIdentifier, Hub hub, String propName) {
@@ -39,6 +40,10 @@ public class OAInputDate extends InputDate implements OAEditorInterface, OAHtmlC
     
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         String val = controlUI.getValueAsString(obj);
         return val;
     }

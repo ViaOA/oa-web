@@ -1,8 +1,8 @@
 package com.viaoa.web.html.input;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 /*
@@ -13,83 +13,9 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 public class InputRange extends InputElement {
     
     public InputRange(String selector) {
-        this(selector, InputType.Range);
-    }
-    protected InputRange(String selector, InputType type) {
-        super(selector, type);
+        super(selector, InputType.Range);
     }
 
-    public String getValue() {
-        return htmlComponent.getValue();
-    }
-    public void setValue(String value) {
-        htmlComponent.setValue(value);
-    }
-
-    public String getPlaceHolder() {
-        return htmlComponent.getPlaceHolder();
-    }
-    public void setPlaceHolder(String placeHolder) {
-        htmlComponent.setPlaceHolder(placeHolder);
-    }
-    
-    public boolean getReadOnly() {
-        return htmlComponent.getReadOnly();
-    }
-
-    public boolean isReadOnly() {
-        return htmlComponent.getReadOnly();
-    }
-    public void setReadOnly(boolean b) {
-        htmlComponent.setReadOnly(b);
-    }
-    
-    public boolean getRequired() {
-        return htmlComponent.getRequired();
-    }
-
-    public boolean isRequired() {
-        return htmlComponent.getRequired();
-    }
-
-    public void setRequired(boolean req) {
-        htmlComponent.setRequired(req);
-    }
-    
-    
-    public String getMin() {
-        return htmlComponent.getMin();
-    }
-
-    public void setMin(String val) {
-        htmlComponent.setMin(val);
-    }
-    
-    public String getMax() {
-        return htmlComponent.getMax();
-    }
-
-    public void setMax(String val) {
-        htmlComponent.setMax(val);
-    }
-    
-
-    public String getStep() {
-        return htmlComponent.getStep();
-    }
-
-    public void setStep(String val) {
-        htmlComponent.setStep(val);
-    }
-    
-    public String getFloatLabel() {
-        return htmlComponent.getFloatLabel();
-    }
-
-    public void setFloatLabel(String floatLabel) {
-        htmlComponent.setFloatLabel(floatLabel);
-    }
-    
     /**
      * The display width of the text field, number of characters wide.
      */
@@ -101,20 +27,67 @@ public class InputRange extends InputElement {
         htmlComponent.setSize(val);
     }
     
+    public int getMinLength() {
+        return htmlComponent.getMinLength();
+    }
+
+    public void setMinLength(int val) {
+        htmlComponent.setMinLength(val);
+    }
+
+    public int getMaxLength() {
+        return htmlComponent.getMaxLength();
+    }
+
+    public void setMaxLength(int val) {
+        htmlComponent.setMaxLength(val);
+    }
+    
+    public String getFloatLabel() {
+        return htmlComponent.getFloatLabel();
+    }
+
+    public void setFloatLabel(String floatLabel) {
+        htmlComponent.setFloatLabel(floatLabel);
+    }
+    
+    public String getMin() {
+        return htmlComponent.getMin();
+    }
+    public void setMin(String min) {
+        htmlComponent.setMin(min);
+    }
+    
+    public String getMax() {
+        return htmlComponent.getMax();
+    }
+    public void setMax(String max) {
+        htmlComponent.setMax(max);
+    }
+    public String getStep() {
+        return htmlComponent.getStep();
+    }
+    public void setStep(String step) {
+        htmlComponent.setStep(step);
+    }
+    
+    
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
-        hsSupported.add("value");
-        hsSupported.add("placeholder");
-        hsSupported.add("readonly");
-        hsSupported.add("required");
         hsSupported.add("size");
+        hsSupported.add("minlength");
+        hsSupported.add("maxlength");
+        hsSupported.add("floatlabel");
         hsSupported.add("min");
         hsSupported.add("max");
         hsSupported.add("step");
-        hsSupported.add("floatlabel");
     }
+
     public boolean isSupported(String name) {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+
 }
+
+

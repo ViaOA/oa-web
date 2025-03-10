@@ -3,6 +3,7 @@ package com.viaoa.web.html.oa;
 import java.util.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.object.OAObject;
 import com.viaoa.uicontroller.*;
 import com.viaoa.util.*;
 import com.viaoa.web.html.*;
@@ -11,7 +12,7 @@ import com.viaoa.web.html.input.InputText;
 /**
  * Binds InputText to an Hub + propertyName
  */
-public class OAInputText extends InputText implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAInputText extends InputText implements OATableColumnInterface {
     private final OAUIController controlUI;
 
     // extra properties
@@ -46,6 +47,10 @@ public class OAInputText extends InputText implements OAEditorInterface, OAHtmlC
     
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         String val = controlUI.getValueAsString(obj);
         return val;
     }
@@ -105,7 +110,6 @@ public class OAInputText extends InputText implements OAEditorInterface, OAHtmlC
         
         String s = super.getJavaScriptForClient(hsVars, bHasChanges);
         
-        //qqqqqqqq was: String s = getOAHtmlComponent().getJavaScriptForClient(hsVars, bHasChanges);
         js = OAStr.concat(s, js, "\n");
         
         return js;

@@ -19,9 +19,9 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * 
  * @author vince
  */
-public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface, OAHtmlTableComponentInterface, OAEditorInterface {
+public class OAHtmlSelect extends HtmlSelect implements OATableColumnInterface {
     private final OAUISelectController controlUISelect;
-    private String propName;
+    private final String propName;
     private String format;
     private String nullDescription = ""; 
     private String jsClient, jsSelected;
@@ -139,6 +139,11 @@ public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface
     public void close() {
         super.close();
         if (controlUISelect != null) controlUISelect.close();
+    }
+    
+    
+    public String getPropertyName() {
+        return this.propName;
     }
     
     public String getFormat() {
@@ -341,6 +346,10 @@ public class OAHtmlSelect extends HtmlSelect implements OAHtmlComponentInterface
 
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         String s = controlUISelect.getValueAsString(hubFrom, obj);
         return s;
     }

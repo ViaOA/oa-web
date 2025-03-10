@@ -1,12 +1,14 @@
 package com.viaoa.web.html.oa;
 
+import java.util.Set;
+
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUIPropertyController;
+import com.viaoa.uicontroller.*;
 import com.viaoa.util.OACompare;
 import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
-import com.viaoa.web.html.HtmlTD;
+import com.viaoa.web.html.*;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputPassword;
@@ -15,164 +17,96 @@ import com.viaoa.web.html.input.InputPassword;
  * Binds Input Password to an Hub + propertyName
  *
  */
-public class OAInputPassword extends InputPassword implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
-    private final OAUIPropertyController oaUiControl;
+public class OAInputPassword extends InputPassword implements OATableColumnInterface {
+    private final OAUIController controlUI;
 
-    private static class LastRefresh {
-        OAObject objUsed;
-        String value;
-    }
-    private final LastRefresh lastRefresh = new LastRefresh();
+    // extra properties
+    private int maxSize;
+    private boolean bMaxSizeChanged;
     
-    public OAInputPassword(String selector, Hub hub, String propName) {
-        super(selector);
-        oaUiControl = new OAUIPropertyController(hub, propName) {
+    public OAInputPassword(String elementIdentifier, Hub hub, String propName) {
+        super(elementIdentifier);
+        controlUI = new OAUIController(hub, propName) {
             @Override
-            protected void onCompleted(String completedMessage, String title) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addMessage(completedMessage);
-                    form.addConsoleMessage(title + " - " + completedMessage);
-                }
+            public void updateComponent(Object object) {
+                String s = this.getValueAsString(object);
+                OAInputPassword.this.setValue(""); // never send PW
+                OAInputPassword.this.setEnabled(this.isEnabled());
+                OAInputPassword.this.setVisible(this.isVisible());
             }
+            
             @Override
-            protected void onError(String errorMessage, String detailMessage) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addError(errorMessage);
-                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
-                }
+            public void updateLabel(Object object) {
+                OAHtmlComponent lbl = getOAHtmlComponent().getLabelComponent();
+                if (lbl == null) return;
+                lbl.setVisible(isVisible());
+
+                boolean b = this.isEnabled();
+                if (!b && getHub().getActiveObject() != null) b = true;
+                lbl.setEnabled(b);
             }
         };
     }
 
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
+        String val = controlUI.getMaskPasswordValue();
+        return val;
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        if (controlUI != null) controlUI.close();
+    }
+    
     public Hub getHub() {
-        return oaUiControl.getHub();
+        return controlUI.getHub();
     }
     public String getPropertyName() {
-        return oaUiControl.getPropertyName();
-    }
-    
-    public void setConversion(char conv) {
-        oaUiControl.setConversion(conv);
-    }
-    public char getConversion() {
-        return oaUiControl.getConversion();
+        return controlUI.getEndPropertyName();
     }
 
-/*qqqqqqq    
-    @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        if (getHub() == null || getPropertyName() == null) {
-            return;
-        }
-        if (lastRefresh.objUsed == null) return;
-        
-        // make sure that it did not change
-        Object objPrev = oaUiControl.getValue(lastRefresh.objUsed);
-        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            formSubmitEvent.addSyncError("OAInputPassword Id="+getId());
-            return;
-        }
-        
-        final String val = getValue();
-        if (OAString.isNotEqual(lastRefresh.value, val)) {
-            oaUiControl.onSetProperty(lastRefresh.objUsed, val);
-            lastRefresh.value = val;
-        }
+    /**
+     * Allow size to grow to fit text, from original (attribute) size to this.maxSize.
+     */
+    public void setMaxSize(int x) {
+        this.bMaxSizeChanged |= this.bMaxSizeChanged || (x != this.maxSize);
+        this.maxSize = x;
     }
-*/    
-    
-    @Override
-    public void beforeGetJavaScriptForClient() {
-        OAForm form = getOAHtmlComponent().getForm();
-        final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
-        lastRefresh.objUsed = (OAObject) oaUiControl.getHub().getAO(); 
-        lastRefresh.value = oaUiControl.getValueAsString(lastRefresh.objUsed);
-        
-        
-        boolean b = oaUiControl.isEnabled(lastRefresh.objUsed);
-        setEnabled(bIsFormEnabled && b);
+    public int getMaxSize() {
+        return maxSize;
+    }
 
-        b = oaUiControl.isVisible(lastRefresh.objUsed);
-        setVisible(b);
-        
-        b = oaUiControl.isRequired();
-        setRequired(b);
-        
-        if (getConversion() == 0) {
-            OAObjectInfo oi = getHub().getOAObjectInfo();
-            OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
-            if (pi != null) {
-                if (pi.isUpper()) oaUiControl.setConversion('U');
-                else if (pi.isLower()) oaUiControl.setConversion('L');
-            }
+    @Override
+    public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
+        boolean b = getOAHtmlComponent().getValueChanged();
+        String js = null;
+        if (bMaxSizeChanged) {
+            bMaxSizeChanged = false;
+            js = OAStr.concat(js, "comp.setMaxSize("+getMaxSize()+");", "\n");
         }
-        
-        setValue(lastRefresh.value);
-        
-        OAObjectInfo oi = getHub().getOAObjectInfo();
-        OAPropertyInfo pi = oi.getPropertyInfo(getPropertyName());
-        
-        if (pi != null) {
-            if (getMaxLength() == 0 && pi.getMaxLength() > 0) setMaxLength(pi.getMaxLength());
-            if (getMinLength() == 0) setMinLength(pi.getMinLength());
-            
-            if (getSize() < 1) {
-                setSize(pi.getDisplayLength());
-            }
+        else if (b) { // need to resize
+            js = OAStr.concat(js, "comp.adjustSize();", "\n");
         }
+
+        bHasChanges |= OAStr.isNotEmpty(js);
+        
+        String s = super.getJavaScriptForClient(hsVars, bHasChanges);
+        
+        js = OAStr.concat(s, js, "\n");
+        
+        return js;
     }
     
     @Override
-    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-
-        String s;
-        if (obj == null) s = "";
-        else {
-            boolean b = obj.isVisible(getPropertyName());
-            if (!b) s = "";
-            else {
-                s = obj.getPropertyAsString(getPropertyName());
-                if (s == null) s = "";
-                else td.addClass("oaNoTextOverflow");
-            }
-        }
-        if (OAStr.isNotEmpty(s)) s = oaUiControl.getIgnorePasswordValue();
-        return s;
-    }
-    @Override
-    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-        String s = "<input type='password' id='"+getId()+"'";
-        s += " class='oaFitColumnSize'";
-        if (obj == null) s += " style='visibility: hidden;'"; 
-        s += ">";
-        // note: other settings will be added InputText
-        return s;
+    protected void onClientChangeEvent(String newValue) {
+        super.onClientChangeEvent(newValue);
+        controlUI.setValueDirectly(getHub().getAO(), getValue());
     }
 
-    
 }

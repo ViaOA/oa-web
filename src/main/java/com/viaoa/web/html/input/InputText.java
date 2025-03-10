@@ -2,38 +2,21 @@ package com.viaoa.web.html.input;
 
 import java.util.*;
 
-import com.viaoa.object.*;
-import com.viaoa.util.OAStr;
 import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent.InputModeType;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
-import com.viaoa.web.util.OAJspUtil;
 
 public class InputText extends InputElement {
 
     public InputText(String selector) {
         this(selector, InputType.Text);
     }
+    
     // used by subclasses to set the input type, ex: "tel"
     protected InputText(String selector, InputType type) {
         super(selector, type);
     }
     
-    
-    public String getValue() {
-        return htmlComponent.getValue();
-    }
-    public void setValue(String value) {
-        htmlComponent.setValue(value);
-    }
-
-    public String getPlaceHolder() {
-        return htmlComponent.getPlaceHolder();
-    }
-    public void setPlaceHolder(String placeHolder) {
-        htmlComponent.setPlaceHolder(placeHolder);
-    }
-
     public String getPattern() {
         return htmlComponent.getPattern();
     }
@@ -65,26 +48,6 @@ public class InputText extends InputElement {
         htmlComponent.setRequired(req);
     }
     
-
-    // Id of datalist element
-    public String getList() {
-        return htmlComponent.getList();
-    }
-
-    public void setList(String listId) {
-        htmlComponent.setList(listId);
-    }
-    
-    public List<String> getDataList() {
-        return htmlComponent.getDataList();
-    }
-
-    public void setDataList(List<String> lst) {
-        htmlComponent.setDataList(lst);
-    }
-    
-
-    
     /**
      * The display width of the text field, number of characters wide.
      */
@@ -112,44 +75,6 @@ public class InputText extends InputElement {
         htmlComponent.setMaxLength(val);
     }
 
-    public String getAutoComplete() {
-        return htmlComponent.getAutoComplete();
-    }
-    public void setAutoComplete(String val) {
-        htmlComponent.setAutoComplete(val);
-    }
-    
-    public String getInputMode() {
-        return htmlComponent.getInputMode();
-    }
-
-    public void setInputMode(String mode) {
-        htmlComponent.setInputMode(mode);
-    }
-
-    public void setInputMode(InputModeType type) {
-        htmlComponent.setInputMode(type);
-    }
-
-
-    public boolean getSpellCheck() {
-        return htmlComponent.getSpellCheck();
-    }
-    public boolean isSpellCheck() {
-        return getSpellCheck();
-    }
-    public void setSpellCheck(boolean b) {
-        htmlComponent.setSpellCheck(b);
-    }
-    
-    public String getFloatLabel() {
-        return htmlComponent.getFloatLabel();
-    }
-
-    public void setFloatLabel(String floatLabel) {
-        htmlComponent.setFloatLabel(floatLabel);
-    }
-
     public String getCalcDisplayName() {
         String s = getName();
         if (OAString.isEmpty(s)) {
@@ -161,7 +86,13 @@ public class InputText extends InputElement {
         return s;
     }
     
-    
+
+    @Override
+    public String getVerifyScript() {
+        // todo: qqqqqqqq 
+        return null;
+    }
+
 /*qqqqqqqqqqq    
     @Override
     protected String getVerifyScript() {
@@ -219,39 +150,87 @@ public class InputText extends InputElement {
     }
 */
 
+    public boolean getSpellCheck() {
+        return htmlComponent.getSpellCheck();
+    }
+    public boolean isSpellCheck() {
+        return getSpellCheck();
+    }
+    public void setSpellCheck(boolean b) {
+        htmlComponent.setSpellCheck(b);
+    }
+
+    public String getAutoComplete() {
+        return htmlComponent.getAutoComplete();
+    }
+    public void setAutoComplete(String val) {
+        htmlComponent.setAutoComplete(val);
+    }
+
+    // Id of datalist element
+    public String getList() {
+        return htmlComponent.getList();
+    }
+
+    public void setList(String listId) {
+        htmlComponent.setList(listId);
+    }
+    
+    public List<String> getDataList() {
+        return htmlComponent.getDataList();
+    }
+
+    public void setDataList(List<String> lst) {
+        htmlComponent.setDataList(lst);
+    }
+    
+    public String getFloatLabel() {
+        return htmlComponent.getFloatLabel();
+    }
+
+    public void setFloatLabel(String floatLabel) {
+        htmlComponent.setFloatLabel(floatLabel);
+    }
+    
+    public String getInputMode() {
+        return htmlComponent.getInputMode();
+    }
+
+    public void setInputMode(String mode) {
+        htmlComponent.setInputMode(mode);
+    }
+
+    public void setInputMode(InputModeType type) {
+        htmlComponent.setInputMode(type);
+    }
+    
+    public String getPlaceHolder() {
+        return htmlComponent.getPlaceHolder();
+    }
+    public void setPlaceHolder(String placeHolder) {
+        htmlComponent.setPlaceHolder(placeHolder);
+    }
+    
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
-        hsSupported.add("value");
-        hsSupported.add("placeholder");
         hsSupported.add("pattern");
         hsSupported.add("readonly");
         hsSupported.add("required");
-        hsSupported.add("list");
-        hsSupported.add("datalist");
         hsSupported.add("size");
         hsSupported.add("minlength");
         hsSupported.add("maxlength");
-        hsSupported.add("autocomplete");
-        hsSupported.add("inputmode");
         hsSupported.add("spellcheck");
+        hsSupported.add("autocomplete");
+        hsSupported.add("list");
+        hsSupported.add("datalist");
         hsSupported.add("floatlabel");
+        hsSupported.add("inputmode");
+        hsSupported.add("placeholder");
     }
+
     public boolean isSupported(String name) {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
 
-    @Override
-    public void onClientEvent(final String type, final Map<String, String> map) {
-        super.onClientEvent(type, map);
-        
-        if (OAStr.isNotEqual(type, Event_Change)) return;
-        
-        onClientChangeEvent(map.get("newValue"));
-    }
-    
-    protected void onClientChangeEvent(String newValue) {
-        getOAHtmlComponent().setValue(newValue);
-        getOAHtmlComponent().setValueChanged(false);
-    }
 }

@@ -12,7 +12,7 @@ import com.viaoa.web.html.input.InputCheckBox;
 /**
  * Binds Input CheckBox to an Hub + propertyName
  */
-public class OAInputCheckBox extends InputCheckBox implements OAHtmlComponentInterface, OAHtmlTableComponentInterface, OAEditorInterface {
+public class OAInputCheckBox extends InputCheckBox implements OATableColumnInterface {
     private final OAUIController controlUI;
     private Object onValue, offValue;
     
@@ -170,6 +170,10 @@ public class OAInputCheckBox extends InputCheckBox implements OAHtmlComponentInt
     
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         Object val = controlUI.getValue(obj);
         String s = OAStr.toString(val);
         return s;

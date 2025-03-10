@@ -14,9 +14,11 @@ import com.viaoa.web.html.input.InputButton;
 
 
 
-//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated using OAHtmlButton
-
-
+//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
+//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
+//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
+//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
+//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
 
 
 /**
@@ -32,7 +34,7 @@ import com.viaoa.web.html.input.InputButton;
  * @see OAHtmlButton
  * @author vince
  */
-public class OAInputButton extends InputButton implements OAHtmlComponentInterface {
+public class OAInputButton extends InputButton {
     private final OAUICommandController oaUiControl;
 
     private static class LastRefresh {

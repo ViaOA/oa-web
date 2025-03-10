@@ -1,6 +1,6 @@
 package com.viaoa.web.html.input;
 
-import java.util.Map;
+import java.util.*;
 
 import com.viaoa.util.OADate;
 import com.viaoa.util.OADateTime;
@@ -20,7 +20,7 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  * 
  *
  */
-public class InputTime extends InputRange {
+public class InputTime extends InputElement {
 
     public InputTime(String selector) {
         super(selector, InputType.Time);
@@ -39,39 +39,130 @@ public class InputTime extends InputRange {
 
 
     public void setMin(OATime time) {
-        if (time == null) super.setMin(null);
-        else super.setMin(time.toString(OATime.JsonFormat));
+        if (time == null) htmlComponent.setMin(null);
+        else htmlComponent.setMin(time.toString(OATime.JsonFormat));
     }
 
     public void setMax(OATime time) {
-        if (time == null) super.setMax(null);
-        else super.setMax(time.toString(OATime.JsonFormat));
+        if (time == null) htmlComponent.setMax(null);
+        else htmlComponent.setMax(time.toString(OATime.JsonFormat));
     }
 
 
     public OATime getMinTime() {
-        String val = getMin();
+        String val = htmlComponent.getMin();
         if (val == null) return null;
         return new OATime(val, OATime.JsonFormat);
     }
     public OATime getMaxTime() {
-        String val = getMax();
+        String val = htmlComponent.getMax();
         if (val == null) return null;
         return new OATime(val, OATime.JsonFormat);
     }
 
-    @Override
-    public void onClientEvent(final String type, final Map<String, String> map) {
-        super.onClientEvent(type, map);
-        
-        if (OAStr.isNotEqual(type, Event_Change)) return;
-        
-        onClientChangeEvent(map.get("newValue"));
+    public boolean getReadOnly() {
+        return htmlComponent.getReadOnly();
+    }
+
+    public boolean isReadOnly() {
+        return htmlComponent.getReadOnly();
+    }
+    public void setReadOnly(boolean b) {
+        htmlComponent.setReadOnly(b);
     }
     
-    protected void onClientChangeEvent(String newValue) {
-        getOAHtmlComponent().setValue(newValue);
-        getOAHtmlComponent().setValueChanged(false);
+    public boolean getRequired() {
+        return htmlComponent.getRequired();
+    }
+
+    public boolean isRequired() {
+        return htmlComponent.getRequired();
+    }
+
+    public void setRequired(boolean req) {
+        htmlComponent.setRequired(req);
+    }
+
+    /**
+     * The display width of the text field, number of characters wide.
+     */
+    public int getSize() {
+        return htmlComponent.getSize();
+    }
+
+    public void setSize(int val) {
+        htmlComponent.setSize(val);
+    }
+    
+    public int getMinLength() {
+        return htmlComponent.getMinLength();
+    }
+
+    public void setMinLength(int val) {
+        htmlComponent.setMinLength(val);
+    }
+
+    public int getMaxLength() {
+        return htmlComponent.getMaxLength();
+    }
+
+    public void setMaxLength(int val) {
+        htmlComponent.setMaxLength(val);
+    }
+
+    public String getAutoComplete() {
+        return htmlComponent.getAutoComplete();
+    }
+    public void setAutoComplete(String val) {
+        htmlComponent.setAutoComplete(val);
+    }
+    
+    public String getFloatLabel() {
+        return htmlComponent.getFloatLabel();
+    }
+
+    public void setFloatLabel(String floatLabel) {
+        htmlComponent.setFloatLabel(floatLabel);
+    }
+
+    public String getPlaceHolder() {
+        return htmlComponent.getPlaceHolder();
+    }
+    public void setPlaceHolder(String placeHolder) {
+        htmlComponent.setPlaceHolder(placeHolder);
+    }
+
+    public String getMin() {
+        return htmlComponent.getMin();
+    }
+    public void setMin(String min) {
+        htmlComponent.setMin(min);
+    }
+    
+    public String getMax() {
+        return htmlComponent.getMax();
+    }
+    public void setMax(String max) {
+        htmlComponent.setMax(max);
+    }
+    
+    private static Set<String> hsSupported = new HashSet<>();  // lowercase
+    static {
+        hsSupported.add("readonly");
+        hsSupported.add("required");
+        hsSupported.add("size");
+        hsSupported.add("minlength");
+        hsSupported.add("maxlength");
+        hsSupported.add("autocomplete");
+        hsSupported.add("floatlabel");
+        hsSupported.add("placeholder");
+        hsSupported.add("min");
+        hsSupported.add("max");
+    }
+
+    public boolean isSupported(String name) {
+        if (name == null) return false;
+        return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
 
 }

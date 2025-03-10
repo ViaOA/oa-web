@@ -25,7 +25,7 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * @see OAInputButton
  * @author vince
  */
-public class OAHtmlButton extends HtmlButton implements OAHtmlComponentInterface {
+public class OAHtmlButton extends HtmlButton {
     private final OAUICommandController oaUiControl;
 
     private static class LastRefresh {

@@ -12,7 +12,7 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
 /**
  * Binds HtmlTextArea to an Hub + propertyName
  */
-public class OAHtmlTextArea extends HtmlTextArea implements OAEditorInterface, OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OAHtmlTextArea extends HtmlTextArea implements OATableColumnInterface {
     private final OAUIController controlUI;
 
     
@@ -43,6 +43,10 @@ public class OAHtmlTextArea extends HtmlTextArea implements OAEditorInterface, O
 
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
         String val = controlUI.getValueAsString(obj);
         return val;
     }

@@ -15,7 +15,7 @@ import com.viaoa.web.html.input.InputText;
  *  
  *  @see OATypeAhead to config with hub and properties to use.
  */
-public class OATypeAheadInputText extends InputText implements OAHtmlComponentInterface, OAHtmlTableComponentInterface {
+public class OATypeAheadInputText extends InputText {
     private final OAUITypeAheadController controlUI;
 
     // extra properties

@@ -68,106 +68,6 @@ public class OAInputCheckBox extends InputCheckBox implements OATableColumnInter
         controlUI.setFormat(format);
     }
 
-/*qqqq    
-    @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        if (getHub() == null || getPropertyName() == null) {
-            return;
-        }
-        
-        if (lastRefresh.objUsed == null) return;
-        
-        // make sure that it did not change
-        Object objPrev = controlUI.getValue(lastRefresh.objUsed);
-        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            formSubmitEvent.addSyncError("OAInputCheckBox Id="+getId());
-            return;
-        }
-
-        boolean b = isChecked();
-        controlUI.onSetProperty(lastRefresh.objUsed, b ? onValue : offValue);
-    }
-*/    
-/*    
-    @Override
-    public void beforeGetJavaScriptForClient() {
-        OAForm form = getOAHtmlComponent().getForm();
-        final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
-        lastRefresh.objUsed = (OAObject) controlUI.getHub().getAO(); 
-        lastRefresh.value = controlUI.getValue(lastRefresh.objUsed);
-        
-        boolean b = controlUI.isEnabled();
-        setEnabled(bIsFormEnabled && b);
-
-        b = controlUI.isVisible();
-        setVisible(b);
-
-        b = (lastRefresh.objUsed == null) ? false : OACompare.isEqual(onValue, lastRefresh.value);
-        setChecked(b);
-    }
-    
-    @Override
-    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-
-        String s;
-        if (obj == null) s = "";
-        else {
-            boolean b = obj.isVisible(getPropertyName());
-            if (!b) s = "";
-            else {
-                s = obj.getPropertyAsString(getPropertyName(), getFormat());
-                if (s == null) s = "";
-                else td.addClass("oaNoTextOverflow");
-            }
-        }
-        return s;
-    }
-    @Override
-    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-        String s = "<input type='checkbox' id='"+getId()+"'";
-        s += " class='oaFitColumnSize'";
-        if (obj == null) s += " style='visibility: hidden;'"; 
-        s += ">";
-        return s;
-    }
-*/    
-    
-    @Override
-    public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
-        String js = super.getJavaScriptForClient(hsVars, bHasChanges);
-        return js;
-    }
-    
-
-    @Override
-    protected void onClientChangeEvent(boolean newValue) {
-        super.onClientChangeEvent(newValue);
-        this.controlUI.setValue(newValue); // set property
-    }
-    
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
         if (obj instanceof OAObject) {
@@ -175,7 +75,20 @@ public class OAInputCheckBox extends InputCheckBox implements OATableColumnInter
             if (!b) return "";
         }
         Object val = controlUI.getValue(obj);
-        String s = OAStr.toString(val);
+        
+        String s;
+        if (OACompare.isEqual(onValue, val)) s = "true";
+        else s = "";
         return s;
+    }
+
+    @Override
+    protected void onClientChangeEvent(String newValue) {
+        boolean bChecked = OAConv.toBoolean(newValue);
+        setChecked(bChecked);
+        htmlComponent.setCheckedChanged(false);
+        
+        Object val = bChecked ? onValue : offValue;
+        this.controlUI.setValue(val);
     }
 }

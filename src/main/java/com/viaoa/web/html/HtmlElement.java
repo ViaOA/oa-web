@@ -820,11 +820,11 @@ public void beforeGetJavaScriptForClientRecursive() {
     }
 
     public static String Event_Visible = "visible";  // OAVisibleObserverElement, HtmlElement (lazyLoad)
-    public static String Event_Change = "change";  // InputText, InputCheckBox, OAInputCheckBox, HtmlSelect, OATabPanel
-    public static String Event_Checked = "checked";  // InputRadio, OAInputRadio
+    public static String Event_Change = "change";  // InputText, InputCheckBox, OAInputCheckBox, HtmlSelect, OATabPanel, InputRadio
+    public static String Event_Checked = "checked";  // qqq none / not used
     public static String Event_Show = "show";  // OAAccordionBar 
     public static String Event_Hide = "hide";  // OAAccordionBar
-    public static String Event_Click = "click";  // HtmlImg, OAHtmlButton
+    public static String Event_Click = "click";  // HtmlImg, OAHtmlButton, InputButton
     public static String Event_Selected = "selected";  // OATree, OATreeNode
     public static String Event_LoadChildren = "loadchildren";  // OATree
     public static String Event_CheckBoxClicked = "checkboxclicked";  // OATree

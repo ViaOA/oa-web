@@ -1,5 +1,7 @@
 package com.viaoa.web.html.input;
 import java.util.*;
+
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
@@ -48,46 +50,14 @@ public class InputButton extends InputElement {
     }
     
     
-    // the button text and value that is submitted if clicked.
-    public String getValue() {
-        return htmlComponent.getValue();
-    }
-    public void setValue(String value) {
-        htmlComponent.setValue(value);
-    }
-/*qqqqqq    
     @Override
-    protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
-        super.onSubmit(formSubmitEvent);
-    }
-*/    
-    
-/*    
-
-If the "image" button is used to submit the form, this control doesn't submit its value — 
-    instead, the X and Y coordinates of the click on the image are submitted 
-
-
-<input type="image" alt="Click me!" src="my-img.png" width="80" height="30" />
-
-  acts as a submit button
-  
-  name/values submitted:
-  name.x=99   name.y=99
-
-*/    
-    /*    
-    
-    <input type="submit" value="Submit this form" />
-    <input type="reset" value="Reset this form" />
-    <input type="button" value="Do Nothing without JavaScript" />
-
-    <button type="submit">Submit this form</button>
-    <button type="reset">Reset this form</button>
-    <button type="button">Do Nothing without JavaScript</button>    
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
         
-    */  
+        if (OAStr.isNotEqual(type, Event_Click)) return;
+        onClientClickEvent();
+    }
     
-    
-    
+    protected void onClientClickEvent() {
+    }
 }

@@ -8,19 +8,6 @@ import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputButton;
 
-
-
-
-
-
-
-//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
-//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
-//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
-//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
-//qqqqqqqqqqqqqqqqqqqqqqqq this needs to be updated to match OAHtmlButton
-
-
 /**
  * InputButton that works with OAModel. 
  * <p>
@@ -30,22 +17,18 @@ import com.viaoa.web.html.input.InputButton;
  * Similar to OAHtmlButton
  * <p>
  * Overwrite method performCommand for manual/custom commands.<br>
- * Overwrite method getManualObject if command requires one for 
+ * Overwrite method getManualObject if command requires one for
+ * use Value to set the button's text.
+ *  
  * @see OAHtmlButton
  * @author vince
  */
-public class OAInputButton extends InputButton {
-    private final OAUICommandController oaUiControl;
+public class OAInputButton extends InputButton implements OATableColumnInterface {
+    private final OAUICommandController controlUI;
 
-    private static class LastRefresh {
-        Hub hubUsed;
-        OAObject hubUsedAO;
-    }
-    private final LastRefresh lastRefresh = new LastRefresh();
-    
     public OAInputButton(String selector, Hub hub, OAUICommandController.Command command) {
         super(selector);
-        oaUiControl = new OAUICommandController(hub, command) {
+        controlUI = new OAUICommandController(hub, command) {
             @Override
             protected Object getManualObject() {
                 return OAInputButton.this.getManualObject();
@@ -85,38 +68,12 @@ public class OAInputButton extends InputButton {
         };
     }
 
-/*qq    
-    @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        if (oaUiControl.getCommand().getChangesAO()) {
-            Hub h = getHub();
-            if (h != null) {
-                if (lastRefresh.hubUsed != h.getRealHub() || lastRefresh.hubUsedAO != h.getAO()) {
-                    formSubmitEvent.addSyncError("OAInputButton Id="+getId());
-                    return;
-                }
-            }
-        }
-    }
-*/    
-    
-    /**
-     * Called by OAForm whenever this button causes the submit (/ajaxSubmit).
-     * <br>
-     * By default, this will call OAUICommandController.onCommand, and should be overwritten if using any of the "manual" commands.
-     */
-/*qqqqqqqqqq    
-    @Override
-    protected void onSubmit(OAFormSubmitEvent formSubmitEvent) {
-        oaUiControl.onCommand();
-    }
-*/    
     /**
      * Override to get manual object, for commands NewManual, AddManual, ManualChangeAO
      */
     protected Object getManualObject() {
         OAObject obj = null; 
-        switch (oaUiControl.getCommand()) { 
+        switch (controlUI.getCommand()) { 
             case NewManual:
                 obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
                 break;
@@ -136,26 +93,16 @@ public class OAInputButton extends InputButton {
     }
     
     public Hub getHub() {
-        return oaUiControl.getHub();
+        return controlUI.getHub();
     }
     
     public OAUICommandController getController() {
-        return oaUiControl;
+        return controlUI;
+    }
+
+    @Override
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        return htmlComponent.getValue();
     }
     
-    @Override
-    public void beforeGetJavaScriptForClient() {
-        OAForm form = getOAHtmlComponent().getForm();
-        final boolean bIsFormEnabled = form == null || form.getEnabled();
-
-        boolean b = oaUiControl.isEnabled();
-        setEnabled(bIsFormEnabled && b);
-
-        Hub h = getHub();
-        lastRefresh.hubUsed = h == null ? null : h.getRealHub();
-        lastRefresh.hubUsedAO = h == null ? null : (OAObject) h.getAO();
-
-        b = oaUiControl.isVisible();
-        setVisible(b);
-    }
 }

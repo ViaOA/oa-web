@@ -14,14 +14,14 @@ import com.viaoa.web.html.input.InputRadio;
  * Binds Input Radio to an Hub + propertyName
  *
  */
-public class OAInputRadio extends InputRadio {
+public class OAInputRadio extends InputRadio implements OATableColumnInterface {
     private final OAUIController controlUI;
-    private Object selectValue;
+    private Object onValue;
     
     
     public OAInputRadio(String selector, Hub hub, String propName, Object selectValue) {
         super(selector);
-        this.selectValue = selectValue;
+        this.onValue = selectValue;
         
         controlUI = new OAUIController(hub, propName) {
             @Override
@@ -64,104 +64,24 @@ public class OAInputRadio extends InputRadio {
     public void setFormat(String format) {
         controlUI.setFormat(format);
     }
-    
-/*qqqq    
-    @Override
-    protected void onSubmitAfterLoadValues(OAFormSubmitEvent formSubmitEvent) {
-        if (getHub() == null || getPropertyName() == null) {
-            return;
-        }
-        
-        if (lastRefresh.objUsed == null) return;
-        
-        // make sure that it did not change
-        Object objPrev = controlUI.getValue(lastRefresh.objUsed);
-        if (!OACompare.isEqual(objPrev, lastRefresh.value)) {
-            formSubmitEvent.addSyncError("OAInputRadio Id="+getId());
-            return;
-        }
-
-        boolean b = isChecked();
-        if (b) controlUI.onSetProperty(lastRefresh.objUsed, selectValue);
-    }
-*/    
-/*    
-    @Override
-    public void beforeGetJavaScriptForClient() {
-        OAForm form = getOAHtmlComponent().getForm();
-        final boolean bIsFormEnabled = form == null || form.getEnabled();
-        
-        lastRefresh.objUsed = (OAObject) controlUI.getHub().getAO(); 
-        lastRefresh.value = controlUI.getValue(lastRefresh.objUsed);
-        
-        boolean b = controlUI.isEnabled();
-        setEnabled(bIsFormEnabled && b);
-
-        b = controlUI.isVisible();
-        setVisible(b);
-
-        b = (lastRefresh.objUsed == null) ? false : OACompare.isEqual(selectValue, lastRefresh.value);
-        setChecked(b);
-    }
 
     @Override
-    public String getTableCellRenderer(Hub hubTable, HtmlTD td, int row) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
+    public String getValueAsString(Hub hubFrom, Object obj) {
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
         }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-
+        Object val = controlUI.getValue(obj);
+        
         String s;
-        if (obj == null) s = "";
-        else {
-            boolean b = obj.isVisible(getPropertyName());
-            if (!b) s = "";
-            else {
-                s = obj.getPropertyAsString(getPropertyName(), getFormat());
-                if (s == null) s = "";
-                else td.addClass("oaNoTextOverflow");
-            }
-        }
+        if (OACompare.isEqual(onValue, val)) s = "true";
+        else s = "";
         return s;
     }
-    @Override
-    public String getTableCellEditor(Hub hubTable, HtmlTD td, int row, boolean bHasFocus) {
-        OAObject obj;
-        if (hubTable != null && hubTable != getHub()) {
-            obj = (OAObject) hubTable.getAt(row);
-            if (obj != null) {
-                String pp = OAObjectReflectDelegate.getPropertyPathBetweenHubs(hubTable, getHub());
-                obj = (OAObject) obj.getProperty(pp);
-            }
-        }
-        else {
-            obj = (OAObject) getHub().get(row);
-        }
-        String s = "<input type='radio' id='"+getId()+"'";
-        s += " class='oaFitColumnSize'";
-        if (obj == null) s += " style='visibility: hidden;'"; 
-        s += ">";
-        return s;
-    }
-*/
+    
     
     @Override
-    public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
-        String js = super.getJavaScriptForClient(hsVars, bHasChanges);
-        return js;
+    protected void onClientChangeEvent() {
+        this.controlUI.setValue(onValue); // set property
     }
-    
-    @Override
-    protected void onClientCheckedEvent() {
-        super.onClientCheckedEvent();
-        this.controlUI.setValue(selectValue); // set property
-    }
-    
 }

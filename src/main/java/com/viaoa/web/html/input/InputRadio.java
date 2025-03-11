@@ -57,11 +57,11 @@ public class InputRadio extends InputElement {
     public void onClientEvent(final String type, final Map<String, String> map) {
         super.onClientEvent(type, map);
         
-        if (OAStr.isNotEqual(type, Event_Checked)) return;
-        onClientCheckedEvent();
+        if (OAStr.isNotEqual(type, Event_Change)) return;
+        onClientChangeEvent();
     }
     
-    protected void onClientCheckedEvent() {
+    protected void onClientChangeEvent() {
         this.setChecked(true);
         this.getOAHtmlComponent().setCheckedChanged(false);
         

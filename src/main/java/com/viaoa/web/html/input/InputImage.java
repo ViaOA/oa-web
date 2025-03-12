@@ -1,8 +1,8 @@
 package com.viaoa.web.html.input;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+import com.viaoa.util.OAStr;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 /*
@@ -75,4 +75,16 @@ public class InputImage extends InputElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+    
+    @Override
+    public void onClientEvent(final String type, final Map<String, String> map) {
+        super.onClientEvent(type, map);
+        
+        if (OAStr.isNotEqual(type, Event_Click)) return;
+        onClientClickEvent();
+    }
+    
+    protected void onClientClickEvent() {
+    }
+
 }

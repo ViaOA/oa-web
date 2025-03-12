@@ -70,4 +70,5 @@ public class InputCheckBox extends InputElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
+
 }

@@ -18,7 +18,7 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  * This does not submit the form.<br>
  *
  */
-public class InputReset extends InputSubmit {
+public class InputReset extends InputButton {
 
     public InputReset(String selector) {
         super(selector, InputType.Reset);

@@ -13,6 +13,10 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
  NOTE:  all grouped checkboxes should have different Id, but the same Name with different value.
 */ 
  
+/**
+ * 
+ * @see InputRadioGroup
+ */
 public class InputRadio extends InputElement {
     private InputRadioGroup inputRadioGroup;
     
@@ -55,8 +59,6 @@ public class InputRadio extends InputElement {
     
     @Override
     public void onClientEvent(final String type, final Map<String, String> map) {
-        super.onClientEvent(type, map);
-        
         if (OAStr.isNotEqual(type, Event_Change)) return;
         onClientChangeEvent();
     }

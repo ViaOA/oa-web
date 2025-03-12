@@ -7,12 +7,6 @@ import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 import java.util.HashSet;
 import java.util.Set;
 
-/*
-
-https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
-
-*/
-
 
 /**
  * Support for HTML elements that work with Forms.

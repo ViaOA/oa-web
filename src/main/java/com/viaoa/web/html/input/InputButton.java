@@ -27,6 +27,23 @@ form.add(comp);
  */
 public class InputButton extends InputElement {
 
+    
+    public InputButton(String selector) {
+        super(selector, InputType.Button);
+    }
+
+    public InputButton(String selector, InputType type) {
+        super(selector, type);
+    }
+    
+    public String getButtonText() {
+        return htmlComponent.getValue();
+    }
+    public void setButtonText(String value) {
+        htmlComponent.setValue(value);
+    }
+    
+
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
         hsSupported.add("value");
@@ -36,19 +53,7 @@ public class InputButton extends InputElement {
         if (name == null) return false;
         return super.isSupported(name) || hsSupported.contains(name.toLowerCase());
     }
-    
-    
-    public InputButton(String selector) {
-        super(selector, InputType.Button);
-    }
 
-    public String getButtonText() {
-        return htmlComponent.getValue();
-    }
-    public void setButtonText(String value) {
-        htmlComponent.setValue(value);
-    }
-    
     
     @Override
     public void onClientEvent(final String type, final Map<String, String> map) {
@@ -60,4 +65,5 @@ public class InputButton extends InputElement {
     
     protected void onClientClickEvent() {
     }
+
 }

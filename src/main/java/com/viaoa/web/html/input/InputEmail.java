@@ -8,7 +8,7 @@ import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 /* Not used yet .....qqqqqqqqqqqqq
 
-<input id="email" type="email" name="email" inputmode="email" value="jsmith@gmail.com">
+<input id="email" type="email" name="email" inputmode="email" value="jsmith@gmail.com" multiple>
 
 */
 
@@ -16,7 +16,7 @@ public class InputEmail extends InputText {
 
     private static Set<String> hsSupported = new HashSet<>();  // lowercase
     static {
-        hsSupported.add("multiple");
+        hsSupported.add("multiple"); // separated by commas
     }
     public boolean isSupported(String name) {
         if (name == null) return false;

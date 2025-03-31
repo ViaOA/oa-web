@@ -113,7 +113,7 @@ public class OARestServlet extends HttpServlet {
 	private HashMap<String, Class> hmClassName = new HashMap<String, Class>();
 	private HashMap<String, Class> hmClassPluralName = new HashMap<String, Class>();
 	private String httpCORS; // "*" for all
-	private boolean bJaxbIncludeOwnedReferences = true;
+	private boolean bJaxbIncludeOwnedReferences = true;  // root object only
 
 	protected HashMap<String, Object> hmRemoteObject = new HashMap<>();
 
@@ -533,7 +533,7 @@ public class OARestServlet extends HttpServlet {
 			hmParam.put(key.toLowerCase(), req.getParameter(key));
 		}
 
-		boolean bUseRefId = bJaxbUseReferences;
+		boolean bUseRefId = bJaxbUseReferences; //qqqqqqq not used anymore (jaxb)
 		boolean bUseOwned = getJaxbIncludeOwnedReferences();
 
 		// get list of extra propertyPaths to include, for OAJaxb

@@ -254,7 +254,7 @@ public abstract class OAHtmlComponent {
     }
     
     
-    private String type;  // input type attribute, see InputType 
+    private String type;  // input type attribute, see InputType & Button 
 
     protected String value;  
 //qqqq remove, not in html    protected String[] values; 

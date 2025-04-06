@@ -7,7 +7,10 @@ import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.*;
-import com.viaoa.web.html.oa.OAHtmlComponentInterface;
+// import com.viaoa.web.html.oa.OAHtmlComponentInterface;
+
+
+//qqqqqqqqqqqqqqqqqqqqqqqqqqq 
 
 /**
  * OAWeb components to control htmlElementPropertyEditor.jsp
@@ -24,7 +27,7 @@ public class HtmlElementPropertyEditor {
         this.htmlComp = he;
         this.oahtmlComp = he.getOAHtmlComponent();
 //        this.bIsOA = he instanceof OA
-        setup();
+//        setup();
     }
 
         
@@ -72,7 +75,8 @@ public class HtmlElementPropertyEditor {
         txtHref
         txtTarget
     */
-    
+
+/*    
     protected void setup() {
         InputCheckBox chk;
         InputText txt;
@@ -862,5 +866,5 @@ public class HtmlElementPropertyEditor {
         // txt.setValue(oahtmlComp.getStyle());
         form.add(txt);
     }
-
+*/
 }

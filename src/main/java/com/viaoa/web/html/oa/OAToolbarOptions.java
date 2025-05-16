@@ -120,6 +120,25 @@ public class OAToolbarOptions {
         return new OAToolbarOptions(value);
     }
     
+    public static OAToolbarOptions createSearchTableNorth() {
+        int value = 0;
+        value |= Search;
+        value |= Find;
+        return new OAToolbarOptions(value);
+    }
+
+    public static OAToolbarOptions createSearchTableSouth() {
+        int value = 0;
+        value |= Details;
+        value |= Save;
+        value |= New;
+        value |= Wizard;
+        value |= Remove;
+        value |= Delete;
+        value |= Download;
+        return new OAToolbarOptions(value);
+    }
+    
     public void addNav() {
         int value = 0;
         value |= Prev;

@@ -31,10 +31,4 @@ public class OASplitPanel extends HtmlDiv {
         }
         return js;
     }
-    
-    @Override
-    protected void onLazyLoadEvent() {
-        // TODO Auto-generated method stub
-        super.onLazyLoadEvent();
-    }
 }

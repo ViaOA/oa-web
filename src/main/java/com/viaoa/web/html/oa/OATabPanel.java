@@ -20,6 +20,14 @@ public class OATabPanel extends OAPanel {
     private int lastActiveTab = 0;
     private int lastTabCount = 0;
     
+    // todo: qqqq
+    public final int TOP = 0;
+    public final int BOTTOM = 0;
+    public final int RIGHT = 0;
+    public final int LEFT = 0;
+    
+    
+    
     public OATabPanel(String elementIdentifier) {
         super(elementIdentifier);
     }
@@ -45,11 +53,16 @@ public class OATabPanel extends OAPanel {
     @Override
     public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
         String js = null;
-        if (lastTabCount != getChildren().size()) {
-            for (int i=lastTabCount; i<getChildren().size(); i++) {
-                js = OAStr.concat(js, "comp.addTab('"+getChildren().get(i).getDataOAName()+"');", "\n");
+            
+        for (HtmlElement he : getChildren()) {
+            if (!"tabs".equals(he.getDataOAName())) continue;
+            if (lastTabCount != he.getChildren().size()) {
+                for (int i=lastTabCount; i<he.getChildren().size(); i++) {
+                    js = OAStr.concat(js, "comp.addTab('"+he.getChildren().get(i).getDataOAName()+"');", "\n");
+                }
+                lastTabCount = he.getChildren().size();
             }
-            lastTabCount = getChildren().size();
+            break;
         }
         
         if (this.activeTab != lastActiveTab) {

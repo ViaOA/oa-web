@@ -21,10 +21,10 @@ public class OATabPanel extends OAPanel {
     private int lastTabCount = 0;
     
     // todo: qqqq
-    public final int TOP = 0;
-    public final int BOTTOM = 0;
-    public final int RIGHT = 0;
-    public final int LEFT = 0;
+    public final static int TOP = 0;
+    public final static int BOTTOM = 0;
+    public final static int RIGHT = 0;
+    public final static int LEFT = 0;
     
     
     

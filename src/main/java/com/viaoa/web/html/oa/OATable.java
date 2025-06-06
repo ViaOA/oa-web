@@ -488,6 +488,15 @@ public class OATable extends HtmlElement {
         }
     }
 
+    public Hub getSelectHub() {
+        return hubSelect;
+    }
+    
+    public Hub getMasterFilterHub() {
+        return null;
+        //qqqqqq return hubFilterMaster;
+    }
+
 }
 
 

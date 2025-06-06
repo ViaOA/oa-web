@@ -19,10 +19,13 @@ public class OAInputText extends InputText implements OATableColumnInterface {
     private int maxSize;
     private boolean bMaxSizeChanged;
     
-    
     public OAInputText(String elementIdentifier, Hub hub, String propName) {
+        this(elementIdentifier, hub, propName, -1);
+    }
+    
+    public OAInputText(String elementIdentifier, Hub hub, String propName, int size) {
         super(elementIdentifier);
-        
+        if (size > 0) setSize(size);
         controlUI = new OAUIController(hub, propName) {
             @Override
             public void updateComponent(Object object) {

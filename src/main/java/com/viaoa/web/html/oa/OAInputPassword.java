@@ -23,9 +23,14 @@ public class OAInputPassword extends InputPassword implements OATableColumnInter
     // extra properties
     private int maxSize;
     private boolean bMaxSizeChanged;
-    
+
     public OAInputPassword(String elementIdentifier, Hub hub, String propName) {
+        this(elementIdentifier, hub, propName, -1);
+    }
+    
+    public OAInputPassword(String elementIdentifier, Hub hub, String propName, int size) {
         super(elementIdentifier);
+        if (size > 0) setSize(size);
         controlUI = new OAUIController(hub, propName) {
             @Override
             public void updateComponent(Object object) {

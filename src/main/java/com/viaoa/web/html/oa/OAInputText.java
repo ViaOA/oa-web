@@ -48,6 +48,10 @@ public class OAInputText extends InputText implements OATableColumnInterface {
         };
     }
     
+    public OAUIController getController() {
+        return controlUI;
+    }
+    
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
         if (obj instanceof OAObject) {

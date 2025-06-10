@@ -49,6 +49,10 @@ public class OAInputCheckBox extends InputCheckBox implements OATableColumnInter
         };
     }
 
+    public OAUIController getController() {
+        return controlUI;
+    }
+    
     @Override
     public void close() {
         super.close();

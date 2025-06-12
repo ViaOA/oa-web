@@ -38,6 +38,10 @@ public class OAInputDate extends InputDate implements OATableColumnInterface {
         controlUI.setFormat("yyyy-MM-dd");
     }
     
+    public OAUIController getController() {
+        return controlUI;
+    }
+    
     @Override
     public String getValueAsString(Hub hubFrom, Object obj) {
         if (obj instanceof OAObject) {

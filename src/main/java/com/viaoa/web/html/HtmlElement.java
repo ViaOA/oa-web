@@ -29,8 +29,10 @@ public class HtmlElement {
     private List<HtmlElement> alChildren;
     
     private boolean bLazyLoad;
-    protected String templateName;
+    
+    // HTML template
     protected String templateUrl;
+    protected String templateName;
     
 
     public HtmlElement(String elementIdentifier) {

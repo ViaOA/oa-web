@@ -11,7 +11,7 @@ Currently expanding to include other JS frameworks and third party components.
 
 Full software systems can be visually designed and then automatically generated using the OA library, OABuilder visual modeling tool, along with the OA.G2 code generation
 
-Visit [www.viaoa.com](www.viaoa.com) for more information.
+Visit [www.viaoa.com](https://www.viaoa.com) for more information.
 
 Visit [OA-Web Javadoc](http://viaoa.github.io/oa-web/docs/index.html)
 

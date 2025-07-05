@@ -1,15 +1,11 @@
 # oa-web
 OA web components and framework
 
-Allows dynamically updating/binding to server side model without writing JS code.
+Allows dynamically updating/binding to server side model (OAObjectGraph) with Client JS UI components.
 
-Uses JSP/Servlets, JS, CSS, JQuery, Ajax and third party components.  
+Uses Java, JS, CSS, Bootstrap, Ajax and third party components.  
 
-Currently expanding to include other JS frameworks and third party components.
-
-
-
-Full software systems can be visually designed and then automatically generated using the OA library, OABuilder visual modeling tool, along with the OA.G2 code generation
+Full software systems can be visually designed and then automatically generated using the OABuilder visual modeling tool, along with the OACodeGen UI code generators.
 
 Visit [www.viaoa.com](https://www.viaoa.com) for more information.
 

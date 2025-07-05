@@ -1,0 +1,24 @@
+-classpath
+'C:/Users/vince/.m2/repository/com/viaoa/oa-core/3.7.12/oa-core-3.7.12.jar;C:/Users/vince/.m2/repository/javax/mail/mail/1.4.7/mail-1.4.7.jar;C:/Users/vince/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar;C:/Users/vince/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.13.4/jackson-core-2.13.4.jar;C:/Users/vince/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.13.4.2/jackson-databind-2.13.4.2.jar;C:/Users/vince/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.13.4/jackson-annotations-2.13.4.jar;C:/Users/vince/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.4/jackson-datatype-jsr310-2.13.4.jar;C:/Users/vince/.m2/repository/com/fasterxml/jackson/dataformat/jackson-dataformat-xml/2.13.4/jackson-dataformat-xml-2.13.4.jar;C:/Users/vince/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar;C:/Users/vince/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.3.1/woodstox-core-6.3.1.jar;C:/Users/vince/.m2/repository/javax/json/javax.json-api/1.1.4/javax.json-api-1.1.4.jar;C:/Users/vince/.m2/repository/org/glassfish/javax.json/1.1.4/javax.json-1.1.4.jar;C:/Users/vince/.m2/repository/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar;C:/Users/vince/.m2/repository/javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar;C:/Users/vince/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.1/jaxb-core-4.0.1.jar;C:/Users/vince/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar;C:/Users/vince/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.0/jakarta.activation-api-2.1.0.jar;C:/Users/vince/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.1/jaxb-impl-4.0.1.jar;C:/Users/vince/.m2/repository/javax/servlet/javax.servlet-api/4.0.0/javax.servlet-api-4.0.0.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'C:/Users/vvia/git/oa-web/src/main/java'
+-author
+-bottom
+'Copyright &#169; 1999&#x2013;2025 <a href="www.viaoa.com">ViaOA</a>. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Users/vvia/git/oa-web/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'com.viaoa:oa-web 3.7.12 API'
+-linkoffline
+'https://docs.oracle.com/javase/8/docs/api' 'C:/Users/vvia/git/oa-web/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'com.viaoa:oa-web 3.7.12 API'

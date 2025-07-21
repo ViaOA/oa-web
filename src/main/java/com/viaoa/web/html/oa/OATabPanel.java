@@ -53,16 +53,17 @@ public class OATabPanel extends OAPanel {
     @Override
     public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
         String js = null;
-            
-        for (HtmlElement he : getChildren()) {
-            if (!"tabs".equals(he.getDataOAName())) continue;
-            if (lastTabCount != he.getChildren().size()) {
-                for (int i=lastTabCount; i<he.getChildren().size(); i++) {
-                    js = OAStr.concat(js, "comp.addTab('"+he.getChildren().get(i).getDataOAName()+"');", "\n");
-                }
-                lastTabCount = he.getChildren().size();
-            }
-            break;
+        if (getChildren() != null) {    
+		    for (HtmlElement he : getChildren()) {
+		        if (!"tabs".equals(he.getDataOAName())) continue;
+		        if (lastTabCount != he.getChildren().size()) {
+		            for (int i=lastTabCount; i<he.getChildren().size(); i++) {
+		                js = OAStr.concat(js, "comp.addTab('"+he.getChildren().get(i).getDataOAName()+"');", "\n");
+		            }
+		            lastTabCount = he.getChildren().size();
+		        }
+		        break;
+		    }
         }
         
         if (this.activeTab != lastActiveTab) {

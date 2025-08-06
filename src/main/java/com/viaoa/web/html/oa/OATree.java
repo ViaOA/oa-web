@@ -183,6 +183,7 @@ public class OATree extends HtmlElement {
             sb.append("objs = [\n");
             int x = tndRoot.getChildCount();
             for (int i=0; i<x; i++) {
+            	if (i > 0) sb.append(", ");
                 OATreeNodeData tnd = tndRoot.getChild(i);
                 _getJavaScriptForClient_tnd(hsVars, tnd, sb, 0); 
             }

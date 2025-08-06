@@ -9,6 +9,8 @@ public class OAResizePanel extends HtmlDiv {
      
     public OAResizePanel(String selector, HtmlElement he1, HtmlElement he2, int percent) {
         super(selector);
+        
         //qqqqqq todo:
+        
     }
 }

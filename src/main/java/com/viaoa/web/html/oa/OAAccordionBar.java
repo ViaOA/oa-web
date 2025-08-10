@@ -4,7 +4,6 @@ import java.util.*;
 
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.*;
-import com.viaoa.web.html.input.InputRadio;
 
 public class OAAccordionBar extends HtmlElement {
     

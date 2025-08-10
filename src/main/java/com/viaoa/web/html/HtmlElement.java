@@ -690,10 +690,11 @@ public void beforeGetJavaScriptForClientRecursive() {
     }
     public void setParent(HtmlElement he) {
         if (this.heParent == he) return;
-        if (this.heParent != null) {
-            this.heParent.remove(this);
-        }
+        HtmlElement heHold = this.heParent;
         this.heParent = he;
+        if (heHold != null) {
+        	heHold.remove(this);
+        }
         if (this.heParent != null) {
             this.heParent.add(this);
         }

@@ -1,9 +1,11 @@
 package com.viaoa.web.html.oa;
 
+import java.util.List;
 import java.util.Set;
 
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.HtmlDiv;
+import com.viaoa.web.html.HtmlElement;
 
 /**
  * Create a split panel from an existing panel.
@@ -18,11 +20,13 @@ public class OASplitPanel extends HtmlDiv {
     
     @Override
     public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
-        bHasChanges |= !bInit;
+        if (!getLazyLoad()) {
+        	bHasChanges |= !bInit;
+        }
+        bUsedLazyLoad |= getLazyLoad();
         
         String js = super.getJavaScriptForClient(hsVars, bHasChanges);
 
-        bUsedLazyLoad |= getLazyLoad();
         
         // make sure the template is loaded
         if (!bInit && !getLazyLoad()) {

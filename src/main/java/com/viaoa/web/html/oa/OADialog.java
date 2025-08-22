@@ -5,7 +5,7 @@ import java.util.*;
 import com.viaoa.util.OAStr;
 import com.viaoa.web.html.*;
 
-public class OADialog extends HtmlDiv {
+public class OADialog extends OAPanel {
 
     private boolean bShow;
     private boolean bCalled;

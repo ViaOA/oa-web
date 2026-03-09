@@ -153,7 +153,7 @@ public class OARestServlet extends HttpServlet {
 			String[] fnames = OAReflect.getClasses(packageName);
 			for (String fn : fnames) {
 				Class c = Class.forName(packageName + "." + fn);
-				OAObjectInfo oi = OAObjectInfoDelegate.getObjectInfo(c);
+				OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(c);
 				hmClassName.put(fn.toLowerCase(), c);
 
 				String s = oi.getPluralName().toLowerCase();
@@ -775,7 +775,7 @@ public class OARestServlet extends HttpServlet {
 				Object obj = null;
 
 				// might be multipart id
-				OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+				OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(clazz);
 				String sql = "";
 
 				ArrayList<String> al = new ArrayList();
@@ -1167,7 +1167,7 @@ public class OARestServlet extends HttpServlet {
 		Object obj = null;
 
 		// might be multipart id
-		OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(clazz);
+		OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(clazz);
 		String sql = "";
 
 		ArrayList<String> al = new ArrayList();

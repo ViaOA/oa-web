@@ -1356,7 +1356,7 @@ public abstract class OAHtmlComponent {
                     String v = ex.getValue();
                     n = OAStr.convertToHungarian(n, "-");
                     if (v == null) al.add("ele.style."+n+" = null;");
-                    else al.add("ele.style."+n+" = '"+ OAStr.escapeJS(v, '\'') + "';");
+                    else al.add("ele.style."+n+" = '"+ OAStr.escapeJs(v, '\'') + "';");
                 }
             }
         }
@@ -1365,7 +1365,7 @@ public abstract class OAHtmlComponent {
                 for (String n : alStyleAdd) {
                     String v = hmStyle.get(n);
                     n = OAStr.convertToHungarian(n, "-");
-                    al.add("ele.style['"+n+"'] = '"+ OAStr.escapeJS(v, '\'') + "';");
+                    al.add("ele.style['"+n+"'] = '"+ OAStr.escapeJs(v, '\'') + "';");
                 }
             }
         
@@ -2510,15 +2510,15 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
                     list += "</optgroup>";
                 }
                 bInOptGroup = true;
-                list += "<optgroup label='" + OAStr.escapeJS(s,'\'') + "'";
+                list += "<optgroup label='" + OAStr.escapeJs(s,'\'') + "'";
                 if (!ho.getEnabled()) list += " disabled";
                 list += ">";
             }
             else {
-                list += "<option value='" + OAStr.escapeJS(ho.getValue(), '\'') + "'";
+                list += "<option value='" + OAStr.escapeJs(ho.getValue(), '\'') + "'";
                 if (!ho.getEnabled()) list += " disabled";
                 if (ho.getSelected()) list += " selected";
-                list += ">"+OAStr.escapeJS(s, '\'');
+                list += ">"+OAStr.escapeJs(s, '\'');
             }
 
             if (ho instanceof HtmlOptionGroup) {

@@ -55,7 +55,7 @@
     <dependency>
       <groupId>com.viaoa</groupId>
       <artifactId>oa-core</artifactId>
-      <version>3.7.12</version>
+      <version>3.8.0</version>
     </dependency>
 
     <dependency>

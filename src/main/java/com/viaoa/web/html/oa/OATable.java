@@ -193,7 +193,7 @@ public class OATable extends HtmlElement {
                 for (OATableColumn tc : alTableColumn) {
                     String val = tc.editor.getValueAsString(getHub(), obj);
                     if (val == null) val = "null";
-                    else val = "'" + OAStr.escapeJS(val, '\'') + "'";
+                    else val = "'" + OAStr.escapeJs(val, '\'') + "'";
                     s = OAStr.append(s, val, ",");
                 }
                 StringBuilder sb = new StringBuilder();
@@ -210,7 +210,7 @@ public class OATable extends HtmlElement {
                 for (OATableColumn tc : alTableColumn) {
                     String val = tc.editor.getValueAsString(getHub(), obj);
                     if (val == null) val = "null";
-                    else val = "'" + OAStr.escapeJS(val, '\'') + "'";
+                    else val = "'" + OAStr.escapeJs(val, '\'') + "'";
                     s = OAStr.append(s, val, ",");
                 }
                 s = "comp.addRow(comp.createTableRow([" + s + "]));\n";
@@ -224,7 +224,7 @@ public class OATable extends HtmlElement {
                 for (OATableColumn tc : alTableColumn) {
                     String val = tc.editor.getValueAsString(getHub(), obj);
                     if (val == null) val = "null";
-                    else val = "'" + OAStr.escapeJS(val, '\'') + "'";
+                    else val = "'" + OAStr.escapeJs(val, '\'') + "'";
                     s = OAStr.append(s, val, ",");
                 }
                 s = "comp.insertRow(comp.createTableRow([" + s + "]), "+row+");\n";
@@ -270,7 +270,7 @@ public class OATable extends HtmlElement {
                     for (OATableColumn tc : alTableColumn) {
                         String val = tc.editor.getValueAsString(getHub(), obj);
                         if (val == null) val = "null";
-                        else val = "'" + OAStr.escapeJS(val, '\'') + "'";
+                        else val = "'" + OAStr.escapeJs(val, '\'') + "'";
                         s = OAStr.append(s, val, ",");
                     }
                     sb.append(s + "]");

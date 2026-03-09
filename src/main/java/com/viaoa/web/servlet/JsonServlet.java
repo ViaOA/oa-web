@@ -276,7 +276,7 @@ public class JsonServlet extends HttpServlet {
 		}
 
 		if (bDescribe) {
-			OAObjectInfo oi = OAObjectInfoDelegate.getOAObjectInfo(c);
+			OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(c);
 			result += "{\n";
 			//was: result += "{ \"class\": {\n";
 			result += "  \"name\": \"" + oi.getForClass().getSimpleName() + "\",\n";

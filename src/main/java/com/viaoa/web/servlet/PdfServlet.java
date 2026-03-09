@@ -68,7 +68,7 @@ public class PdfServlet extends HttpServlet {
 		if (clazz == null) {
 			return null;
 		}
-		String rand = OAString.createRandomString(14, 28, true, true, false);
+		String rand = OAString.getRandomString(14, 28, true, true, false);
 		RequestInfo ri = new RequestInfo();
 		ri.clazz = clazz;
 		ri.id = id;

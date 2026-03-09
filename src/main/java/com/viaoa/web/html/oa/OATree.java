@@ -424,7 +424,7 @@ public class OATree extends HtmlElement {
                     break;
                 case change:  
                     sb.append("tnd = tree.getTreeNodeData("+c.path+");\n");
-                    sb.append("tnd.label = '" + OAStr.escapeJS(c.tnd.toString(), '\'') + "';\n");
+                    sb.append("tnd.label = '" + OAStr.escapeJs(c.tnd.toString(), '\'') + "';\n");
                     sb.append("tree.updateTreeNodeDataLabel(tnd);\n");
                     break;
                 case move:

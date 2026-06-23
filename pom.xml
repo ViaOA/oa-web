@@ -59,6 +59,18 @@
     </dependency>
 
     <dependency>
+      <groupId>com.viaoa</groupId>
+      <artifactId>oa-core-ui</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.viaoa</groupId>
+      <artifactId>oa-jackson</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>4.0.0</version>

@@ -12,7 +12,8 @@ package com.viaoa.web.html.form;
 
 import java.util.HashMap;
 
-import com.viaoa.util.OAString;
+import com.viaoa.lang.OAString;
+
 
 public class OAFormInsertDelegate {
 

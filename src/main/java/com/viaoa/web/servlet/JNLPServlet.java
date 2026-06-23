@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OAFile;
-import com.viaoa.util.OAString;
+import com.viaoa.datetime.OADateTime;
+import com.viaoa.io.OAFile;
+import com.viaoa.lang.OAString;
 
 /**
  * servlet used to serve up JNLP files, and dynamically set the codebase data, and other

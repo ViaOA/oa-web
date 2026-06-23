@@ -3,9 +3,10 @@ package com.viaoa.web.html.oa;
 import java.util.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.lang.OAArray;
+import com.viaoa.lang.OAStr;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUISelectController;
-import com.viaoa.util.*;
+import com.viaoa.ui.controller.OAUISelectController;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
@@ -325,7 +326,7 @@ public class OAHtmlSelect extends HtmlSelect implements OATableColumnInterface {
         bIgnoreSelected = true;
         if (hubSelected != null) {
             for (int pos : selectIndexes) {
-                Object obj = hub.getAt(pos);
+                OAObject obj = hub.getAt(pos);
                 hubSelected.add(obj);
             }
             for (Object obj : hubSelected) {

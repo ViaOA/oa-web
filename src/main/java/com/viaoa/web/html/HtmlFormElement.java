@@ -1,7 +1,7 @@
 package com.viaoa.web.html;
 
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 
 import java.util.HashSet;

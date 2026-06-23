@@ -4,8 +4,6 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.viaoa.util.OAStr;
-import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 
 /*    

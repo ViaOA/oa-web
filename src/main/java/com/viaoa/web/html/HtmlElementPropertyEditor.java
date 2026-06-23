@@ -2,8 +2,6 @@ package com.viaoa.web.html;
 
 import java.util.*;
 
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.*;

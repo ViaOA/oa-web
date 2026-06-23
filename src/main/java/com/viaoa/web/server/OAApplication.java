@@ -16,7 +16,6 @@ import java.io.*;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.hub.*;
-import com.viaoa.util.OAString;
 
 /**
  * Application level object.

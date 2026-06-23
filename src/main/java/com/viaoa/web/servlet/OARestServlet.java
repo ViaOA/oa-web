@@ -10,6 +10,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,30 +21,26 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.xml.bind.JAXBContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.viaoa.annotation.OAClassFilter;
-import com.viaoa.context.OAContext;
-import com.viaoa.context.OAUserAccess;
-import com.viaoa.datasource.OASelect;
+import com.viaoa.converter.OAConv;
 import com.viaoa.filter.OAAndFilter;
-import com.viaoa.hub.CustomHubFilter;
+import com.viaoa.filter.OAFilter;
+import com.viaoa.find.OAFinder;
+import com.viaoa.graph.api.internal.OAGraphInternal;
 import com.viaoa.hub.Hub;
+import com.viaoa.hub.filter.CustomHubFilter;
 import com.viaoa.json.OAJson;
-import com.viaoa.object.OAFinder;
+import com.viaoa.lang.OAString;
+import com.viaoa.metadata.OAObjectInfo;
+import com.viaoa.metadata.OAPropertyInfo;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCallbackDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAPropertyInfo;
-import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OAFilter;
-import com.viaoa.util.OAPropertyPath;
-import com.viaoa.util.OAReflect;
-import com.viaoa.util.OAString;
+import com.viaoa.path.OAPath;
+import com.viaoa.reflect.OAReflect;
+import com.viaoa.runtime.OARuntime;
+import com.viaoa.select.OASelect;
 import com.viaoa.web.filter.OAUserAccessFilter;
 import com.viaoa.web.servlet.exception.OAServletException;
 
@@ -142,6 +139,11 @@ public class OARestServlet extends HttpServlet {
 		return bJaxbIncludeOwnedReferences;
 	}
 
+	public OAGraphInternal getGraph() {
+		return (OAGraphInternal) OARuntime.graph(this.packageName);
+	}
+	
+	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -153,7 +155,7 @@ public class OARestServlet extends HttpServlet {
 			String[] fnames = OAReflect.getClasses(packageName);
 			for (String fn : fnames) {
 				Class c = Class.forName(packageName + "." + fn);
-				OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(c);
+				OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(c);
 				hmClassName.put(fn.toLowerCase(), c);
 
 				String s = oi.getPluralName().toLowerCase();
@@ -266,8 +268,8 @@ public class OARestServlet extends HttpServlet {
 	}
 	**/
 
+/*qqqqqqqqqqqqqqqqqqqqqqqqqq	
 	private OAUserAccess userAccess;
-
 	protected OAUserAccess getUserAccess() {
 		if (userAccess != null) {
 			return userAccess;
@@ -276,7 +278,7 @@ public class OARestServlet extends HttpServlet {
 		//   http://localhost:8088/pi/api/clients
 		userAccess = new OAUserAccess(true, true);
 
-		/*
+		/ *
 		userAccess = new OAUserAccess(false, true);
 		userAccess.setValidPackage(Campaign.class.getPackage());  // only for PI project
 		OAContext.setContextUserAccess(this, userAccess);
@@ -306,10 +308,11 @@ public class OARestServlet extends HttpServlet {
 		
 		//qqqqqqqqq :  check for servlet session, add HTTP basic auth
 		
-		*/
+		* /
 		return userAccess;
 	}
-
+*/
+	
 	/**
 	 * Process the http request
 	 */
@@ -326,7 +329,8 @@ public class OARestServlet extends HttpServlet {
 		}
 		try {
 			//qqqq            getRestAppUser(); // make sure that it's initialized
-			getUserAccess(); //    "   "
+//qqqqqqqqqq			
+//			getUserAccess(); //    "   "
 			//qqqq            OAThreadLocalDelegate.setContext(this);
 
 			resp.setCharacterEncoding("UTF-8");
@@ -342,7 +346,9 @@ public class OARestServlet extends HttpServlet {
 			resp.setStatus(resp.SC_INTERNAL_SERVER_ERROR);
 			onException(resp, ex);
 		} finally {
-			OAThreadLocalDelegate.setContext(null);
+			OARuntime.thread().getThreadLocalService().setContextUser(null);
+//qqqqqqqqqqqqqq			
+//was: 			OAThreadLocalDelegate.setContext(null);
 		}
 	}
 
@@ -775,7 +781,7 @@ public class OARestServlet extends HttpServlet {
 				Object obj = null;
 
 				// might be multipart id
-				OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(clazz);
+				OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(clazz);
 				String sql = "";
 
 				ArrayList<String> al = new ArrayList();
@@ -806,7 +812,8 @@ public class OARestServlet extends HttpServlet {
 				}
 
 				if (obj != null) {
-					if (!OAObjectCallbackDelegate.getAllowVisible(null, (OAObject) obj, null)) {
+					
+					if (!getGraph().internal().objects().callbacks().getAllowVisible(null, (OAObject) obj, null)) {
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 					} else {
 						jsonOutput = oaj.write((OAObject) obj);
@@ -842,7 +849,7 @@ public class OARestServlet extends HttpServlet {
 
 				String filterName = hmParam.get("filter");
 				if (OAString.isNotEmpty(filterName)) {
-					OAPropertyPath propertyPath = new OAPropertyPath(clazz, ":" + filterName);
+					OAPath propertyPath = new OAPath(clazz, ":" + filterName);
 
 					// match filters
 					String[] names = propertyPath.getFilterNames();
@@ -927,13 +934,13 @@ public class OARestServlet extends HttpServlet {
 							if (obj instanceof Hub) {
 								h = (Hub) obj;
 							} else {
-								h.add(obj);
+								h.add((OAObject) obj);
 							}
 						} else {
 							OAFinder finder = new OAFinder((OAObject) obj, fromPath);
-							ArrayList al = finder.find();
+							List al = finder.find();
 							for (Object objx : al) {
-								h.add(objx);
+								h.add((OAObject) objx);
 							}
 						}
 					}
@@ -941,7 +948,7 @@ public class OARestServlet extends HttpServlet {
 
 				boolean b = true;
 				for (Object obj : h) {
-					if (!OAObjectCallbackDelegate.getAllowVisible(null, (OAObject) obj, null)) {
+					if (!getGraph().internal().objects().callbacks().getAllowVisible(null, (OAObject) obj, null)) {
 						b = false;
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 						break;
@@ -1077,7 +1084,8 @@ public class OARestServlet extends HttpServlet {
 		}
 		final int dcntURI = OAString.dcount(argsURI, "/");
 
-		JAXBContext jaxbContext = null;
+//qqqqqqqq		
+//		JAXBContext jaxbContext = null;
 		String valString = null;
 
 		int result = HttpServletResponse.SC_OK;
@@ -1148,12 +1156,12 @@ public class OARestServlet extends HttpServlet {
 			throw new RuntimeException(
 					"Session web user (" + OAUserAccessFilter.KEY_OAWebUser + ") is not defined");
 		}
-
+/*qqqqqqqqqqqq
 		OAObject user2 = OAContext.getContextObject();
 		if (user != user2) {
 			throw new RuntimeException("Session context user (" + OAUserAccessFilter.KEY_OAContextUser + ") is not defined");
 		}
-
+*/
 		super.service(request, response);
 	}
 
@@ -1167,7 +1175,7 @@ public class OARestServlet extends HttpServlet {
 		Object obj = null;
 
 		// might be multipart id
-		OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(clazz);
+		OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(clazz);
 		String sql = "";
 
 		ArrayList<String> al = new ArrayList();
@@ -1207,13 +1215,13 @@ public class OARestServlet extends HttpServlet {
 			throw new OAServletException(s, HttpServletResponse.SC_NOT_FOUND, null);
 		}
 
-		if (!OAObjectCallbackDelegate.getAllowVisible(null, (OAObject) obj, methodName)) {
+		if (!getGraph().internal().objects().callbacks().getAllowVisible(null, (OAObject) obj, methodName)) {
 			String s = String.format(	"method not authorized (visible=false), class=%s, method=%s, id=%s",
 										clazz.getSimpleName(), methodName, id);
 			throw new OAServletException(s, HttpServletResponse.SC_UNAUTHORIZED, null);
 		}
 
-		Method method = OAObjectInfoDelegate.getMethod(oi, methodName);
+		Method method = getGraph().internal().objects().info().getMethod(oi, methodName);
 
 		if (method == null) {
 			throw new RuntimeException("method " + methodName + " not found in class " + clazz.getSimpleName());

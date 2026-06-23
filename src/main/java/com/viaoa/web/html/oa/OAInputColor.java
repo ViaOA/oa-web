@@ -2,7 +2,7 @@ package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
 import com.viaoa.object.OAObject;
-import com.viaoa.uicontroller.*;
+import com.viaoa.ui.controller.OAUIController;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.*;
 

@@ -4,9 +4,17 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.viaoa.converter.OAConverter;
+import com.viaoa.graph.api.internal.OAGraphInternal;
 import com.viaoa.hub.*;
+import com.viaoa.hub.filter.HubFilter;
+import com.viaoa.lang.OAStr;
+import com.viaoa.lang.OAString;
+import com.viaoa.metadata.OALinkInfo;
+import com.viaoa.metadata.OAObjectInfo;
 import com.viaoa.object.*;
-import com.viaoa.util.*;
+import com.viaoa.reflect.OAReflect;
+import com.viaoa.runtime.OARuntime;
 
 public class OATreeNode {
 
@@ -216,7 +224,7 @@ public class OATreeNode {
                 this.def.hubSelected.remove(tnd.object);
             }
             else {
-                this.def.hubSelected.add(tnd.object);
+                this.def.hubSelected.add((OAObject) tnd.object);
             }
         }
     }
@@ -232,7 +240,7 @@ public class OATreeNode {
             if (child.node.def.hubSelected != null) {
                 if (bChecked) {
                     if (!child.node.def.hubSelected.contains(child.object)) {
-                        child.node.def.hubSelected.add(child.object);
+                        child.node.def.hubSelected.add((OAObject) child.object);
                     }
                 }
                 else if (child.node.def.hubSelected.contains(child.object)) {
@@ -354,6 +362,13 @@ public class OATreeNode {
         setupUpdateHub();
     }
 
+	public OAGraphInternal getGraph() {
+		Class<?> c = null;
+		if (hub != null) c = hub.getObjectClass();
+		return (OAGraphInternal) OARuntime.graph(c);
+	}
+    
+    
     /**
      * Object to update whenever node is selected.
      */
@@ -385,8 +400,8 @@ public class OATreeNode {
                 if (def.tree.shouldIgnoreChangeAO()) {
                     return;
                 }
-
-                if (hub != null && !HubShareDelegate.isUsingSameSharedHub(def.updateHub, hub)) {
+                
+                if (hub != null && !getGraph().internal().hubs().share().isUsingSameSharedHub(def.updateHub, hub)) {
                     return;
                 }
 
@@ -397,13 +412,13 @@ public class OATreeNode {
                 }
                 else {
                     // this will "hit" the same hub that the OATreeNodeData is listening to - since it is listening to the "real" Hub.
-                    h = HubShareDelegate.getMainSharedHub(def.updateHub);
+                    h = getGraph().internal().hubs().share().getMainSharedHub(def.updateHub);
                 }
                 if (obj != h.getAO()) {
                     // 2l0190311 dont set AO, send hub event instead
                     try {
                         bSkip = true;
-                        HubEventDelegate.fireAfterChangeActiveObjectEvent(h, obj, h.getPos(obj), false);
+                        getGraph().internal().hubs().events().fireAfterChangeActiveObjectEvent(h, (OAObject) obj, h.getPos(obj), false);
                     }
                     finally {
                         bSkip = false;
@@ -618,7 +633,7 @@ public class OATreeNode {
 
         if (methodsToHub == null && bRecursive) {
             Class clazz = object.getClass();
-            OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(clazz);
+            OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(clazz);
             OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
 
             // find method
@@ -651,7 +666,7 @@ public class OATreeNode {
 
         // 20110802 recursive nodes
         if (methodsToHub == null && bRecursive) {
-            OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(clazz);
+            OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(clazz);
             OALinkInfo li = oi.getRecursiveLinkInfo(OALinkInfo.MANY);
 
             // find method

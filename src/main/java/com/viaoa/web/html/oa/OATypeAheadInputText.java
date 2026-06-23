@@ -4,9 +4,10 @@ package com.viaoa.web.html.oa;
 import java.util.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.lang.OAStr;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.*;
-import com.viaoa.util.*;
+import com.viaoa.ui.controller.OAUITypeAheadController;
+import com.viaoa.ui.typeahead.OATypeAhead;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputText;
 

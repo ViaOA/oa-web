@@ -12,12 +12,14 @@ package com.viaoa.web.util;
 
 import java.awt.Color;
 import java.util.*;
+
+import com.viaoa.converter.OAConverter;
+import com.viaoa.graph.api.internal.OAGraphInternal;
 import com.viaoa.hub.*;
+import com.viaoa.lang.OAString;
+import com.viaoa.metadata.OAObjectInfo;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectReflectDelegate;
-import com.viaoa.util.*;
+import com.viaoa.runtime.OARuntime;
 
 
 /**
@@ -105,6 +107,9 @@ public class JspUtil {
         return getObject(hub, id);
     }
 
+	public static OAGraphInternal getGraph(Class c) {
+		return (OAGraphInternal) OARuntime.graph(c);
+	}
 
 //qqqqqqqqqq Use ObjectKey for this    
     /** returns the Objects first propertyId as a string */
@@ -125,7 +130,7 @@ public class JspUtil {
         if (ids.length == 0) return null;
                     
         try {
-            Object object = OAObjectReflectDelegate.getProperty((OAObject)obj, ids[0]);
+            Object object = getGraph(obj.getClass()).internal().objects().reflect().getProperty((OAObject)obj, ids[0]);
             return OAConverter.toString(object);
         }
         catch (Exception e) {
@@ -147,7 +152,7 @@ public class JspUtil {
         }
         
         
-        if (!hub.isOAObject()) return strId;
+        //was: if (!hub.isOAObject()) return strId;
         
         /*
         OAObjectInfo oi = Hub.getOAObjectInfo(c);
@@ -162,7 +167,7 @@ public class JspUtil {
         return OAObjectCacheDelegate.get(hub.getObjectClass(), obj);
         */
        
-        return OAObjectCacheDelegate.get(hub.getObjectClass(), strId);
+        return getGraph(hub.getObjectClass()).internal().objects().cache().getObject(hub.getObjectClass(), strId);
     }
 
     public static String field(String str, char sep, int beg) {

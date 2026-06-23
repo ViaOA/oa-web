@@ -2,9 +2,12 @@ package com.viaoa.web.html.oa;
 
 import java.util.*;
 
+import com.viaoa.converter.OAConv;
 import com.viaoa.hub.*;
-import com.viaoa.uicontroller.*;
-import com.viaoa.util.*;
+import com.viaoa.lang.OAArray;
+import com.viaoa.lang.OAStr;
+import com.viaoa.object.OAObject;
+import com.viaoa.ui.controller.OAUITableController;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputCheckBox;
 
@@ -98,7 +101,7 @@ public class OATable extends HtmlElement {
         @Override
         public void setChecked(boolean b) {
             super.setChecked(b);
-            Object obj = hub.getAO();
+            OAObject obj = hub.getAO();
             if (obj != null) {
                 if (b) hubSelect.add(obj);
                 else hubSelect.remove(obj);

@@ -2,7 +2,6 @@ package com.viaoa.web.html;
 
 import java.util.*;
 
-import com.viaoa.util.OAConv;
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 import com.viaoa.web.html.oa.OATreeNodeData;
 

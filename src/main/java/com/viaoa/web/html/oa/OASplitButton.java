@@ -1,7 +1,7 @@
 package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.Hub;
-import com.viaoa.uicontroller.OAUICommandController;
+import com.viaoa.ui.controller.OAUICommandController;
 
 public class OASplitButton extends OAHtmlButton {
 

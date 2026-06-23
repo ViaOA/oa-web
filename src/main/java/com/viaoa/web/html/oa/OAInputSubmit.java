@@ -2,8 +2,7 @@ package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUICommandController;
-import com.viaoa.uicontroller.OAUICommandController.Command;
+import com.viaoa.ui.controller.OAUICommandController;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.input.InputButton;
@@ -107,10 +106,10 @@ public class OAInputSubmit extends InputSubmit {
         OAObject obj = null; 
         switch (oaUiControl.getCommand()) { 
             case NewManual:
-                obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
+                obj = (OAObject) oaUiControl.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
             case AddManual:
-                obj = (OAObject) OAObjectReflectDelegate.createNewObject(getHub().getObjectClass());
+                obj = (OAObject) oaUiControl.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
         }
         return obj;

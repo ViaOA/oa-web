@@ -10,7 +10,7 @@
 */
 package com.viaoa.web.util;
 
-import com.viaoa.util.OAString;
+import com.viaoa.lang.OAString;
 
 /**
  * Utility used to convert dynamic data for internal text, so that it is html and javascript safe.

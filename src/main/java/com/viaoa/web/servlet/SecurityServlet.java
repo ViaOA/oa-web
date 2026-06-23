@@ -27,14 +27,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.datasource.OASelect;
-import com.viaoa.image.OAImageUtil;
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.util.Base64;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OAString;
+import com.viaoa.secure.Base64;
 
 /**
  * 

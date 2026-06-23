@@ -2,8 +2,12 @@ package com.viaoa.web.html.oa;
 
 import java.util.*;
 
+import com.viaoa.converter.OAConv;
+import com.viaoa.filter.OAFilter;
 import com.viaoa.hub.*;
-import com.viaoa.util.*;
+import com.viaoa.lang.OAArray;
+import com.viaoa.lang.OAStr;
+import com.viaoa.object.OAObject;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.oa.OATree.TreeNodeDataChange.Type;
 
@@ -144,7 +148,7 @@ public class OATree extends HtmlElement {
     protected void _onCheckBoxClickedEvent(OATreeNodeData tnd, int checkType) {
         if (tnd.node.getSelectedHub() != null) {
             if (checkType == 0) tnd.node.getSelectedHub().remove(tnd.object);
-            else if (checkType == 2) tnd.node.getSelectedHub().add(tnd.object);
+            else if (checkType == 2) tnd.node.getSelectedHub().add((OAObject) tnd.object);
         }
         else {
             for (OATreeNodeData tndx : tnd.getChildren()) {

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.viaoa.util.OAStr;
+import com.viaoa.lang.OAStr;
 import com.viaoa.web.util.OAWebUtil;
 
 /**

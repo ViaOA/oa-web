@@ -2,7 +2,7 @@ package com.viaoa.web.html.input;
 
 import java.util.*;
 
-import com.viaoa.util.OAString;
+import com.viaoa.lang.OAString;
 import com.viaoa.web.html.OAHtmlComponent.InputModeType;
 import com.viaoa.web.html.OAHtmlComponent.InputType;
 

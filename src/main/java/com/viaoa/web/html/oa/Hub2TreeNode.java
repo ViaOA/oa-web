@@ -13,8 +13,11 @@ package com.viaoa.web.html.oa;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.object.*;
-import com.viaoa.util.OAArray;
+import com.viaoa.runtime.OARuntime;
+import com.viaoa.graph.api.internal.OAGraphInternal;
 import com.viaoa.hub.*;
+import com.viaoa.hub.filter.HubFilter;
+import com.viaoa.lang.OAArray;
 
 /** 
     Used by OATreeNodeData for each node in the tree that uses a Hub.
@@ -57,7 +60,7 @@ public class Hub2TreeNode extends HubListenerAdapter {
     
     
     public @Override void afterPropertyChange(HubEvent e) {
-        if (e.getObject() instanceof Hub) return;
+        //was: if (e.getObject() instanceof Hub) return;
         String s = e.getPropertyName();
         if (s == null) return;
         if (s.equalsIgnoreCase("changed") || s.equalsIgnoreCase("new")) return;
@@ -212,7 +215,8 @@ public class Hub2TreeNode extends HubListenerAdapter {
             if (OAArray.contains(tns, node)) hubUpdate = hub;
         }
         
-        if (hubUpdate != null && (HubShareDelegate.isUsingSameSharedHub(hubUpdate, hub)) ) {
+    	OAGraphInternal og = (OAGraphInternal) OARuntime.graph(hubUpdate);
+        if (hubUpdate != null && (og.internal().hubs().share().isUsingSameSharedHub(hubUpdate, hub)) ) {
             OATreeNodeData tnd = parent.getChild(pos);
             tnd.select();
         }

@@ -25,13 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.datasource.OASelect;
-import com.viaoa.image.OAImageUtil;
+import com.viaoa.converter.OAConv;
+import com.viaoa.datetime.OADateTime;
+import com.viaoa.graph.api.internal.OAGraphInternal;
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.util.OAConv;
-import com.viaoa.util.OADateTime;
-import com.viaoa.util.OAString;
+import com.viaoa.runtime.OARuntime;
+import com.viaoa.select.OASelect;
 
 /**
  * Get an image from an Object Property similar to protocol handler: com.viaoa.jfc.editor.html.protocol.classpath.Handler Note: images were
@@ -205,8 +205,10 @@ public class ImageServlet extends HttpServlet {
 			return;
 		}
 
-		OAObject obj;
-		obj = (OAObject) OAObjectCacheDelegate.get(c, id);
+//		OAObject obj;
+		OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+
+		OAObject obj = (OAObject) og.internal().objects().cache().getObject((Class<? extends OAObject>) c, id);
 		if (obj == null) {
 			OASelect sel = new OASelect(c);
 			sel.select("ID = ?", new Object[] { id });
@@ -254,7 +256,7 @@ public class ImageServlet extends HttpServlet {
 					long ts = req.getDateHeader("If-Modified-Since");
 					if (ts > 0) {
 						OADateTime dt = new OADateTime(ts);
-						if (dt.addHours(24).after(new OADateTime())) {
+						if (dt.plusHours(24).after(new OADateTime())) {
 							resp.sendError(HttpServletResponse.SC_NOT_MODIFIED);
 							resp.setHeader("Last-Modified", req.getHeader("If-Modified-Since"));
 							return; // browser will use the image in it's cache
@@ -270,6 +272,7 @@ public class ImageServlet extends HttpServlet {
 		int maxw = maxW == null ? 0 : OAConv.toInt(maxW);
 		int maxh = maxH == null ? 0 : OAConv.toInt(maxH);
 
+/*qqqqqqqqq get OAImageUtil qqqqqqqqqqqqqq		
 		if (maxw > 0 || maxh > 0) {
 			BufferedImage bi = OAImageUtil.convertToBufferedImage(bs);
 			bi = OAImageUtil.scaleDownToSize(bi, maxw, maxh);
@@ -295,13 +298,13 @@ public class ImageServlet extends HttpServlet {
 		} else {
 			imageType = "jpeg";
 		}
-
 		resp.setContentLength(bs.length);
 
 		resp.setHeader("ETag", "\"" + etag + "\"");
 
 		// Set content type
 		resp.setContentType("image/" + imageType);
+*/
 
 		resp.setDateHeader("Date", System.currentTimeMillis());
 		resp.setDateHeader("Last-Modified", System.currentTimeMillis());
@@ -313,9 +316,10 @@ public class ImageServlet extends HttpServlet {
 			maxAgeSeconds = 0; // this will have the browser req everytime.  But it will send the etag, and the browser can send back 304 is img size has not changed.
 		}
 		resp.setHeader("Cache-Control", "private, max-age=" + maxAgeSeconds + ", must-revalidate");
-
+/*qqqqqqqqqqqqq
 		out.write(bs);
 		out.close();
+*/		
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 

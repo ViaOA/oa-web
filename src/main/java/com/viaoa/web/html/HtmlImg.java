@@ -2,7 +2,7 @@ package com.viaoa.web.html;
 
 import java.util.*;
 
-import com.viaoa.util.OAStr;
+import com.viaoa.lang.OAStr;
 
 public class HtmlImg extends HtmlElement {
 

@@ -2,8 +2,8 @@ package com.viaoa.web.html.summernote;
 
 import java.util.Set;
 
+import com.viaoa.lang.OAStr;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAStr;
 import com.viaoa.web.html.HtmlTextArea;
 import com.viaoa.web.html.OAHtmlComponent.FormElementType;
 import com.viaoa.web.html.form.OAFormInsertDelegate;

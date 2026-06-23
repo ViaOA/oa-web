@@ -8,8 +8,8 @@ import java.io.OutputStream;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import com.viaoa.lang.OAStr;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.OAStr;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.server.OASession;

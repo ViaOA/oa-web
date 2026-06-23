@@ -1,6 +1,6 @@
 package com.viaoa.web.html.input;
 
-import com.viaoa.util.OAStr;
+import com.viaoa.lang.OAStr;
 import com.viaoa.web.html.HtmlFormElement;
 import com.viaoa.web.html.OAHtmlComponent.InputModeType;
 

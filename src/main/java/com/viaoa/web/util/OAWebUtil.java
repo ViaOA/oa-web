@@ -8,10 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.viaoa.hub.Hub;
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
 import com.viaoa.template.OATemplate;
-import com.viaoa.util.OAStr;
-import com.viaoa.util.OAString;
 import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.server.OASession;
 

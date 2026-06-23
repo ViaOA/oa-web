@@ -25,17 +25,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.datasource.OASelect;
+import com.viaoa.graph.api.internal.OAGraphInternal;
 import com.viaoa.hub.Hub;
 import com.viaoa.json.OAJson;
-import com.viaoa.object.OACalcInfo;
-import com.viaoa.object.OALinkInfo;
+import com.viaoa.lang.OAString;
+import com.viaoa.lang.oa.VEnum;
+import com.viaoa.metadata.OACalcInfo;
+import com.viaoa.metadata.OALinkInfo;
+import com.viaoa.metadata.OAObjectInfo;
+import com.viaoa.metadata.OAPropertyInfo;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.object.OAObjectInfo;
-import com.viaoa.object.OAObjectInfoDelegate;
-import com.viaoa.object.OAPropertyInfo;
-import com.viaoa.util.OAString;
+import com.viaoa.runtime.OARuntime;
+import com.viaoa.select.OASelect;
 
 // NOTE: this is replaced by OARestServlet, which includes user context for security/access
 
@@ -206,14 +207,17 @@ public class JsonServlet extends HttpServlet {
 		} else if (id == null || id.length() == 0) {
 			if (!bDescribe) {
 				ArrayList al = new ArrayList();
-				OAObjectCacheDelegate.find(null, c, 500, al);
+				
+				OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+				og.internal().objects().cache().find(null, c, 500, al);
 				newObject = new Hub();
 				for (Object objx : al) {
-					((Hub) newObject).add(objx);
+					((Hub) newObject).add((OAObject) objx);
 				}
 			}
 		} else {
-			newObject = OAObjectCacheDelegate.get(c, id);
+			OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+			newObject = og.internal().objects().cache().getObject(c, id);
 			if (newObject == null) {
 				OASelect sel = new OASelect(c);
 				sel.select("ID = ?", new Object[] { id });
@@ -276,7 +280,8 @@ public class JsonServlet extends HttpServlet {
 		}
 
 		if (bDescribe) {
-			OAObjectInfo oi = OAObjectInfoDelegate.callInfoGetObjectInfo(c);
+			OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+			OAObjectInfo oi = og.internal().objects().info().getObjectInfo(c);
 			result += "{\n";
 			//was: result += "{ \"class\": {\n";
 			result += "  \"name\": \"" + oi.getForClass().getSimpleName() + "\",\n";
@@ -298,7 +303,11 @@ public class JsonServlet extends HttpServlet {
 				if (pp.isNameValue()) {
 					result += ", \"nameValues\": [\n";
 					int cntx = 0;
-					for (String nv : pp.getNameValues()) {
+
+					Hub<VEnum> hubEnums = og.internal().objects().enumx().getVEnums(c, pp.getName());
+					for (VEnum emx : hubEnums) {
+						String nv = emx.getName();
+					//was: for (String nv : pp.getNameValues()) {
 						if (cntx > 0) {
 							result += ", ";
 						}

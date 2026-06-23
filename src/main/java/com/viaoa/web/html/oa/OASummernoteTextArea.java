@@ -1,10 +1,10 @@
 package com.viaoa.web.html.oa;
 
 import com.viaoa.hub.*;
+import com.viaoa.metadata.OAObjectInfo;
+import com.viaoa.metadata.OAPropertyInfo;
 import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUIPropertyController;
-import com.viaoa.util.OACompare;
-import com.viaoa.util.OAString;
+import com.viaoa.ui.controller.OAUIPropertyController;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 import com.viaoa.web.html.summernote.SummernoteTextArea;

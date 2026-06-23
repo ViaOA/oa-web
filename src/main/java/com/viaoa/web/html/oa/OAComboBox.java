@@ -1,14 +1,7 @@
 package com.viaoa.web.html.oa;
 
-import java.util.*;
-
 import com.viaoa.hub.*;
-import com.viaoa.object.*;
-import com.viaoa.uicontroller.OAUISelectController;
-import com.viaoa.util.*;
 import com.viaoa.web.html.*;
-import com.viaoa.web.html.form.OAForm;
-import com.viaoa.web.html.form.OAFormSubmitEvent;
 
 /**
  * HtmlSelect to work with OAModel.

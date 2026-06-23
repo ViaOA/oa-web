@@ -3,9 +3,11 @@ package com.viaoa.web.filter;
 import java.io.IOException;
 import java.io.StringReader;
 
+/*
 import javax.json.Json;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
+*/
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -16,12 +18,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.context.OAContext;
-import com.viaoa.context.OAUserAccess;
+import com.viaoa.runtime.context.OAContext;
+import com.viaoa.secure.Base64;
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAThreadLocalDelegate;
-import com.viaoa.util.Base64;
-import com.viaoa.util.OAString;
 
 /**
  * Manages user access for OARestServlet, etc. This will manage the OAContext user and userAccess for the current thread.
@@ -61,7 +61,7 @@ public abstract class OAUserAccessFilter implements Filter {
 
 		OAObject webUser = (OAObject) session.getAttribute(KEY_OAWebUser);
 		OAObject contextUser = (OAObject) session.getAttribute(KEY_OAContextUser);
-		OAUserAccess userAccess = (OAUserAccess) session.getAttribute(KEY_OAContextUserAccess);
+		// OAUserAccess userAccess = (OAUserAccess) session.getAttribute(KEY_OAContextUserAccess);
 
 		if (webUser == null) {
 			String userId = null;
@@ -74,7 +74,7 @@ public abstract class OAUserAccessFilter implements Filter {
 					if (jwt != null) {
 						String s = OAString.field(jwt, ".", 2); // json data that includes user
 						String sz = Base64.decode(s);
-
+/*qqqqqqqqqqqqq
 						final JsonParser parser = Json.createParser(new StringReader(sz));
 						String key = null;
 						String value = null;
@@ -90,6 +90,7 @@ public abstract class OAUserAccessFilter implements Filter {
 							}
 						}
 						parser.close();
+*/						
 					}
 				}
 			} else if (getAuthType() == AuthType.HttpBasic) {
@@ -118,12 +119,14 @@ public abstract class OAUserAccessFilter implements Filter {
 
 				contextUser = getContextUser(webUser);
 				session.setAttribute(KEY_OAContextUser, contextUser);
-
+/*qqqqqqqqqqqqq
 				userAccess = getContextUserAccess(webUser, contextUser);
 				session.setAttribute(KEY_OAContextUserAccess, userAccess);
+*/				
 			}
 		}
 
+/*qqqqqqq			
 		try {
 			OAThreadLocalDelegate.setContext(session);
 			OAContext.setContext(session, contextUser);
@@ -136,7 +139,7 @@ public abstract class OAUserAccessFilter implements Filter {
 			OAContext.setContext(session, null);
 			OAContext.setContextUserAccess(session, null);
 		}
-
+*/
 	}
 
 	@Override
@@ -154,10 +157,11 @@ public abstract class OAUserAccessFilter implements Filter {
 	/**
 	 * Called to get the UserAccess for OAContext.setUserContext
 	 */
+/*qqqqqqqqqqq	
 	protected OAUserAccess getUserAccess(OAObject user) {
 		return null;
 	}
-
+*/
 	public String getJWTHeaderName() {
 		return jwtHeaderName;
 	}
@@ -182,6 +186,7 @@ public abstract class OAUserAccessFilter implements Filter {
 	protected abstract OAObject getContextUser(OAObject webUser);
 
 	// get the user access object for a web user.
-	protected abstract OAUserAccess getContextUserAccess(OAObject webUser, OAObject contextUser);
+//qqqqqqqqqqqqqqq	
+//	protected abstract OAUserAccess getContextUserAccess(OAObject webUser, OAObject contextUser);
 
 }

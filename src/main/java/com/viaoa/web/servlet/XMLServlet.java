@@ -25,11 +25,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.datasource.OASelect;
+import com.viaoa.graph.api.internal.OAGraphInternal;
 import com.viaoa.hub.Hub;
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
-import com.viaoa.object.OAObjectCacheDelegate;
-import com.viaoa.util.OAString;
+import com.viaoa.runtime.OARuntime;
+import com.viaoa.select.OASelect;
 import com.viaoa.xml.OAXMLWriter;
 
 /**
@@ -134,6 +135,11 @@ public class XMLServlet extends HttpServlet {
 		return super.getServletInfo();
 	}
 
+	public OAGraphInternal getGraph() {
+		return (OAGraphInternal) OARuntime.graph(this.packageName);
+	}
+	
+	
 	// class, id, [prop]
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// Get the absolute path of the image
@@ -184,7 +190,7 @@ public class XMLServlet extends HttpServlet {
 		}
 
 		OAObject obj;
-		obj = (OAObject) OAObjectCacheDelegate.get(c, id);
+		obj = (OAObject) getGraph().internal().objects().cache().getObject(c, id);
 		if (obj == null) {
 			OASelect sel = new OASelect(c);
 			sel.select("ID = ?", new Object[] { id });

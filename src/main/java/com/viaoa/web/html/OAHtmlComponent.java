@@ -9,8 +9,9 @@ package com.viaoa.web.html;
 import java.io.OutputStream;
 import java.util.*;
 
+import com.viaoa.lang.OAStr;
+import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
-import com.viaoa.util.*;
 import com.viaoa.web.html.form.*;
 import com.viaoa.web.server.OASession;
 import com.viaoa.web.util.*;

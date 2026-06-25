@@ -14,7 +14,7 @@ import java.awt.Color;
 import java.util.*;
 
 import com.viaoa.converter.OAConverter;
-import com.viaoa.graph.api.internal.OAGraphInternal;
+import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.*;
 import com.viaoa.lang.OAString;
 import com.viaoa.metadata.OAObjectInfo;
@@ -107,8 +107,8 @@ public class JspUtil {
         return getObject(hub, id);
     }
 
-	public static OAGraphInternal getGraph(Class c) {
-		return (OAGraphInternal) OARuntime.graph(c);
+	public static OAGraph getGraph(Class c) {
+		return OARuntime.graph(c);
 	}
 
 //qqqqqqqqqq Use ObjectKey for this    

@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.graph.api.internal.OAGraphInternal;
+import com.viaoa.graph.OAGraph;
 import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
 import com.viaoa.runtime.OARuntime;
@@ -133,8 +133,8 @@ public class PdfServlet extends HttpServlet {
 		return config.getInitParameter(name);
 	}
 	
-	public OAGraphInternal getGraph() {
-		return (OAGraphInternal) OARuntime.graph(this.packageName);
+	public OAGraph getGraph() {
+		return OARuntime.graph(this.packageName);
 	}
 	
 

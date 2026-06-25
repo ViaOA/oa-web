@@ -27,7 +27,7 @@ import javax.servlet.http.HttpSession;
 
 import com.viaoa.converter.OAConv;
 import com.viaoa.datetime.OADateTime;
-import com.viaoa.graph.api.internal.OAGraphInternal;
+import com.viaoa.graph.OAGraph;
 import com.viaoa.lang.OAString;
 import com.viaoa.object.OAObject;
 import com.viaoa.runtime.OARuntime;
@@ -206,7 +206,7 @@ public class ImageServlet extends HttpServlet {
 		}
 
 //		OAObject obj;
-		OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+		OAGraph og = OARuntime.graph(c);
 
 		OAObject obj = (OAObject) og.internal().objects().cache().getObject((Class<? extends OAObject>) c, id);
 		if (obj == null) {

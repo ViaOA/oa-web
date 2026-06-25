@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.converter.OAConverter;
-import com.viaoa.graph.api.internal.OAGraphInternal;
+import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.*;
 import com.viaoa.hub.filter.HubFilter;
 import com.viaoa.lang.OAStr;
@@ -362,10 +362,10 @@ public class OATreeNode {
         setupUpdateHub();
     }
 
-	public OAGraphInternal getGraph() {
+	public OAGraph getGraph() {
 		Class<?> c = null;
 		if (hub != null) c = hub.getObjectClass();
-		return (OAGraphInternal) OARuntime.graph(c);
+		return OARuntime.graph(c);
 	}
     
     

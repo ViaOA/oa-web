@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.graph.api.internal.OAGraphInternal;
+import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.Hub;
 import com.viaoa.json.OAJson;
 import com.viaoa.lang.OAString;
@@ -208,7 +208,7 @@ public class JsonServlet extends HttpServlet {
 			if (!bDescribe) {
 				ArrayList al = new ArrayList();
 				
-				OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+				OAGraph og = OARuntime.graph(c);
 				og.internal().objects().cache().find(null, c, 500, al);
 				newObject = new Hub();
 				for (Object objx : al) {
@@ -216,7 +216,7 @@ public class JsonServlet extends HttpServlet {
 				}
 			}
 		} else {
-			OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+			OAGraph og = OARuntime.graph(c);
 			newObject = og.internal().objects().cache().getObject(c, id);
 			if (newObject == null) {
 				OASelect sel = new OASelect(c);
@@ -280,7 +280,7 @@ public class JsonServlet extends HttpServlet {
 		}
 
 		if (bDescribe) {
-			OAGraphInternal og = (OAGraphInternal) OARuntime.graph(c);
+			OAGraph og = OARuntime.graph(c);
 			OAObjectInfo oi = og.internal().objects().info().getObjectInfo(c);
 			result += "{\n";
 			//was: result += "{ \"class\": {\n";

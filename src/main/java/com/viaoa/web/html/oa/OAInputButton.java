@@ -74,10 +74,10 @@ public class OAInputButton extends InputButton implements OATableColumnInterface
         OAObject obj = null; 
         switch (controlUI.getCommand()) { 
             case NewManual:
-                obj = (OAObject) controlUI.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
+                obj = (OAObject) controlUI.getOA().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
             case AddManual:
-                obj = (OAObject) controlUI.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
+                obj = (OAObject) controlUI.getOA().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
         }
         return obj;

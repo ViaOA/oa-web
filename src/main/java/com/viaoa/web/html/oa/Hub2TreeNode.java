@@ -14,10 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.object.*;
 import com.viaoa.runtime.OARuntime;
-import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.*;
 import com.viaoa.hub.filter.HubFilter;
 import com.viaoa.lang.OAArray;
+import com.viaoa.oa.OA;
 
 /** 
     Used by OATreeNodeData for each node in the tree that uses a Hub.
@@ -215,8 +215,8 @@ public class Hub2TreeNode extends HubListenerAdapter {
             if (OAArray.contains(tns, node)) hubUpdate = hub;
         }
         
-    	OAGraph og = OARuntime.graph(hubUpdate);
-        if (hubUpdate != null && (og.internal().hubs().share().isUsingSameSharedHub(hubUpdate, hub)) ) {
+    	OA oa = OARuntime.oa(hubUpdate);
+        if (hubUpdate != null && (oa.internal().hubs().share().isUsingSameSharedHub(hubUpdate, hub)) ) {
             OATreeNodeData tnd = parent.getChild(pos);
             tnd.select();
         }

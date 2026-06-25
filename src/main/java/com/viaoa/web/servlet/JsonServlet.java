@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.annotation.OACalculatedProperty;
-import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.Hub;
 import com.viaoa.json.OAJson;
 import com.viaoa.lang.OAString;
@@ -34,6 +33,7 @@ import com.viaoa.metadata.OACalcInfo;
 import com.viaoa.metadata.OALinkInfo;
 import com.viaoa.metadata.OAObjectInfo;
 import com.viaoa.metadata.OAPropertyInfo;
+import com.viaoa.oa.OA;
 import com.viaoa.object.OAObject;
 import com.viaoa.runtime.OARuntime;
 import com.viaoa.select.OASelect;
@@ -208,16 +208,16 @@ public class JsonServlet extends HttpServlet {
 			if (!bDescribe) {
 				ArrayList al = new ArrayList();
 				
-				OAGraph og = OARuntime.graph(c);
-				og.internal().objects().cache().find(null, c, 500, al);
+				OA oa = OARuntime.oa(c);
+				oa.internal().objects().cache().find(null, c, 500, al);
 				newObject = new Hub();
 				for (Object objx : al) {
 					((Hub) newObject).add((OAObject) objx);
 				}
 			}
 		} else {
-			OAGraph og = OARuntime.graph(c);
-			newObject = og.internal().objects().cache().getObject(c, id);
+			OA oa = OARuntime.oa(c);
+			newObject = oa.internal().objects().cache().getObject(c, id);
 			if (newObject == null) {
 				OASelect sel = new OASelect(c);
 				sel.select("ID = ?", new Object[] { id });
@@ -280,8 +280,8 @@ public class JsonServlet extends HttpServlet {
 		}
 
 		if (bDescribe) {
-			OAGraph og = OARuntime.graph(c);
-			OAObjectInfo oi = og.internal().objects().info().getObjectInfo(c);
+			OA oa = OARuntime.oa(c);
+			OAObjectInfo oi = oa.internal().objects().info().getObjectInfo(c);
 			result += "{\n";
 			//was: result += "{ \"class\": {\n";
 			result += "  \"name\": \"" + oi.getForClass().getSimpleName() + "\",\n";
@@ -304,7 +304,7 @@ public class JsonServlet extends HttpServlet {
 					result += ", \"nameValues\": [\n";
 					int cntx = 0;
 
-					Hub<VEnum> hubEnums = og.internal().objects().enumx().getVEnums(c, pp.getName());
+					Hub<VEnum> hubEnums = oa.internal().objects().enumx().getVEnums(c, pp.getName());
 					for (VEnum emx : hubEnums) {
 						String nv = emx.getName();
 					//was: for (String nv : pp.getNameValues()) {

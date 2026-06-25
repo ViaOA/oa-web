@@ -25,9 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.Hub;
 import com.viaoa.lang.OAString;
+import com.viaoa.oa.OA;
 import com.viaoa.object.OAObject;
 import com.viaoa.runtime.OARuntime;
 import com.viaoa.select.OASelect;
@@ -135,8 +135,8 @@ public class XMLServlet extends HttpServlet {
 		return super.getServletInfo();
 	}
 
-	public OAGraph getGraph() {
-		return OARuntime.graph(this.packageName);
+	public OA getGraph() {
+		return OARuntime.oa(this.packageName);
 	}
 	
 	

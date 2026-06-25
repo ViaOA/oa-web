@@ -5,13 +5,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.converter.OAConverter;
-import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.*;
 import com.viaoa.hub.filter.HubFilter;
 import com.viaoa.lang.OAStr;
 import com.viaoa.lang.OAString;
 import com.viaoa.metadata.OALinkInfo;
 import com.viaoa.metadata.OAObjectInfo;
+import com.viaoa.oa.OA;
 import com.viaoa.object.*;
 import com.viaoa.reflect.OAReflect;
 import com.viaoa.runtime.OARuntime;
@@ -362,10 +362,10 @@ public class OATreeNode {
         setupUpdateHub();
     }
 
-	public OAGraph getGraph() {
+	public OA getGraph() {
 		Class<?> c = null;
 		if (hub != null) c = hub.getObjectClass();
-		return OARuntime.graph(c);
+		return OARuntime.oa(c);
 	}
     
     

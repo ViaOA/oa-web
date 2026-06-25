@@ -116,10 +116,10 @@ public class OAHtmlButton extends HtmlButton {
         
         switch (oaUiControl.getCommand()) { 
             case NewManual:
-                obj = (OAObject) oaUiControl.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
+                obj = (OAObject) oaUiControl.getOA().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
             case AddManual:
-                obj = (OAObject) oaUiControl.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
+                obj = (OAObject) oaUiControl.getOA().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
         }
         return obj;

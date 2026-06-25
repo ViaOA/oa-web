@@ -29,13 +29,13 @@ import com.viaoa.converter.OAConv;
 import com.viaoa.filter.OAAndFilter;
 import com.viaoa.filter.OAFilter;
 import com.viaoa.find.OAFinder;
-import com.viaoa.graph.OAGraph;
 import com.viaoa.hub.Hub;
 import com.viaoa.hub.filter.CustomHubFilter;
 import com.viaoa.json.OAJson;
 import com.viaoa.lang.OAString;
 import com.viaoa.metadata.OAObjectInfo;
 import com.viaoa.metadata.OAPropertyInfo;
+import com.viaoa.oa.OA;
 import com.viaoa.object.OAObject;
 import com.viaoa.path.OAPath;
 import com.viaoa.reflect.OAReflect;
@@ -139,8 +139,8 @@ public class OARestServlet extends HttpServlet {
 		return bJaxbIncludeOwnedReferences;
 	}
 
-	public OAGraph getGraph() {
-		return OARuntime.graph(this.packageName);
+	public OA getGraph() {
+		return OARuntime.oa(this.packageName);
 	}
 	
 	

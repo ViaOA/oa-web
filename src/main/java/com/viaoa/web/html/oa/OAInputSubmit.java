@@ -106,10 +106,10 @@ public class OAInputSubmit extends InputSubmit {
         OAObject obj = null; 
         switch (oaUiControl.getCommand()) { 
             case NewManual:
-                obj = (OAObject) oaUiControl.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
+                obj = (OAObject) oaUiControl.getOA().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
             case AddManual:
-                obj = (OAObject) oaUiControl.getGraph().internal().objects().reflect().createNewObject(getHub().getObjectClass());
+                obj = (OAObject) oaUiControl.getOA().internal().objects().reflect().createNewObject(getHub().getObjectClass());
                 break;
         }
         return obj;

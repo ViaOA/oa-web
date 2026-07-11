@@ -813,7 +813,7 @@ public class OARestServlet extends HttpServlet {
 
 				if (obj != null) {
 					
-					if (!getGraph().internal().objects().callbacks().getAllowVisible(null, (OAObject) obj, null)) {
+					if (!getGraph().internal().objects().rules().getAllowVisible(null, (OAObject) obj, null)) {
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 					} else {
 						jsonOutput = oaj.write((OAObject) obj);
@@ -948,7 +948,7 @@ public class OARestServlet extends HttpServlet {
 
 				boolean b = true;
 				for (Object obj : h) {
-					if (!getGraph().internal().objects().callbacks().getAllowVisible(null, (OAObject) obj, null)) {
+					if (!getGraph().internal().objects().rules().getAllowVisible(null, (OAObject) obj, null)) {
 						b = false;
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 						break;
@@ -1215,7 +1215,7 @@ public class OARestServlet extends HttpServlet {
 			throw new OAServletException(s, HttpServletResponse.SC_NOT_FOUND, null);
 		}
 
-		if (!getGraph().internal().objects().callbacks().getAllowVisible(null, (OAObject) obj, methodName)) {
+		if (!getGraph().internal().objects().rules().getAllowVisible(null, (OAObject) obj, methodName)) {
 			String s = String.format(	"method not authorized (visible=false), class=%s, method=%s, id=%s",
 										clazz.getSimpleName(), methodName, id);
 			throw new OAServletException(s, HttpServletResponse.SC_UNAUTHORIZED, null);

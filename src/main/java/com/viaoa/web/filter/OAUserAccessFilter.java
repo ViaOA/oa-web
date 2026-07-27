@@ -17,7 +17,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.viaoa.secure.Base64;
+import com.viaoa.session.OASessionUser;
+import com.viaoa.hub.Hub;
 import com.viaoa.lang.OAString;
+import com.viaoa.oa.OA;
 import com.viaoa.object.OAObject;
 
 /**
@@ -25,42 +28,44 @@ import com.viaoa.object.OAObject;
  *
  * @author vvia
  */
-public abstract class OAUserAccessFilter implements Filter {
+public abstract class OAUserAccessFilter<M extends OAObject, S extends OAObject> implements Filter {
 
-	// user for session, ex: Employee
-	public static final String KEY_OAWebUser = "OAWebUser";
-	// context user that is used by OAContext, ex: AppUser
-	public static final String KEY_OAContextUser = "OAContextUser";
-	// context user access that is used by OAContext
-	public static final String KEY_OAContextUserAccess = "OAContextUserAccess";
+	public static final String KEY_HubModelUser = "HubModelUser";
+	public static final String KEY_OASessionUser = "OASessionUser";
 
 	private AuthType authType = AuthType.None;
-
 	public static enum AuthType {
 		None, HttpBasic, JWT;
 	}
 
+	private final OA oa;
 	private String jwtHeaderName; // name of http header if using json web token for user auth.
 	private String jwtKeyName; // name of http header if using json web token for user auth.
 
+	public OAUserAccessFilter(OA oa) {
+		this.oa = oa;
+	}
+	
+	public OA getOA() {
+		return this.oa;
+	}
+	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 	}
 
 	@Override
-	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-			throws IOException, ServletException {
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 
-		HttpServletRequest request = (HttpServletRequest) servletRequest;
-		HttpServletResponse response = (HttpServletResponse) servletResponse;
+		final HttpServletRequest request = (HttpServletRequest) servletRequest;
+		final HttpServletResponse response = (HttpServletResponse) servletResponse;
 
 		final HttpSession session = request.getSession(true);
 
-		OAObject webUser = (OAObject) session.getAttribute(KEY_OAWebUser);
-		OAObject contextUser = (OAObject) session.getAttribute(KEY_OAContextUser);
-		// OAUserAccess userAccess = (OAUserAccess) session.getAttribute(KEY_OAContextUserAccess);
+		Hub<M> hubModelUser = (Hub<M>) session.getAttribute(KEY_HubModelUser);
+		OASessionUser<S> sessionUser = (OASessionUser<S>) session.getAttribute(KEY_OASessionUser);
 
-		if (webUser == null) {
+		if (sessionUser == null || sessionUser.getHub() == null || sessionUser.getHub().getAO() == null) {
 			String userId = null;
 			String pw = null;
 
@@ -102,35 +107,23 @@ public abstract class OAUserAccessFilter implements Filter {
 				// guest?
 			}
 
-			webUser = getWebUser(userId, pw);
-
-			if (webUser == null) {
+			S obj = getLoginSessionObject(userId, pw);
+			
+			if (obj == null) {
 				if (getAuthType() == AuthType.HttpBasic) {
-					response.setHeader("WWW-Authenticate", "BASIC realm=\"OARest\"");
+					response.setHeader("WWW-Authenticate", "BASIC realm=\"OAUserAccess\"");
 				}
 				response.sendError(response.SC_UNAUTHORIZED);
 				return;
-			} else {
-				session.setAttribute(KEY_OAWebUser, webUser);
+			} 
 
-				contextUser = getContextUser(webUser);
-				session.setAttribute(KEY_OAContextUser, contextUser);
-				userAccess = getContextUserAccess(webUser, contextUser);
-				session.setAttribute(KEY_OAContextUserAccess, userAccess);
-			}
-		}
+			if (sessionUser == null) sessionUser = createSessionUser(obj);
+			if (hubModelUser == null) hubModelUser = createModelUserHub();
 
-		try {
-			OAThreadLocalDelegate.setContext(session);
-			OAContext.setContext(session, contextUser);
-			OAContext.setContextUserAccess(session, userAccess);
-
-			filterChain.doFilter(request, response);
-
-		} finally {
-			OAThreadLocalDelegate.setContext(null);
-			OAContext.setContext(session, null);
-			OAContext.setContextUserAccess(session, null);
+			onSetUsers(hubModelUser, sessionUser);
+			
+			session.setAttribute(KEY_HubModelUser, hubModelUser);
+			session.setAttribute(KEY_OASessionUser, sessionUser);
 		}
 	}
 
@@ -146,12 +139,6 @@ public abstract class OAUserAccessFilter implements Filter {
 		return authType;
 	}
 
-	/**
-	 * Called to get the UserAccess for OAContext.setUserContext
-	 */
-	protected OAUserAccess getUserAccess(OAObject user) {
-		return null;
-	}
 
 	public String getJWTHeaderName() {
 		return jwtHeaderName;
@@ -170,12 +157,11 @@ public abstract class OAUserAccessFilter implements Filter {
 		this.jwtKeyName = key;
 	}
 
-	// user Object for the web user.  Ex: Employee, Customer, AppUser
-	protected abstract OAObject getWebUser(String userId, String password);
+	protected abstract S getLoginSessionObject(String userId, String password);
+	
+	protected abstract OASessionUser<S> createSessionUser(S sessonObj);
+	protected abstract Hub<M> createModelUserHub();
+	
+	protected abstract void onSetUsers(Hub<M> hubModelUser, OASessionUser<S> su);
 
-	// Context Object to use for the webUser.  Ex: AppUser
-	protected abstract OAObject getContextUser(OAObject webUser);
-
-	// get the user access object for a web user.
-//	protected abstract OAUserAccess getContextUserAccess(OAObject webUser, OAObject contextUser);
 }

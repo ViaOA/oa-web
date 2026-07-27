@@ -41,6 +41,7 @@ import com.viaoa.path.OAPath;
 import com.viaoa.reflect.OAReflect;
 import com.viaoa.runtime.OARuntime;
 import com.viaoa.select.OASelect;
+import com.viaoa.session.OASessionUser;
 import com.viaoa.web.filter.OAUserAccessFilter;
 import com.viaoa.web.servlet.exception.OAServletException;
 
@@ -104,7 +105,9 @@ import com.viaoa.web.servlet.exception.OAServletException;
 public class OARestServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static Logger LOG = Logger.getLogger(OARestServlet.class.getName());
-	private String packageName;
+
+	private final OA oa;
+	
 	private ServletConfig servletConfig;
 	private String contextPath;
 	private HashMap<String, Class> hmClassName = new HashMap<String, Class>();
@@ -117,9 +120,8 @@ public class OARestServlet extends HttpServlet {
 	/** default setting for JAXB marshalling to use refIds */
 	private boolean bJaxbUseReferences;
 
-	public OARestServlet(String packageName) {
-		LOG.fine("Started packageName=" + packageName);
-		this.packageName = packageName;
+	public OARestServlet(OA oa) {
+		this.oa = oa;
 		setupMappings();
 	}
 
@@ -139,11 +141,6 @@ public class OARestServlet extends HttpServlet {
 		return bJaxbIncludeOwnedReferences;
 	}
 
-	public OA getGraph() {
-		return OARuntime.oa(this.packageName);
-	}
-	
-	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -151,24 +148,12 @@ public class OARestServlet extends HttpServlet {
 		this.servletConfig = config;
 		contextPath = config.getServletContext().getContextPath();
 		try {
-			//qqqqqqqqqqqqqqqqqqqqq needs to include package names for other oaobjects ... search, inputs, etc qqqqqqqqqqqqqqqq
-			String[] fnames = OAReflect.getClasses(packageName);
-			for (String fn : fnames) {
-				Class c = Class.forName(packageName + "." + fn);
-				OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(c);
-				hmClassName.put(fn.toLowerCase(), c);
-
-				String s = oi.getPluralName().toLowerCase();
-				hmClassPluralName.put(s, c);
-
-				if (!s.equals(fn.toLowerCase() + "s")) {
-					hmClassPluralName.put(fn.toLowerCase() + "s", c);
-					s = ", (also: " + c.getName() + "s)";
-				} else {
-					s = "";
-				}
-
-				LOG.fine("adding class=" + c.getName() + ", plural name=" + oi.getPluralName() + s);
+			for (Class type : oa.internal().objects().info().getAllClasses()) {
+				OAObjectInfo oi = oa.info(type);
+				hmClassName.put(type.getSimpleName().toLowerCase(), type);
+				hmClassName.put(type.getSimpleName().toLowerCase() + "s", type);
+				hmClassPluralName.put(oi.getPluralName().toLowerCase(), type);
+				LOG.fine("adding class=" + type.getSimpleName() + ", plural name=" + oi.getPluralName());
 			}
 		} catch (Exception e) {
 			ServletException se = new ServletException("Exception getting class infos for package", e);
@@ -328,11 +313,6 @@ public class OARestServlet extends HttpServlet {
 			resp.addHeader("Access-Control-Allow-Origin", s); // ex:  "http://localhost:4200");
 		}
 		try {
-			//qqqq            getRestAppUser(); // make sure that it's initialized
-//qqqqqqqqqq			
-//			getUserAccess(); //    "   "
-			//qqqq            OAThreadLocalDelegate.setContext(this);
-
 			resp.setCharacterEncoding("UTF-8");
 			resp.setContentType("application/json");
 			int status = _process(req, resp);
@@ -346,9 +326,6 @@ public class OARestServlet extends HttpServlet {
 			resp.setStatus(resp.SC_INTERNAL_SERVER_ERROR);
 			onException(resp, ex);
 		} finally {
-			OARuntime.thread().getThreadLocalService().setContextUser(null);
-//qqqqqqqqqqqqqq			
-//was: 			OAThreadLocalDelegate.setContext(null);
 		}
 	}
 
@@ -781,7 +758,7 @@ public class OARestServlet extends HttpServlet {
 				Object obj = null;
 
 				// might be multipart id
-				OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(clazz);
+				OAObjectInfo oi = oa.internal().objects().info().getObjectInfo(clazz);
 				String sql = "";
 
 				ArrayList<String> al = new ArrayList();
@@ -813,7 +790,7 @@ public class OARestServlet extends HttpServlet {
 
 				if (obj != null) {
 					
-					if (!getGraph().internal().objects().rules().getAllowVisible(null, (OAObject) obj, null)) {
+					if (!oa.internal().objects().rules().getAllowVisible(null, (OAObject) obj, null)) {
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 					} else {
 						jsonOutput = oaj.write((OAObject) obj);
@@ -948,7 +925,7 @@ public class OARestServlet extends HttpServlet {
 
 				boolean b = true;
 				for (Object obj : h) {
-					if (!getGraph().internal().objects().rules().getAllowVisible(null, (OAObject) obj, null)) {
+					if (!oa.internal().objects().rules().getAllowVisible(null, (OAObject) obj, null)) {
 						b = false;
 						httpStatus = HttpServletResponse.SC_UNAUTHORIZED;
 						break;
@@ -1150,18 +1127,16 @@ public class OARestServlet extends HttpServlet {
 		final HttpSession session = request.getSession(true);
 
 		// verify that user has been set
-		OAObject user = (OAObject) session.getAttribute(OAUserAccessFilter.KEY_OAWebUser);
-
-		if (user == null) {
-			throw new RuntimeException(
-					"Session web user (" + OAUserAccessFilter.KEY_OAWebUser + ") is not defined");
+		OASessionUser su = (OASessionUser) session.getAttribute(OAUserAccessFilter.KEY_OASessionUser);
+		
+		if (su == null) {
+			throw new RuntimeException("HttpSession.getAttribute("+OAUserAccessFilter.KEY_OASessionUser + ") is null");
 		}
-/*qqqqqqqqqqqq
-		OAObject user2 = OAContext.getContextObject();
-		if (user != user2) {
-			throw new RuntimeException("Session context user (" + OAUserAccessFilter.KEY_OAContextUser + ") is not defined");
+		
+		su = oa.sessionUser().get();
+		if (su == null) {
+			throw new RuntimeException("OA.sessionUser() is null");
 		}
-*/
 		super.service(request, response);
 	}
 
@@ -1175,7 +1150,7 @@ public class OARestServlet extends HttpServlet {
 		Object obj = null;
 
 		// might be multipart id
-		OAObjectInfo oi = getGraph().internal().objects().info().getObjectInfo(clazz);
+		OAObjectInfo oi = oa.internal().objects().info().getObjectInfo(clazz);
 		String sql = "";
 
 		ArrayList<String> al = new ArrayList();
@@ -1215,13 +1190,13 @@ public class OARestServlet extends HttpServlet {
 			throw new OAServletException(s, HttpServletResponse.SC_NOT_FOUND, null);
 		}
 
-		if (!getGraph().internal().objects().rules().getAllowVisible(null, (OAObject) obj, methodName)) {
+		if (!oa.internal().objects().rules().getAllowVisible(null, (OAObject) obj, methodName)) {
 			String s = String.format(	"method not authorized (visible=false), class=%s, method=%s, id=%s",
 										clazz.getSimpleName(), methodName, id);
 			throw new OAServletException(s, HttpServletResponse.SC_UNAUTHORIZED, null);
 		}
 
-		Method method = getGraph().internal().objects().info().getMethod(oi, methodName);
+		Method method = oa.internal().objects().info().getMethod(oi, methodName);
 
 		if (method == null) {
 			throw new RuntimeException("method " + methodName + " not found in class " + clazz.getSimpleName());

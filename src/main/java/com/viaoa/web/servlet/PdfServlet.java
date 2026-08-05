@@ -226,7 +226,7 @@ public class PdfServlet extends HttpServlet {
 		}
 
 		OAObject obj;
-		obj = (OAObject) getGraph().internal().objects().cache().getObject(c, id);
+		obj = (OAObject) getGraph().internal().objects().cache().getUsingKey(c, id);
 		if (obj == null) {
 			OASelect sel = new OASelect(c);
 			sel.select("ID = ?", new Object[] { id });

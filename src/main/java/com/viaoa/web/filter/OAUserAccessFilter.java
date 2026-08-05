@@ -107,9 +107,9 @@ public abstract class OAUserAccessFilter<M extends OAObject, S extends OAObject>
 				// guest?
 			}
 
-			S obj = getLoginSessionObject(userId, pw);
+			S sessionUserx = getSessionUser(userId, pw);
 			
-			if (obj == null) {
+			if (sessionUserx == null) {
 				if (getAuthType() == AuthType.HttpBasic) {
 					response.setHeader("WWW-Authenticate", "BASIC realm=\"OAUserAccess\"");
 				}
@@ -117,14 +117,35 @@ public abstract class OAUserAccessFilter<M extends OAObject, S extends OAObject>
 				return;
 			} 
 
-			if (sessionUser == null) sessionUser = createSessionUser(obj);
-			if (hubModelUser == null) hubModelUser = createModelUserHub();
-
-			onSetUsers(hubModelUser, sessionUser);
+//qqqqqqqq new login 			
+			Hub<S> hubs = new Hub<S>();
+			hubs.add(sessionUserx);
+			hubs.setAO(sessionUserx);
+			sessionUser = new OASessionUser(hubs); 
+			session.setAttribute(KEY_OASessionUser, sessionUser);
+					
+			M modelUser = getModelUser(sessionUserx);
+			hubModelUser = new Hub<M>();
+			hubModelUser.add(modelUser);
+			hubModelUser.setAO(modelUser);
 			
 			session.setAttribute(KEY_HubModelUser, hubModelUser);
-			session.setAttribute(KEY_OASessionUser, sessionUser);
 		}
+		
+		oa.sessionUser().set(sessionUser);
+		oa.modelUser().setCurrent(hubModelUser);
+		
+		try {
+			filterChain.doFilter(request, response);
+		}
+		finally {
+//qqqqqqqqqq after		
+System.out.println("OAUserAccessFilter ... after filterChain.doFilter");		
+		
+			oa.sessionUser().set(null);
+			oa.modelUser().setCurrent(null);
+		}
+
 	}
 
 	@Override
@@ -157,11 +178,8 @@ public abstract class OAUserAccessFilter<M extends OAObject, S extends OAObject>
 		this.jwtKeyName = key;
 	}
 
-	protected abstract S getLoginSessionObject(String userId, String password);
+	protected abstract S getSessionUser(String userId, String password);
+	protected abstract M getModelUser(S user);
 	
-	protected abstract OASessionUser<S> createSessionUser(S sessonObj);
-	protected abstract Hub<M> createModelUserHub();
-	
-	protected abstract void onSetUsers(Hub<M> hubModelUser, OASessionUser<S> su);
 
 }

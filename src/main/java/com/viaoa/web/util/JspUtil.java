@@ -167,7 +167,7 @@ public class JspUtil {
         return OAObjectCacheDelegate.get(hub.getObjectClass(), obj);
         */
        
-        return getGraph(hub.getObjectClass()).internal().objects().cache().getObject(hub.getObjectClass(), strId);
+        return getGraph(hub.getObjectClass()).internal().objects().cache().getUsingKey(hub.getObjectClass(), strId);
     }
 
     public static String field(String str, char sep, int beg) {

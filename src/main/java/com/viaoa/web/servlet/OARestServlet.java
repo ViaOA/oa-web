@@ -148,7 +148,7 @@ public class OARestServlet extends HttpServlet {
 		this.servletConfig = config;
 		contextPath = config.getServletContext().getContextPath();
 		try {
-			for (Class type : oa.internal().objects().info().getAllClasses()) {
+			for (Class type : oa.internal().objects().info().getAllOAObjectClasses()) {
 				OAObjectInfo oi = oa.info(type);
 				hmClassName.put(type.getSimpleName().toLowerCase(), type);
 				hmClassName.put(type.getSimpleName().toLowerCase() + "s", type);
@@ -1133,10 +1133,12 @@ public class OARestServlet extends HttpServlet {
 			throw new RuntimeException("HttpSession.getAttribute("+OAUserAccessFilter.KEY_OASessionUser + ") is null");
 		}
 		
+		/*qqqq
 		su = oa.sessionUser().get();
 		if (su == null) {
 			throw new RuntimeException("OA.sessionUser() is null");
 		}
+		*/
 		super.service(request, response);
 	}
 

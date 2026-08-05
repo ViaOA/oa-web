@@ -217,7 +217,7 @@ public class JsonServlet extends HttpServlet {
 			}
 		} else {
 			OA oa = OARuntime.oa(c);
-			newObject = oa.internal().objects().cache().getObject(c, id);
+			newObject = oa.internal().objects().cache().getUsingKey(c, id);
 			if (newObject == null) {
 				OASelect sel = new OASelect(c);
 				sel.select("ID = ?", new Object[] { id });

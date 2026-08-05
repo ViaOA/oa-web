@@ -208,7 +208,7 @@ public class ImageServlet extends HttpServlet {
 //		OAObject obj;
 		OA oa = OARuntime.oa(c);
 
-		OAObject obj = (OAObject) oa.internal().objects().cache().getObject((Class<? extends OAObject>) c, id);
+		OAObject obj = (OAObject) oa.internal().objects().cache().getUsingKey((Class<? extends OAObject>) c, id);
 		if (obj == null) {
 			OASelect sel = new OASelect(c);
 			sel.select("ID = ?", new Object[] { id });

@@ -6,7 +6,9 @@ import com.viaoa.converter.OAConv;
 import com.viaoa.hub.*;
 import com.viaoa.lang.OAArray;
 import com.viaoa.lang.OAStr;
+import com.viaoa.oa.api.internal.objects.OAObjectReflectOps;
 import com.viaoa.object.OAObject;
+import com.viaoa.runtime.OARuntime;
 import com.viaoa.ui.controller.OAUITableController;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputCheckBox;
@@ -93,6 +95,11 @@ public class OATable extends HtmlElement {
         }
 
         @Override
+        public Hub getHub() {
+        	return hub;
+        }
+        
+        @Override
         public String getValueAsString(Hub hubFrom, Object obj) {
             if (hubSelect.contains(obj)) return "true";
             return "";
@@ -174,10 +181,20 @@ public class OATable extends HtmlElement {
     protected void initialize() {
         if (bIsInitialized) return;
         bIsInitialized = true;
+
+        
+        OAObjectReflectOps opsReflect = OARuntime.oa(getHub()).internal().objects().reflect();
         
         String[] ss = new String[0];
         for (OATableColumn tc : alTableColumn) {
-            ss = OAArray.add(ss, tc.propertyPath);
+        	
+// qqqqqqq need to expand from table.hub to tc.hub qqqqqq
+        	String tcpp = tc.propertyPath;
+        	if (tcpp != null && tcpp.indexOf('.') < 0) {
+		    	String pre = opsReflect.getPathBetweenHubs(getHub(), tc.editor.getHub());
+		    	if (OAStr.isNotEmpty(pre)) tcpp = pre + "." + tcpp;
+        	}
+	        ss = OAArray.add(ss, tcpp);
         }
         
         

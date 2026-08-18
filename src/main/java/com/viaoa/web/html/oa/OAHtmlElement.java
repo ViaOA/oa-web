@@ -18,6 +18,9 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     private String format;
     private String template;
     private OATemplate oaTemplate;
+    
+    private String toolTipTemplate;
+    private OATemplate toolTipOATemplate;
 
     private final OAUIController controlUI;
     
@@ -78,9 +81,21 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
     public void setTemplate(String template) {
         if (this.template != template) oaTemplate = null;
         this.template = template;
-
+    }
+    
+    public String getToolTipTemplate() {
+        return this.toolTipTemplate;
     }
 
+    public void setToolTipTemplate(String template) {
+        if (this.toolTipTemplate != template) toolTipOATemplate = null;
+        this.toolTipTemplate = template;
+    }
+    public void setToolTipTextTemplate(String template) {
+    	setToolTipTemplate(template);
+    }
+    
+    
     @Override
     public void beforeGetJavaScriptForClient() {
         if (getHub() == null || getPropertyName() == null) {
@@ -106,6 +121,14 @@ public class OAHtmlElement<F extends OAObject> extends HtmlElement implements OA
             val = obj.getPropertyAsString(getPropertyName(), getFormat());
         }
         setInnerHtml(val);
+        
+        if (OAStr.isNotEmpty(getToolTipTemplate())) {
+            if (toolTipOATemplate == null) {
+            	toolTipOATemplate = new OATemplate(getToolTipTemplate());
+            }
+            val = toolTipOATemplate.process(obj);
+            setToolTip(val);
+        }
     }
 
     @Override

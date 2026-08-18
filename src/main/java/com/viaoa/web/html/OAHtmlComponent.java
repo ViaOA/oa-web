@@ -8,6 +8,7 @@ package com.viaoa.web.html;
 
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.viaoa.lang.OAStr;
 import com.viaoa.lang.OAString;
@@ -70,8 +71,8 @@ public abstract class OAHtmlComponent {
     protected String name;
     
     // Server-side sequential ID 
-    private static int ServerAssignSeqId;
-    protected final int serverAssignedId = ++ServerAssignSeqId;
+    private static final AtomicInteger aiServerAssignSeqId = new AtomicInteger();
+    protected final int serverAssignedId = aiServerAssignSeqId.incrementAndGet();
 
     protected String componentClassName;
     
@@ -561,7 +562,7 @@ public abstract class OAHtmlComponent {
 
         if (this.elementIdentifierType == ElementIdentifierType.DataOAName ) setDataOAName(elementIdentifier);
         else if (this.elementIdentifierType == ElementIdentifierType.Id ) setId(elementIdentifier);
-        else if (this.elementIdentifierType == ElementIdentifierType.HtmlSelector ) setDataOAName(elementIdentifier);
+        else if (this.elementIdentifierType == ElementIdentifierType.HtmlSelector ) setHtmlSelector(elementIdentifier);
     }
     
     public OAHtmlComponent(ElementIdentifierType elementIdentifierType, String elementIdentifier) {
@@ -800,7 +801,7 @@ public abstract class OAHtmlComponent {
         bRequiredChanged = bRequiredChanged || required != this.bRequired;
         bRequired = required;
         if (!required) removeClass("oa-required");
-        else removeClass("oa-required");
+        else addClass("oa-required");
     }
 
     public void setFocus(boolean b) {
@@ -1068,40 +1069,40 @@ public abstract class OAHtmlComponent {
     
 
     public String getHeight() {
-        return hmStyle.get("height");
+        return getStyle("height");
     }
     
     public void setHeight(String val) {
         addStyle("height", val);
     }
     public String getWidth() {
-        return hmStyle.get("width");
+        return getStyle("width");
     }
     public void setWidth(String val) {
         addStyle("width", val);
     }
     
     public String getMinHeight() {
-        return hmStyle.get("min-height");
+        return getStyle("min-height");
     }
     public void setMinHeight(String val) {
         addStyle("min-height", val);
     }
     public String getMinWidth() {
-        return hmStyle.get("min-width");
+        return getStyle("min-width");
     }
     public void setMinWidth(String val) {
         addStyle("min-width", val);
     }
     
     public String getMaxHeight() {
-        return hmStyle.get("max-height");
+        return getStyle("max-height");
     }
     public void setMaxHeight(String val) {
         addStyle("max-height", val);
     }
     public String getMaxWidth() {
-        return hmStyle.get("max-width");
+        return getStyle("max-width");
     }
     public void setMaxWidth(String val) {
         addStyle("max-width", val);
@@ -1187,7 +1188,7 @@ public abstract class OAHtmlComponent {
     // overflow: visible, hidden, scroll, auto, etc
     // text-overflow: ellipsis
     public String getOverflow() {
-        return hmStyle.get("overflow");
+        return getStyle("overflow");
     }
     public void setOverflow(String overflow) {
         addStyle("overflow", overflow);
@@ -1364,7 +1365,8 @@ public abstract class OAHtmlComponent {
         else {
             if (alStyleAdd != null) {
                 for (String n : alStyleAdd) {
-                    String v = hmStyle.get(n);
+                    String v = getStyle(n);
+                    if (v == null) continue;
                     n = OAStr.convertToHungarian(n, "-");
                     al.add("ele.style['"+n+"'] = '"+ OAStr.escapeJs(v, '\'') + "';");
                 }
@@ -1661,33 +1663,32 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
         if (bAcceptChanged || (!bIsInitialized && OAStr.isNotEmpty(getAccept()))) {
             bAcceptChanged = false;
             s = getAccept();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("accept: %s,", s)); 
         }
         
         if (bCaptureChanged || (!bIsInitialized && OAStr.isNotEmpty(getCapture()))) {
             bCaptureChanged = false;
             s = getCapture();
-
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("capture: %s,", s)); 
         }
         
         if (bAutoCompleteChanged || (!bIsInitialized && OAStr.isNotEmpty(getAutoComplete()))) {
             bAutoCompleteChanged = false;
             s = getAutoComplete();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("autocomplete: %s,", s)); 
         }
 
         if (bListChanged || (!bIsInitialized && OAStr.isNotEmpty(getList()))) {
             bListChanged = false;
             s = getList();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("list: %s,", s)); 
         }
         
@@ -1715,55 +1716,55 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
         if (bHrefChanged || (!bIsInitialized && OAStr.isNotEmpty(getHref()))) {
             bHrefChanged = false;
             s = getHref();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s != null) s = "'" + OAStr.escapeJSON(s) + "'";
+            else s = ""; // not an attribute
             sb.append(String.format("href: %s,", s)); 
         }
 
         
         if (bTargetChanged || (!bIsInitialized && OAStr.isNotEmpty(getTarget()))) {
-            bHrefChanged = false;
+        	bTargetChanged = false;
             s = getTarget();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("target: %s,", s)); 
         }
 
         if (bMinChanged || (!bIsInitialized && OAStr.isNotEmpty(getMin()))) {
             bMinChanged = false;
             s = getMin();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("min: %s,", s)); 
         }
         if (bMaxChanged || (!bIsInitialized && OAStr.isNotEmpty(getMax()))) {
             bMaxChanged = false;
-            s = getMin();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            s = getMax();
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("max: %s,", s)); 
         }
     
         if (bPlaceHolderChanged || (!bIsInitialized && OAStr.isNotEmpty(getPlaceHolder()))) {
             bPlaceHolderChanged = false;
             s = getPlaceHolder();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("placeholder: %s,", s)); 
         }
         
         if (bPatternChanged || (!bIsInitialized && OAStr.isNotEmpty(getPattern()))) {
             bPatternChanged = false;
             s = getPattern();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("pattern: %s,", s)); 
         }
         if (bTitleChanged || (!bIsInitialized && OAStr.isNotEmpty(getTitle()))) {
             bTitleChanged = false;
             s = getTitle();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("title: %s,", s)); 
         }
         
@@ -1771,8 +1772,8 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
             bImageChanged = false;
             
             s = getSource();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s != null) s = "'" + OAStr.escapeJSON(s) + "'";
+            else s = ""; // not an attribute
             sb.append(String.format("src: %s,", s)); 
             
             if (getImageWidth() > 0) sb.append(String.format("width: %d,", getImageWidth()));
@@ -1798,16 +1799,16 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
         if (bAltChanged || (!bIsInitialized && OAStr.isNotEmpty(getAlt()))) {
             bAltChanged = false;
             s = getAlt();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("alt: %s,", s)); 
         }
         
         if (bStepChanged || (!bIsInitialized && OAStr.isNotEmpty(getStep()) ) ) {
             bStepChanged = false;
             s = getStep();
-            if (s == null) s = "";
-            else s = "'"+s+"'";
+            if (s == null) s = "''";
+            else s = "'" + OAStr.escapeJSON(s) + "'";
             sb.append(String.format("step: %s,", s)); 
         }
 
@@ -1818,7 +1819,7 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
         
         if (bSpellCheckChanged || (!bIsInitialized && isSpellCheck())) {
             bSpellCheckChanged = false;
-            sb.append(String.format("spellchecked: %b,", isSpellCheck())); 
+            sb.append(String.format("spellcheck: %b,", isSpellCheck())); 
         }
         
         if (bMultipleChanged || (!bIsInitialized && getMultiple())) {

@@ -5,6 +5,7 @@ import java.util.*;
 import com.viaoa.hub.*;
 import com.viaoa.lang.OAStr;
 import com.viaoa.object.OAObject;
+import com.viaoa.template.OATemplate;
 import com.viaoa.ui.controller.OAUIController;
 import com.viaoa.web.html.*;
 import com.viaoa.web.html.input.InputText;
@@ -18,6 +19,10 @@ public class OAInputText extends InputText implements OATableColumnInterface {
     // extra properties
     private int maxSize;
     private boolean bMaxSizeChanged;
+    
+    private String toolTipTemplate;
+    private OATemplate toolTipOATemplate;
+    
     
     public OAInputText(String elementIdentifier, Hub hub, String propName) {
         this(elementIdentifier, hub, propName, -1);
@@ -46,6 +51,18 @@ public class OAInputText extends InputText implements OATableColumnInterface {
                 lbl.setEnabled(b);
             }
         };
+    }
+    
+    public String getToolTipTemplate() {
+        return this.toolTipTemplate;
+    }
+    
+    public void setToolTipTemplate(String template) {
+        if (this.toolTipTemplate != template) toolTipOATemplate = null;
+        this.toolTipTemplate = template;
+    }
+    public void setToolTipTextTemplate(String template) {
+    	setToolTipTemplate(template);
     }
     
     public OAUIController getController() {
@@ -100,6 +117,22 @@ public class OAInputText extends InputText implements OATableColumnInterface {
         return maxSize;
     }
     
+    
+    @Override
+    public void beforeGetJavaScriptForClient() {
+    	super.beforeGetJavaScriptForClient();
+        if (getHub() == null || getPropertyName() == null) {
+            return;
+        }
+        if (OAStr.isNotEmpty(getToolTipTemplate())) {
+            if (toolTipOATemplate == null) {
+            	toolTipOATemplate = new OATemplate(getToolTipTemplate());
+            }
+            OAObject obj = (OAObject) getHub().getAO();
+            String val = toolTipOATemplate.process(obj);
+            setToolTip(val);
+        }
+    }    
     
     @Override
     public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {

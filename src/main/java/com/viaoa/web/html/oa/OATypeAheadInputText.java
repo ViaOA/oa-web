@@ -3,6 +3,7 @@ package com.viaoa.web.html.oa;
 
 import java.util.*;
 
+import com.viaoa.compare.OACompare;
 import com.viaoa.hub.*;
 import com.viaoa.lang.OAStr;
 import com.viaoa.object.*;
@@ -16,7 +17,7 @@ import com.viaoa.web.html.input.InputText;
  *  
  *  @see OATypeAhead to config with hub and properties to use.
  */
-public class OATypeAheadInputText extends InputText {
+public class OATypeAheadInputText extends InputText implements OATableColumnInterface {
     private final OAUITypeAheadController controlUI;
 
     // extra properties
@@ -140,5 +141,17 @@ public class OATypeAheadInputText extends InputText {
     protected void onClientSelectEvent(Object obj) {
         controlUI.getTypeAhead().getHub().setActiveObject(obj);
     }
+
+	@Override
+	public String getValueAsString(Hub hubFrom, Object obj) {
+		/*from OAInputText
+        if (obj instanceof OAObject) {
+            boolean b = ((OAObject)obj).isVisible(getPropertyName());
+            if (!b) return "";
+        }
+        */
+        String val = controlUI.getValueAsString(obj);
+        return val;
+	}
     
 }

@@ -146,7 +146,7 @@ public class HtmlElement {
               //qqqqqq OutputStream os2 = HtmlElement.this.onSubmitGetFileOutputStream(fileName, contentType);
               //qqqqqq if (os2 != null) os = os2;
               //qqqqqq  return os;
-                return null;
+                return os;
             }
             
             @Override
@@ -313,7 +313,7 @@ public class HtmlElement {
     }
     
     /**
-     * Internal component used bo control any/all HTML elements, attributes, etc.
+     * Internal component used to control any/all HTML elements, attributes, etc.
      */
     public OAHtmlComponent getOAHtmlComponent() {
         return htmlComponent;

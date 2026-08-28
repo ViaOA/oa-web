@@ -351,6 +351,7 @@ public class OAHtmlSelect extends HtmlSelect implements OATableColumnInterface {
             boolean b = ((OAObject)obj).isVisible(getPropertyName());
             if (!b) return "";
         }
+        if (controlUISelect == null) return ""; //qqqqqqqq
         String s = controlUISelect.getValueAsString(hubFrom, obj);
         return s;
     }

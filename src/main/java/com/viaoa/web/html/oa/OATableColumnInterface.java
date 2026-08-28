@@ -8,7 +8,6 @@ import com.viaoa.hub.Hub;
  */
 public interface OATableColumnInterface {
     
-
     public String getValueAsString(Hub<?> hubFrom, Object obj);
     public Hub<?> getHub();
 }

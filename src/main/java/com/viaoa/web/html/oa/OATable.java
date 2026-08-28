@@ -356,13 +356,19 @@ public class OATable extends HtmlElement {
     
     
     protected static class OATableColumn {
+        HtmlElement eleTd; 
         OATableColumnInterface editor; 
         String columnName;
         int colCharWidth;
         String propertyPath;
 
         public OATableColumn(OATableColumnInterface editor, String columnName, int colCharWidth, String propertyPath) {
-            this.editor = editor;
+        	this(null, editor, columnName, colCharWidth, propertyPath);
+        }
+        
+        public OATableColumn(HtmlElement eleTd, OATableColumnInterface editor, String columnName, int colCharWidth, String propertyPath) {
+            this.eleTd = eleTd;
+        	this.editor = editor;
             this.columnName = columnName;
             this.colCharWidth = colCharWidth;
             this.propertyPath = propertyPath;
@@ -375,6 +381,10 @@ public class OATable extends HtmlElement {
         addColumn(oaDataName, tc);
     }
 
+    public void addColumn(HtmlElement eleTd, String oaDataName, OATableColumnInterface editor, String columnName, int colCharWidth, String propertyPath) {
+        OATableColumn tc = new OATableColumn(eleTd, editor, columnName, colCharWidth, propertyPath);
+        addColumn(oaDataName, tc);
+    }
     
     
     public void addColumn(String oaDataName, OATableColumn tc) {
@@ -386,9 +396,13 @@ public class OATable extends HtmlElement {
         tc.usesUpDownArrowKeys = true;
         table.addColumn(tc);
         */
-        
+
+        if (tc.eleTd != null) {
+        	this.add(tc.eleTd);
+        }
         if (tc.editor instanceof HtmlElement) {
-            this.add( (HtmlElement) tc.editor);
+        	if (tc.eleTd != null) tc.eleTd.add((HtmlElement) tc.editor);
+        	else this.add( (HtmlElement) tc.editor);
         }
         
         String js = String.format("ele2 = ele.querySelector(':scope [data-oa-name=\"%s\"]');\n", oaDataName);

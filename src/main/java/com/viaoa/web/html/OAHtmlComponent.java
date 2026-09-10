@@ -81,6 +81,7 @@ public abstract class OAHtmlComponent {
     protected List<OAHtmlComponent> alChildren;
 */
     
+    private List<Message> alMessage; 
     
     protected OAForm form;
     
@@ -701,7 +702,7 @@ public abstract class OAHtmlComponent {
         return this.floatLabel;
     }
     public void setFloatLabel(String floatLabel) {
-        this.bFloatLabelChanged |= OAStr.isNotEqualNullEqualsBlank(this.floatLabel, floatLabel);
+        this.bFloatLabelChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.floatLabel, floatLabel);
         if (bFloatLabelChanged && OAStr.isNotEmpty(this.floatLabel)) setNeedsRefreshed(true);
         this.floatLabel = floatLabel;
     }
@@ -711,7 +712,7 @@ public abstract class OAHtmlComponent {
     }
     public void setPlaceHolder(String placeHolder) {
         if (OAStr.isEmpty(placeHolder)) bPlaceHolderChanged = true;
-        else this.bPlaceHolderChanged |= OAStr.isNotEqualNullEqualsBlank(this.placeHolder, placeHolder);
+        else this.bPlaceHolderChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.placeHolder, placeHolder);
         this.placeHolder = placeHolder;
     }
     
@@ -720,7 +721,7 @@ public abstract class OAHtmlComponent {
     }
     public void setPattern(String pattern) {
         if (OAStr.isEmpty(pattern)) bPatternChanged = true;
-        else this.bPatternChanged |= OAStr.isNotEqualNullEqualsBlank(this.pattern, pattern);
+        else this.bPatternChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.pattern, pattern);
         if (bPatternChanged) setNeedsRefreshed(true);
         this.pattern = pattern;
     }
@@ -730,7 +731,7 @@ public abstract class OAHtmlComponent {
     }
     public void setTitle(String title) {
         if (OAStr.isEmpty(title)) bTitleChanged = true;
-        else this.bTitleChanged |= OAStr.isNotEqualNullEqualsBlank(this.title, title);
+        else this.bTitleChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.title, title);
         this.title = title;
     }
     
@@ -741,7 +742,7 @@ public abstract class OAHtmlComponent {
         return bEnabled;
     }
     public void setEnabled(boolean b) {
-        bEnabledChanged |= (b != this.bEnabled);
+        bEnabledChanged |= (!bIsInitialized || b != this.bEnabled);
         this.bEnabled = b;
     }
 
@@ -752,7 +753,7 @@ public abstract class OAHtmlComponent {
         return bReadOnly;
     }
     public void setReadOnly(boolean b) {
-        bReadOnlyChanged |= (b != this.bReadOnly);
+        bReadOnlyChanged |= (!bIsInitialized || b != this.bReadOnly);
         this.bReadOnly = b;
     }
 
@@ -767,7 +768,7 @@ public abstract class OAHtmlComponent {
         return bHidden;
     }
     public void setHidden(boolean b) {
-        bHiddenChanged |= (b != this.bHidden);
+        bHiddenChanged |= (!bIsInitialized || b != this.bHidden);
         this.bHidden = b;
     }
     public void setHiddenChanged(boolean b) {
@@ -784,7 +785,7 @@ public abstract class OAHtmlComponent {
         return bVisible;
     }
     public void setVisible(boolean b) {
-        bVisibleChanged |= (b != this.bVisible);
+        bVisibleChanged |= (!bIsInitialized || b != this.bVisible);
         this.bVisible= b;
     }
     public void setVisibleChanged(boolean b) {
@@ -798,7 +799,7 @@ public abstract class OAHtmlComponent {
         return getRequired();
     }
     public void setRequired(boolean required) {
-        bRequiredChanged = bRequiredChanged || required != this.bRequired;
+        bRequiredChanged |= !bIsInitialized || required != this.bRequired;
         bRequired = required;
         if (!required) removeClass("oa-required");
         else addClass("oa-required");
@@ -885,7 +886,7 @@ public abstract class OAHtmlComponent {
         return this.toolTipText;
     }
     public void setToolTip(String toolTip) {
-        this.bToolTipChanged |= OAStr.isNotEqualNullEqualsBlank(this.toolTipText, toolTip);
+        this.bToolTipChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.toolTipText, toolTip);
         this.toolTipText = toolTip;
     }
 
@@ -1050,7 +1051,7 @@ public abstract class OAHtmlComponent {
         return list;
     }
     public void setList(String listId) {
-        bListChanged |= OAStr.isNotEqualNullEqualsBlank(this.list, listId);
+        bListChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.list, listId);
         this.list = listId;
     }
 
@@ -1112,21 +1113,21 @@ public abstract class OAHtmlComponent {
         return this.minLength;
     }
     public void setMinLength(int val) {
-        bLengthsChanged |= (this.minLength != val);
+        bLengthsChanged |= (!bIsInitialized || this.minLength != val);
         this.minLength = val;
     }
     public int getMaxLength() {
         return this.maxLength;
     }
     public void setMaxLength(int val) {
-        bLengthsChanged |= (this.maxLength != val);
+        bLengthsChanged |= (!bIsInitialized || this.maxLength != val);
         this.maxLength = val;
     }
     public int getSize() {
         return this.size;
     }
     public void setSize(int val) {
-        bLengthsChanged |= (this.size != val);
+        bLengthsChanged |= (!bIsInitialized || this.size != val);
         this.size = val;
     }
 
@@ -1134,7 +1135,7 @@ public abstract class OAHtmlComponent {
         return this.rows;
     }
     public void setRows(int val) {
-        bLengthsChanged |= (this.rows != val);
+        bLengthsChanged |= (!bIsInitialized || this.rows != val);
         this.rows = val;
     }
 
@@ -1142,7 +1143,7 @@ public abstract class OAHtmlComponent {
         return this.cols;
     }
     public void setCols(int val) {
-        bLengthsChanged |= (this.cols != val);
+        bLengthsChanged |= (!bIsInitialized || this.cols != val);
         this.cols = val;
     }
     
@@ -1150,7 +1151,7 @@ public abstract class OAHtmlComponent {
         return this.min;
     }
     public void setMin(String val) {
-        bMinChanged |= OAStr.isNotEqualNullEqualsBlank(this.min, val);
+        bMinChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.min, val);
         this.min = val;
     }
 
@@ -1158,7 +1159,7 @@ public abstract class OAHtmlComponent {
         return this.max;
     }
     public void setMax(String val) {
-        bMaxChanged |= OAStr.isNotEqualNullEqualsBlank(this.max, val);
+        bMaxChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.max, val);
         this.max = val;
     }
 
@@ -1174,14 +1175,14 @@ public abstract class OAHtmlComponent {
         return this.imageHeight;
     }
     public void setImageHeight(int val) {
-        bImageChanged |= this.imageHeight != val;
+        bImageChanged |= !bIsInitialized || this.imageHeight != val;
         this.imageHeight = val;
     }
     public int getImageWidth() {
         return this.imageWidth;
     }
     public void setImageWidth(int val) {
-        bImageChanged |= this.imageWidth != val;
+        bImageChanged |= !bIsInitialized || this.imageWidth != val;
         this.imageWidth = val;
     }
 
@@ -1209,7 +1210,7 @@ public abstract class OAHtmlComponent {
     }
     public void setSource(String val) {
         if (OAStr.isEmpty(val)) bImageChanged = true;
-        else bImageChanged |= OAStr.isNotEqualNullEqualsBlank(this.source, val);
+        else bImageChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.source, val);
         this.source = val;
     }
     public String getSrc() {
@@ -1434,7 +1435,7 @@ public abstract class OAHtmlComponent {
         return cursor;
     }
     public void setCursor(String cursorName) {
-        bCursorChanged |= OAStr.isNotEqualNullEqualsBlank(this.cursor, cursorName);
+        bCursorChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.cursor, cursorName);
         this.cursor = cursorName;
     }
     public void setCursor(CursorType cursorType) {
@@ -1494,7 +1495,7 @@ public abstract class OAHtmlComponent {
      * 
      */
     public void setAutoComplete(String val) {
-        bAutoCompleteChanged |= OAStr.isNotEqualNullEqualsBlank(this.autoComplete, val);
+        bAutoCompleteChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.autoComplete, val);
         this.autoComplete = val;
     }
 
@@ -1512,7 +1513,7 @@ public abstract class OAHtmlComponent {
         return this.accept;
     }
     public void setAccept(String val) {
-        bAcceptChanged |= OAStr.isNotEqualNullEqualsBlank(this.accept, val);
+        bAcceptChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.accept, val);
         this.accept = val;
     }
 
@@ -1524,7 +1525,7 @@ public abstract class OAHtmlComponent {
         return this.capture;
     }
     public void setCapture(String val) {
-        bCaptureChanged |= OAStr.isNotEqualNullEqualsBlank(this.capture, val);
+        bCaptureChanged |= !bIsInitialized || OAStr.isNotEqualNullEqualsBlank(this.capture, val);
         this.capture = val;
     }
     
@@ -1532,7 +1533,7 @@ public abstract class OAHtmlComponent {
         return this.bMultiple;
     }
     public void setMultiple(boolean b) {
-        bMultipleChanged |= (this.bMultiple != b);
+        bMultipleChanged |= (!bIsInitialized || this.bMultiple != b);
         this.bMultiple = b;
     }
     
@@ -1937,8 +1938,16 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
         */
         
         
-        String js = sb.toString();
+        if (alMessage != null) {
+        	for (Message msg : alMessage) {
+                sb.append(msg.getJsCode());
+                sb.append("\n");
+        		
+        	}
+        	alMessage.clear();
+        }
         
+        String js = sb.toString();
         return js;
     }
     
@@ -2793,5 +2802,64 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
         return true;
     }
     
+
+    public static enum MessageTarget {
+        Console,
+        Notify,
+        Toast
+    }
     
+    public static enum MessageType {
+    	Info,
+    	Warn,
+    	Error
+    }
+
+    public static class Message {
+    	String title, text;
+    	MessageType type;
+    	MessageTarget target;
+    	public Message(String title, String text, MessageType type, MessageTarget target) {
+    		if (type == null) type = MessageType.Info;
+    		if (target == null) target = MessageTarget.Notify;
+    		this.title = title;
+    		this.text = text;
+    		this.type = type;
+    		this.target = target;
+    	}
+		public Object getJsCode() {
+			String icon;
+			if (type == MessageType.Info) icon = "Info";
+			else if (type == MessageType.Warn) icon = "Warn";
+			else icon = "Error";
+			
+			if (target == MessageTarget.Console) {
+				return "console.log('" + icon + ": " + OAStr.escapeJs(title, '\'') + " - " + OAStr.escapeJs(text, '\'') + "');\n";
+			}
+			
+			if (target == MessageTarget.Toast) {
+				return "OAClient.addToastMessage('" +OAStr.escapeJs(title, '\'') + "', '" + OAStr.escapeJs(text, '\'') + "', '"+icon+"');\n";
+			}
+			return "OAClient.addNotifyMessage('" +OAStr.escapeJs(title, '\'') + "', '" + OAStr.escapeJs(text, '\'') + "', '"+icon+"');\n";
+		}
+    }
+
+    public void addMessage(String title, String text, MessageType type, MessageTarget target) {
+    	if (alMessage == null) alMessage = new ArrayList<>();
+    	Message msgx = new Message(title, text, type, target);
+    	alMessage.add(msgx);
+    }
+    
+    public void addNotifyMessage(String title, String text) {
+    	addMessage(title, text, null, MessageTarget.Notify);
+    }
+    public void addToastMessage(String title, String text) {
+    	addMessage(title, text, null, MessageTarget.Toast);
+    }
+    public void addConsoleMessage(String title, String text) {
+    	addMessage(title, text, null, MessageTarget.Console);
+    }
+    public void addConsoleMessage(String text) {
+    	addMessage("Console", text, null, MessageTarget.Console);
+    }
 }

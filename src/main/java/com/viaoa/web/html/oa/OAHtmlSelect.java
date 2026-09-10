@@ -131,7 +131,9 @@ public class OAHtmlSelect extends HtmlSelect implements OATableColumnInterface {
                 }
             }
         };
-        if (hubSelect != null) setMultiple(true);
+        if (hubSelect != null) {
+        	setMultiple(true);
+        }
         controlUISelect.reset();
         controlUISelect.newList();
     }

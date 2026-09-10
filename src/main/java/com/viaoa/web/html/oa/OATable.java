@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.viaoa.converter.OAConv;
 import com.viaoa.hub.*;
+import com.viaoa.hub.filter.HubFilter;
 import com.viaoa.lang.OAArray;
 import com.viaoa.lang.OAStr;
 import com.viaoa.oa.api.internal.objects.OAObjectReflectOps;
@@ -33,6 +34,8 @@ public class OATable extends HtmlElement {
 
     private final Hub hub;
     private final Hub hubSelect;
+	protected Hub hubFilterMaster;
+	protected HubFilter hubFilter;
 
     private OAUITableController controlUITable;
     
@@ -84,6 +87,19 @@ public class OATable extends HtmlElement {
         
     }
 
+    
+	public void setMasterFilterHub(Hub hubFilterMaster) {
+		this.hubFilterMaster = hubFilterMaster;
+		
+		if (hubFilter != null) {
+			hubFilter.close();
+			hubFilter = null;
+		}
+		if (hubFilterMaster == null) {
+			return;
+		}
+		hubFilter = new HubFilter(hubFilterMaster, getHub(), true);
+	}
     
     private static class MySelectCheckBox extends InputCheckBox implements OATableColumnInterface {
         private final Hub hub;

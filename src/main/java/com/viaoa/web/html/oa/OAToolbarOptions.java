@@ -26,9 +26,13 @@ public class OAToolbarOptions {
     public static final int Last = 1 << 7;
     public static final int Prev = 1 << 8;
     public static final int Next = 1 << 9;
+    public static final int PlusNav = First + Last + Prev + Next;
+    
     
     public static final int MoveUp = 1 << 10;
     public static final int MoveDown = 1 << 11;
+    public static final int PlusMove = MoveUp + MoveDown;
+    
     
     public static final int Save = 1 << 12;
     public static final int New = 1 << 13;
@@ -57,6 +61,15 @@ public class OAToolbarOptions {
     
     protected int value;
     
+    public static enum Type {
+    	List,
+    	ListWithEdit,
+    	ListForMaster,
+    	Edit,
+    	EditWithList
+    }
+    
+    
     public OAToolbarOptions() {
     }
     public OAToolbarOptions(int value) {
@@ -64,7 +77,7 @@ public class OAToolbarOptions {
     }
     
     public boolean get(int type) {
-        return (value & type) > 0;
+        return (value & type) != 0;
     }
 
     public void add(int value) {
@@ -72,81 +85,11 @@ public class OAToolbarOptions {
     }
     
     public void remove(int value) {
-        this.value ^= value;
+        this.value &= ~value;
     }
 
     public void addAll() {
-        int value = ~0;
-        this.add(value);;
+        this.add(~0);
     }
     
-    public static OAToolbarOptions createTableNorth() {
-        int value = 0;
-        value |= Icon;
-        value |= Label;
-        value |= Find;
-        //qqqqq   report, table, filter
-        return new OAToolbarOptions(value);
-    }
-
-    public static OAToolbarOptions createTableSouth() {
-        int value = 0;
-        value |= Goto; // details
-        value |= Save;
-        value |= New;
-        value |= Add;
-        value |= Insert;
-        value |= Wizard;
-        value |= Remove;
-        value |= Delete;
-        value |= HubSearch;
-        value |= Download;
-        return new OAToolbarOptions(value);
-    }
-    
-    public static OAToolbarOptions createEdit() {
-        int value = 0;
-        value |= GoBack;
-        value |= Icon;
-        value |= Label;
-        value |= Refresh;
-        value |= Save;
-        value |= New;
-        value |= Add;
-        value |= Insert;
-        value |= Wizard;
-        value |= Remove;
-        value |= Delete;
-        return new OAToolbarOptions(value);
-    }
-    
-    public static OAToolbarOptions createSearchTableNorth() {
-        int value = 0;
-        value |= Search;
-        value |= Find;
-        return new OAToolbarOptions(value);
-    }
-
-    public static OAToolbarOptions createSearchTableSouth() {
-        int value = 0;
-        value |= Details;
-        value |= Save;
-        value |= New;
-        value |= Wizard;
-        value |= Remove;
-        value |= Delete;
-        value |= Download;
-        return new OAToolbarOptions(value);
-    }
-    
-    public void addNav() {
-        int value = 0;
-        value |= Prev;
-        value |= Next;
-        value |= First;
-        value |= Last;
-        value |= MoveUp;
-        value |= MoveDown;
-        add(value);
-    }
 }

@@ -3,9 +3,13 @@ package com.viaoa.web.html.oa;
 import java.util.*;
 
 import com.viaoa.hub.*;
+import com.viaoa.lang.OAStr;
 import com.viaoa.object.*;
 import com.viaoa.ui.controller.OAUICommandController;
+import com.viaoa.ui.controller.OAUICommandController.Command;
+import com.viaoa.ui.controller.OAUIMethodController;
 import com.viaoa.web.html.HtmlButton;
+import com.viaoa.web.html.OAHtmlComponent;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
@@ -24,7 +28,9 @@ import com.viaoa.web.html.form.OAFormSubmitEvent;
  * @author vince
  */
 public class OAHtmlButton extends HtmlButton {
+	
     private final OAUICommandController oaUiControl;
+    private OAUIMethodController oaMethodControl;
 
     private static class LastRefresh {
         Hub hubUsed;
@@ -34,6 +40,11 @@ public class OAHtmlButton extends HtmlButton {
 
     public OAHtmlButton(String selector, Hub hub, OAUICommandController.Command command) {
         this(selector, hub, Type.Button, command);
+    }
+
+    public OAHtmlButton(String selector, Hub hub, String methodName) {
+        this(selector, hub, Type.Button, Command.OtherUsesAO);
+        setMethodName(methodName);
     }
     
     
@@ -47,7 +58,21 @@ public class OAHtmlButton extends HtmlButton {
 
             @Override
             protected boolean performCommand(Hub hub, OAObject obj) {
-                if (command == Command.OtherUsesAO 
+            	try {
+            		return _performCommand(hub, obj);
+            	}
+            	catch (Exception e) {
+            		onError("Command Exception", e.getMessage());
+            	}
+            	return false;
+            }
+            protected boolean _performCommand(Hub hub, OAObject obj) {
+            	if (oaMethodControl != null) {
+            		oaMethodControl.setTitle(OAHtmlButton.this.getTitle());
+            		oaMethodControl.setCompletedMessage(OAHtmlButton.this.getCompletedMessage());
+            		return onCallMethod();
+            	}
+            	else if (command == Command.OtherUsesAO 
                         || command == Command.OtherUsesHub 
                         || command == Command.GoTo
                         || command == Command.HubSearch
@@ -63,21 +88,18 @@ public class OAHtmlButton extends HtmlButton {
             }
 
             @Override
+            protected boolean onConfirm(String confirmMessage, String title) {
+            	return OAHtmlButton.this.onConfirm(confirmMessage, title);
+            }
+            
+            @Override
             protected void onCompleted(String completedMessage, String title) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addMessage(completedMessage);
-                    form.addConsoleMessage(title + " - " + completedMessage);
-                }
+            	OAHtmlButton.this.onCompleted(completedMessage, title);	
             }
 
             @Override
             protected void onError(String errorMessage, String detailMessage) {
-                OAForm form = getForm();
-                if (form != null) {
-                    form.addError(errorMessage);
-                    form.addConsoleMessage(errorMessage + " - " + detailMessage);
-                }
+            	OAHtmlButton.this.onError(errorMessage, detailMessage);	
             }
         };
     }
@@ -161,29 +183,118 @@ public class OAHtmlButton extends HtmlButton {
 */
     
     
+    
+    private String jsAddMsg;
+    
+	/**
+	 * Method in object to execute on active object in hub.
+	 */
+	public void setMethodName(String methodName) {
+		if (OAStr.isEmpty(methodName)) oaMethodControl = null;
+		else oaMethodControl = new OAUIMethodController(getHub(), methodName) {
+			@Override
+			protected void onError(String errorMessage, String detailMessage) {
+				OAHtmlButton.this.onError(errorMessage, detailMessage);
+			}
+			@Override
+			protected void onCompleted(String completedMessage, String title) {
+				OAHtmlButton.this.onCompleted(completedMessage, title);
+			}
+			@Override
+			protected boolean onConfirm(String confirmMessage, String title) {
+				return OAHtmlButton.this.onConfirm(confirmMessage, title);
+			}
+		};
+	}
+	
+
+	protected void onError(String errorMessage, String detailMessage) {
+//qqqqqqqqqqqqqq				
+getOAHtmlComponent().addMessage("Error", detailMessage, OAHtmlComponent.MessageType.Error, OAHtmlComponent.MessageTarget.Notify);				
+		String s = "ERROR: " + errorMessage + " - " + detailMessage;
+		s = OAStr.escapeJs(s, '\'');
+		jsAddMsg = OAStr.append(jsAddMsg, "console.log('" + s + "');", "\n");
+	}
+
+	protected void onCompleted(String completedMessage, String title) {
+		
+getOAHtmlComponent().addNotifyMessage(title, completedMessage);				
+		
+		String s = "COMPLETED: " + title + " - " + completedMessage;
+		s = OAStr.escapeJs(s, '\'');
+		jsAddMsg = OAStr.append(jsAddMsg, "console.log('" + s + "');", "\n");
+	}
+
+	protected boolean onConfirm(String confirmMessage, String title) {
+//qqqqqqqqqqqqqqqqqqq todo:				
+		String s = "CONFIRM: " + title + " - " + confirmMessage;
+		s = OAStr.escapeJs(s, '\'');
+		jsAddMsg = OAStr.append(jsAddMsg, "console.log('" + s + "');", "\n");
+		return true;
+	}
+	
+
+	/**
+	 * Method in object to execute on active object in hub.
+	 */
+	public String getMethodName() {
+		if (oaMethodControl == null) return null;
+		return oaMethodControl.getMethodName();
+	}
+
+	public boolean onCallMethod() {
+		if (oaMethodControl == null) return false;
+		return oaMethodControl.onCallMethod();
+	}
+	
+	public void setCompletedMessage(String msg) {
+		oaUiControl.setCompletedMessage(msg);
+	}
+	public String getCompletedMessage() {
+		return oaUiControl.getCompletedMessage();
+	}
+    
+    public void setConfirmMessage(String msg) {
+    	oaUiControl.setConfirmMessage(msg);
+    }
+    public String getConfirmMessage() {
+    	return oaUiControl.getConfirmMessage();
+    }
+
+    private boolean bWasClicked;
+    
+	@Override
+	protected void onClickEvent() {
+		bWasClicked = true;
+		oaUiControl.onCommand();
+	}
+	
     @Override
     public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {
         boolean b = oaUiControl.isEnabled();
+        if (oaMethodControl != null) b &= oaMethodControl.isEnabled();
         setEnabled(b);
 
+        String jsAdd2 = null;
+        if (bWasClicked) {
+        	bWasClicked = false;
+        	if (b) jsAdd2 = "ele.disabled = false;\n";
+        }
+        
+        
         b = oaUiControl.isVisible();
+        if (oaMethodControl != null) b &= oaMethodControl.isVisible();
         setVisible(b);
         
-        String js = super.getJavaScriptForClient(hsVars, bHasChanges);
+        String js = super.getJavaScriptForClient(hsVars, bHasChanges || (jsAdd2 != null || jsAddMsg != null));
+        
+        if (jsAddMsg != null) js += jsAddMsg + "\n";
+        jsAddMsg = null;
+        if (jsAdd2 != null) js += jsAdd2 + "\n";
+        
         return js;
     }
 
-    /**
-     * This will call UICommandController to process the command.
-     * It will call method performCommand, so overwrite it instead of this method.
-     */
-    @Override
-    protected void onClickEvent() {
-        super.onClickEvent();
-        getController().onCommand();
-    }
-    
-    
     
 }
 

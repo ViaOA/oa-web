@@ -10,7 +10,7 @@ public class OASplitButton extends OAHtmlButton {
     }
     
     public void addButton(OAHtmlButton cmd) {
-        //qqqqqqq todo
+        this.add(cmd);
     }
     
 }

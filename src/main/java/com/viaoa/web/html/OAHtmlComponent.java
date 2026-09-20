@@ -2805,7 +2805,7 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
 
     public static enum MessageTarget {
         Console,
-        Notify,
+        Notify,  // modal dialog popup
         Toast
     }
     
@@ -2840,7 +2840,7 @@ qqqqqqqqqqqq need to find and set Label hidden, visible
 			if (target == MessageTarget.Toast) {
 				return "OAClient.addToastMessage('" +OAStr.escapeJs(title, '\'') + "', '" + OAStr.escapeJs(text, '\'') + "', '"+icon+"');\n";
 			}
-			return "OAClient.addNotifyMessage('" +OAStr.escapeJs(title, '\'') + "', '" + OAStr.escapeJs(text, '\'') + "', '"+icon+"');\n";
+			return "await OAClient.addNotifyMessage('" +OAStr.escapeJs(title, '\'') + "', '" + OAStr.escapeJs(text, '\'') + "', '"+icon+"');\n";
 		}
     }
 

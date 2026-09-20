@@ -10,6 +10,8 @@ import com.viaoa.ui.controller.OAUICommandController.Command;
 import com.viaoa.ui.controller.OAUIMethodController;
 import com.viaoa.web.html.HtmlButton;
 import com.viaoa.web.html.OAHtmlComponent;
+import com.viaoa.web.html.OAHtmlComponent.MessageTarget;
+import com.viaoa.web.html.OAHtmlComponent.MessageType;
 import com.viaoa.web.html.form.OAForm;
 import com.viaoa.web.html.form.OAFormSubmitEvent;
 
@@ -58,21 +60,7 @@ public class OAHtmlButton extends HtmlButton {
 
             @Override
             protected boolean performCommand(Hub hub, OAObject obj) {
-            	try {
-            		return _performCommand(hub, obj);
-            	}
-            	catch (Exception e) {
-            		onError("Command Exception", e.getMessage());
-            	}
-            	return false;
-            }
-            protected boolean _performCommand(Hub hub, OAObject obj) {
-            	if (oaMethodControl != null) {
-            		oaMethodControl.setTitle(OAHtmlButton.this.getTitle());
-            		oaMethodControl.setCompletedMessage(OAHtmlButton.this.getCompletedMessage());
-            		return onCallMethod();
-            	}
-            	else if (command == Command.OtherUsesAO 
+            	if (command == Command.OtherUsesAO 
                         || command == Command.OtherUsesHub 
                         || command == Command.GoTo
                         || command == Command.HubSearch
@@ -88,11 +76,6 @@ public class OAHtmlButton extends HtmlButton {
             }
 
             @Override
-            protected boolean onConfirm(String confirmMessage, String title) {
-            	return OAHtmlButton.this.onConfirm(confirmMessage, title);
-            }
-            
-            @Override
             protected void onCompleted(String completedMessage, String title) {
             	OAHtmlButton.this.onCompleted(completedMessage, title);	
             }
@@ -100,6 +83,11 @@ public class OAHtmlButton extends HtmlButton {
             @Override
             protected void onError(String errorMessage, String detailMessage) {
             	OAHtmlButton.this.onError(errorMessage, detailMessage);	
+            }
+
+            @Override
+            protected boolean onConfirm(String confirmMessage, String title) {
+            	return OAHtmlButton.this.onConfirm(confirmMessage, title);
             }
         };
     }
@@ -191,45 +179,45 @@ public class OAHtmlButton extends HtmlButton {
 	 */
 	public void setMethodName(String methodName) {
 		if (OAStr.isEmpty(methodName)) oaMethodControl = null;
-		else oaMethodControl = new OAUIMethodController(getHub(), methodName) {
-			@Override
-			protected void onError(String errorMessage, String detailMessage) {
-				OAHtmlButton.this.onError(errorMessage, detailMessage);
-			}
-			@Override
-			protected void onCompleted(String completedMessage, String title) {
-				OAHtmlButton.this.onCompleted(completedMessage, title);
-			}
-			@Override
-			protected boolean onConfirm(String confirmMessage, String title) {
-				return OAHtmlButton.this.onConfirm(confirmMessage, title);
-			}
-		};
+		else {
+			oaMethodControl = new OAUIMethodController(getHub(), methodName) {
+				@Override
+				protected void onError(String errorMessage, String detailMessage) {
+					OAHtmlButton.this.onError(errorMessage, detailMessage);
+				}
+				@Override
+				protected void onCompleted(String completedMessage, String title) {
+					OAHtmlButton.this.onCompleted(completedMessage, title);
+				}
+				@Override
+				protected boolean onConfirm(String confirmMessage, String title) {
+					return OAHtmlButton.this.onConfirm(confirmMessage, title);
+				}
+			};
+			oaMethodControl.setCompletedMessage(getCompletedMessage());
+			oaMethodControl.setTitle(getTitle());
+			oaMethodControl.setConfirmMessage(getConfirmMessage());
+		}
 	}
 	
 
 	protected void onError(String errorMessage, String detailMessage) {
-//qqqqqqqqqqqqqq				
-getOAHtmlComponent().addMessage("Error", detailMessage, OAHtmlComponent.MessageType.Error, OAHtmlComponent.MessageTarget.Notify);				
-		String s = "ERROR: " + errorMessage + " - " + detailMessage;
-		s = OAStr.escapeJs(s, '\'');
-		jsAddMsg = OAStr.append(jsAddMsg, "console.log('" + s + "');", "\n");
+		String s = errorMessage;
+		if (s == null) {
+			s = detailMessage;
+			if (s == null) s = "Error";
+		}
+		getOAHtmlComponent().addMessage("Error", s, OAHtmlComponent.MessageType.Error, OAHtmlComponent.MessageTarget.Notify);				
+		if (OAStr.isNotEmpty(detailMessage)) {
+			getOAHtmlComponent().addMessage(s, detailMessage, OAHtmlComponent.MessageType.Error, OAHtmlComponent.MessageTarget.Console);				
+		}
 	}
 
 	protected void onCompleted(String completedMessage, String title) {
-		
-getOAHtmlComponent().addNotifyMessage(title, completedMessage);				
-		
-		String s = "COMPLETED: " + title + " - " + completedMessage;
-		s = OAStr.escapeJs(s, '\'');
-		jsAddMsg = OAStr.append(jsAddMsg, "console.log('" + s + "');", "\n");
+		getOAHtmlComponent().addToastMessage(title, completedMessage);	
 	}
 
 	protected boolean onConfirm(String confirmMessage, String title) {
-//qqqqqqqqqqqqqqqqqqq todo:				
-		String s = "CONFIRM: " + title + " - " + confirmMessage;
-		s = OAStr.escapeJs(s, '\'');
-		jsAddMsg = OAStr.append(jsAddMsg, "console.log('" + s + "');", "\n");
 		return true;
 	}
 	
@@ -249,16 +237,23 @@ getOAHtmlComponent().addNotifyMessage(title, completedMessage);
 	
 	public void setCompletedMessage(String msg) {
 		oaUiControl.setCompletedMessage(msg);
+    	if (oaMethodControl != null) oaMethodControl.setCompletedMessage(msg);  
 	}
 	public String getCompletedMessage() {
 		return oaUiControl.getCompletedMessage();
 	}
     
+	@Override
+	public void setTitle(String title) {
+		super.setTitle(title);
+    	oaUiControl.setTitle(title);
+    	if (oaMethodControl != null) oaMethodControl.setTitle(title);  
+	}
+	
     public void setConfirmMessage(String msg) {
+    	super.setConfirmMessage(msg);
     	oaUiControl.setConfirmMessage(msg);
-    }
-    public String getConfirmMessage() {
-    	return oaUiControl.getConfirmMessage();
+    	if (oaMethodControl != null) oaMethodControl.setConfirmMessage(msg);  
     }
 
     private boolean bWasClicked;
@@ -266,7 +261,8 @@ getOAHtmlComponent().addNotifyMessage(title, completedMessage);
 	@Override
 	protected void onClickEvent() {
 		bWasClicked = true;
-		oaUiControl.onCommand();
+		if (oaMethodControl != null) oaMethodControl.onCallMethod();
+		else oaUiControl.onCommand();
 	}
 	
     @Override
@@ -274,13 +270,12 @@ getOAHtmlComponent().addNotifyMessage(title, completedMessage);
         boolean b = oaUiControl.isEnabled();
         if (oaMethodControl != null) b &= oaMethodControl.isEnabled();
         setEnabled(b);
-
+        
         String jsAdd2 = null;
         if (bWasClicked) {
         	bWasClicked = false;
         	if (b) jsAdd2 = "ele.disabled = false;\n";
         }
-        
         
         b = oaUiControl.isVisible();
         if (oaMethodControl != null) b &= oaMethodControl.isVisible();
@@ -288,13 +283,19 @@ getOAHtmlComponent().addNotifyMessage(title, completedMessage);
         
         String js = super.getJavaScriptForClient(hsVars, bHasChanges || (jsAdd2 != null || jsAddMsg != null));
         
+        if (bHasChanges) {
+        	String s = OAStr.escapeJs(getConfirmMessage(), '\'');
+        	if (s == null) s = "";
+        	if (js == null) js = "";
+        	else js += "\n";
+            js +=  "comp.confirmMessage = '"+s+"';\n";
+        }
+        
         if (jsAddMsg != null) js += jsAddMsg + "\n";
         jsAddMsg = null;
         if (jsAdd2 != null) js += jsAdd2 + "\n";
         
         return js;
     }
-
-    
 }
 

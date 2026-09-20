@@ -66,7 +66,9 @@ public class OAToolbarOptions {
     	ListWithEdit,
     	ListForMaster,
     	Edit,
-    	EditWithList
+    	EditWithList,
+    	SearchList, //qqqqqqqqqqqq
+    	SearchListWithEdit //qqqqqqqqqqqqqqqqqqqqqqq
     }
     
     

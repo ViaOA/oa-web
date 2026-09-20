@@ -27,7 +27,7 @@ public class OAToolbarOptionsDelegate {
 		if (tboTop == null && tboBottom == null) return;
 		OAToolbarOptions to;
 		
-		if (tboType == tboType.List || tboType == tboType.ListWithEdit || tboType == tboType.ListForMaster) {
+		if (tboType == tboType.List || tboType == tboType.ListWithEdit || tboType == tboType.ListForMaster || tboType == tboType.SearchList || tboType == tboType.SearchListWithEdit) {
 			if (tboTop != null) {
 				if (tboBottom == null) {
 					// all on top
@@ -68,18 +68,45 @@ public class OAToolbarOptionsDelegate {
 				);
 			}
 
+			to = tboTop;
+			if (to != null && (tboType == tboType.SearchList || tboType == tboType.SearchListWithEdit)) {
+				to.add(to.Search);
+				to.remove(to.HubSearch);
+			}
+			
+			
 			if (tboType == tboType.ListWithEdit) {
 				to = tboTop;
-				if (to != null) to.remove(to.Icon | to.Label | to.PlusNav);
+				if (to != null) {
+					to.remove(to.Icon | to.Label | to.PlusNav);
+				}
 				to = tboBottom;
-				if (to != null) to.remove(to.Icon | to.Label | to.PlusNav);
+				if (to != null) {
+					to.remove(to.Icon | to.Label | to.PlusNav);
+				}
+			}
+			else if (tboType == tboType.SearchListWithEdit || tboType == tboType.SearchList) {
+				to = tboTop;
+				if (to != null) {
+					to.remove(to.Icon | to.Label | to.PlusNav | to.Find);
+				}
+				to = tboBottom;
+				if (to != null) {
+					to.remove(to.Icon | to.Label | to.PlusNav | to.Find);
+				}
 			}
 			else if (tboType == tboType.ListForMaster) {
 				to = tboTop;
-				if (to != null) to.remove(to.Icon | to.Label | to.PlusNav);
+				if (to != null) {
+					to.remove(to.Icon | to.Label | to.PlusNav);
+				}
 				to = tboBottom;
-				if (to != null) to.remove(to.Icon | to.Label | to.PlusNav);
+				if (to != null) {
+					to.remove(to.Icon | to.Label | to.PlusNav);
+				}
 			}
+			
+			
 		}
 		else {
 			if (tboType == tboType.Edit) {
@@ -126,71 +153,4 @@ public class OAToolbarOptionsDelegate {
 	}
 	
 	
-	public static void configOLD(
-		OAToolbarOptions listTop, 
-		OAToolbarOptions listBottom, 
-		OAToolbarOptions editTop, 
-		OAToolbarOptions editBottom, 
-		final boolean willHaveDetailPanel,
-		final boolean supportsFind
-	) {
-
-		OAToolbarOptions to;
-		if (listTop != null) {
-			if (listBottom == null) {
-				to = listTop;
-				to.add(
-					to.Icon | to.Label | to.Goto |  
-					// to.GoBack |
-					to.Refresh | to.PlusNav | to.PlusMove | to.Save | to.New |
-					to.Add | to.Insert | to.Wizard | to.Remove | to.Delete |
-					to.HubSearch | to.Report | to.Download | to.Custom
-				);
-				if (supportsFind) to.add(to.Find);
-			}
-			else {
-				to = listTop;
-				if (willHaveDetailPanel) {
-					if (supportsFind) to.add(to.Find);
-				}
-				else to.add(to.Icon | to.Label | to.Find);
-				
-				to = listBottom;
-				to.add(
-					to.Goto | to.Details |
-					// to.GoBack |
-					to.Refresh | to.PlusNav | to.PlusMove | to.Save | to.New |
-					to.Add | to.Insert | to.Wizard | to.Remove | to.Delete |
-					to.HubSearch | to.Report | to.Download |
-					to.Custom | to.HubCalc
-				);
-				if (supportsFind) to.add(to.Find);
-			}
-			return;
-		}
-		else if (listBottom != null) {
-			to = listBottom;
-			to.add(
-				to.Icon | to.Label | to.Goto |  
-				// to.GoBack |
-				to.Refresh | to.PlusNav | to.PlusMove | to.Save | to.New |
-				to.Add | to.Insert | to.Wizard | to.Remove | to.Delete |
-				to.HubSearch | to.Report | to.Download |
-				to.Custom | to.HubCalc
-			);
-			if (supportsFind) to.add(to.Find);
-			return;
-		}
-
-		if (editTop != null) {
-			to = editTop;
-			to.add(
-				to.Icon | to.Label | 
-				// to.GoBack |
-				to.Refresh | to.Save | to.New |
-				to.Wizard | to.Remove | to.Delete |
-				to.Report | to.Download | to.Custom
-			);
-		}
-	}
 }

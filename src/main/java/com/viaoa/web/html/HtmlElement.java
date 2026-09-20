@@ -216,7 +216,6 @@ public class HtmlElement {
         }
 
         if (OAStr.isNotEmpty(getTemplateURL()) && OAStr.isNotEmpty(getTemplateName())) {
-            //was: if (!getLazyLoad() && !bTemplateSent) {
             if (!bTemplateSent) {
                 String s = "await OAClient.loadTemplateFromServer(ele, '" + getTemplateURL() + "', '" + getTemplateName() + "');\n";        
                 js = OAStr.concat(js, s, "\n");
@@ -225,6 +224,7 @@ public class HtmlElement {
         }
         
         bHasChanges |= OAStr.isNotEmpty(js);
+        
         String s = getOAHtmlComponent().getJavaScriptForClient(hsVars, bHasChanges);
         s = OAStr.concat(s, js, "\n");
         
@@ -234,7 +234,7 @@ public class HtmlElement {
     
     public String getJavaScriptForClientRecursive(final Set<String> hsVars) {
         StringBuilder sb = new StringBuilder();
-        String js = getJavaScriptForClient(hsVars, false);
+        String js = getJavaScriptForClient(hsVars, getOAHtmlComponent().getNeedsRefreshed());
         if (OAStr.isNotEmpty(js)) sb.append(js);
         
 //js = getVerifyScript();
@@ -572,10 +572,6 @@ public class HtmlElement {
         return htmlComponent.getEditorHtml(obj);
     }
 
-    public boolean getNeedsReloaded() {
-        return htmlComponent.getNeedsRefreshed();
-    }
-
     
     // These are all originated from OAForm --------------------------
 
@@ -797,7 +793,7 @@ public void beforeGetJavaScriptForClientRecursive() {
         hsSupported.add("title");
         hsSupported.add("style");
         hsSupported.add("class");
-        hsSupported.add("confirmmessage");
+        hsSupported.add("confirmmessage");  //qqqqq todo: moved up to components that need it, not used at base level
         hsSupported.add("confirmmessagetemplate");
         hsSupported.add("height");
         hsSupported.add("width");

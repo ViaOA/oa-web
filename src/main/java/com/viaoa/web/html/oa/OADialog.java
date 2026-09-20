@@ -23,6 +23,12 @@ public class OADialog extends OAPanel {
         this.bCalled = true;
     }
     
+    @Override
+    public void setVisible(boolean b) {
+    	super.setVisible(b);
+    	bShow = b;
+    	bCalled = true;
+    }
     
     @Override
     public String getJavaScriptForClient(final Set<String> hsVars, boolean bHasChanges) {

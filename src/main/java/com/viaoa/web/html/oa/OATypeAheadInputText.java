@@ -33,7 +33,8 @@ public class OATypeAheadInputText extends InputText implements OATableColumnInte
             public void updateComponent(Object object) {
                 String s = this.getValueAsString(object);
                 OATypeAheadInputText.this.setValue(s);
-                OATypeAheadInputText.this.setEnabled(this.isEnabled());
+                boolean b = this.isEnabled();
+                OATypeAheadInputText.this.setEnabled(b);
                 OATypeAheadInputText.this.setVisible(this.isVisible());
             }
             
@@ -128,8 +129,8 @@ public class OATypeAheadInputText extends InputText implements OATableColumnInte
             onClientSearchEvent(search);
         }
         else if (OAStr.isEqual(type, Event_Select)) {
-            String objId = map.get("objId");
-            Object obj = controlUI.findObjectUsingId(objId);
+            String guid = map.get("guid");
+            Object obj = controlUI.findObjectUsingGuid(guid);
             onClientSelectEvent(obj);
         }
     }
@@ -139,6 +140,8 @@ public class OATypeAheadInputText extends InputText implements OATableColumnInte
         jsonSearch = controlUI.getJson(search);
     }
     protected void onClientSelectEvent(Object obj) {
+//qqqqqqqqqqqqqqqqqqqqqq fix: this hub is used to supply the search objs qqqqqqqqqqqqqqqqqqqq
+//  qqqqqqqqqq needs to update linkOne ?? qqqqqqqqqqq    	
         controlUI.getTypeAhead().getHub().setActiveObject(obj);
     }
 

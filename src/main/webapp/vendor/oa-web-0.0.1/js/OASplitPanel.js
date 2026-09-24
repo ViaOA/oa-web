@@ -157,12 +157,22 @@ export default class OASplitPanel {
     onMouseMove = (e) => {
         if (!this.isResizing) return;
 
+		if ((e.buttons & 1) === 0) {
+		    this.onMouseUp(e);
+		    return;
+		}
+		
         e.stopPropagation();
         e.preventDefault();
 
         if (this.isThrottled) return;
         this.isThrottled = true;
         window.requestAnimationFrame(() => {
+		    if (!this.isResizing) {
+			    this.isThrottled = false;
+			    return;
+     		}
+			
             this._onMouseMove(e);
         });
     };

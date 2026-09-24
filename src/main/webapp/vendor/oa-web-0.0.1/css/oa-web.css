@@ -74,7 +74,9 @@ textarea.oa-input {
   height: 100%;
   grid-template-columns: 1fr 5fr;
   gap: 0px;
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
 }
 
 .oa-split-panel-hort-b {
@@ -82,7 +84,9 @@ textarea.oa-input {
   height: 100%;
   grid-template-columns: 5fr 1fr;
   gap: 0px;
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
 }
 
 .oa-split-panel-vert {
@@ -90,7 +94,9 @@ textarea.oa-input {
   height: 100%;
   grid-template-rows: 1fr 5fr;
   gap: 0px;
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
 }
 
 .oa-split-panel-vert-b {
@@ -98,7 +104,9 @@ textarea.oa-input {
   height: 100%;
   grid-template-rows: 5fr 1fr;
   gap: 0px;
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
 }
 
 .oa-resize-bar-vert {
@@ -158,6 +166,8 @@ textarea.oa-input {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width:0;
+  min-height:0;
 }
 
 .oa-split-panel-right {
@@ -165,20 +175,26 @@ textarea.oa-input {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width:0;
+  min-height:0;
 }
 
 .oa-split-panel-top {
   width: 100%;
   display: flex;
   flex-direction: column;
-  min-height: 0 overflow: hidden;
+  min-height: 0;
+  min-width:0;
+  overflow: hidden;
 }
 
 .oa-split-panel-bottom {
   width: 100%;
   display: flex;
   flex-direction: column;
-  min-height: 0 overflow: hidden;
+  min-width:0;
+  min-height:0;
+  overflow: hidden;
 }
 
 .oa-debug-yellow {
@@ -306,8 +322,8 @@ ul.list-group[data-oa-web="tree"] li.list-group-item span {
   animation: oa-spin 0.75s linear infinite;
 }
 
-@
-keyframes oa-spin {from { transform:rotate(0deg);
+
+@keyframes oa-spin {from { transform:rotate(0deg);
   
 }
 
@@ -579,7 +595,76 @@ button.accordion-button {
 }
 
 
+/* ============== .oa-resize ================ */
 
+/* 1+ children: flexible component + right-side button */
+  .oa-input-group {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: .25rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .oa-input-group > :first-child {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .oa-input-group > :not(:first-child) {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+/* ============== .oa-dialog ================ */
+
+ .modal-dialog.oa-dialog-resizable {
+      width: max-content;
+      max-width: calc(100vw - 2rem);
+      margin: 1rem auto;
+  }
+
+  .oa-dialog-resizable > .modal-content {
+      resize: both;
+      overflow: hidden;
+
+      width: min(48rem, calc(100vw - 2rem));
+      height: 70vh;
+
+      min-width: min(20rem, calc(100vw - 2rem));
+      min-height: min(15rem, calc(100vh - 2rem));
+
+      max-width: calc(100vw - 2rem);
+      max-height: calc(100vh - 2rem);
+  }
+
+  .oa-dialog-resizable > .modal-content > .modal-header,
+  .oa-dialog-resizable > .modal-content > .modal-footer {
+      flex-shrink: 0;
+  }
+
+  .oa-dialog-resizable > .modal-content > .modal-body {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+  }
+
+  .modal-dialog.oa-dialog-resizable.modal-fullscreen {
+      width: 100vw;
+      max-width: none;
+      margin: 0;
+  }
+
+  .oa-dialog-resizable.modal-fullscreen > .modal-content {
+      width: 100% !important;
+      height: 100% !important;
+      min-width: 0;
+      min-height: 0;
+      max-width: none;
+      max-height: none;
+      resize: none;
+  }
 
 
 

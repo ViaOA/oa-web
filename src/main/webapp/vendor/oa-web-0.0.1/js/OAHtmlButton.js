@@ -8,6 +8,10 @@ export default class OAHtmlButton {
     /** @type {number} */
     id;
     
+	/** @type {string} */
+	confirmMessage = "";
+
+		
     /**
      * @param {HTMLElement} element
      * @param {number} id
@@ -16,7 +20,22 @@ export default class OAHtmlButton {
         this.element = element;
         this.id = id;
         
-        element.addEventListener('click', (event) => {
+        element.addEventListener('click', async (event) => {
+			event.preventDefault();
+			this.element.disabled = true;
+
+			if (this.confirmMessage.trim()) {			
+				const proceed = await OAClient.confirm(
+				    this.element.title || "Confirm",
+				    this.confirmMessage,
+				    "Info"
+				);
+				if (!proceed) {
+					this.element.disabled = false;
+					return;
+				}			
+			}
+			
             let obj = {
                 id: this.id,
                 type: 'click',

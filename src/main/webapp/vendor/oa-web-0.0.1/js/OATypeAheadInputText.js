@@ -233,7 +233,7 @@ export default class OATypeAheadInputText {
 
             const liElements = Array.from(this.elementUL.children);
             const pos = liElements.indexOf(event.target);
-            const objId = this.objs[pos].id;
+            const guid = this.objs[pos].guid;
 
             this.element.value = event.target.textContent;
             this.adjustSize();
@@ -243,7 +243,7 @@ export default class OATypeAheadInputText {
             const obj = {
               id: this.id,
               type: 'select',
-              objId: objId
+              guid: guid
             };
             OAClient.sendEventToServer(obj);
         });

@@ -65,7 +65,7 @@ public class OAHtmlButton extends HtmlButton {
                         || command == Command.GoTo
                         || command == Command.HubSearch
                         || command == Command.Search
-                        || command == Command.Select
+                        // || command == Command.Select
                         || command == Command.ManualChangeAO
                         ) {
                     return OAHtmlButton.this.performCommand(obj);

@@ -39,7 +39,7 @@ public class OAInputButton extends InputButton implements OATableColumnInterface
                         || command == Command.GoTo
                         || command == Command.HubSearch
                         || command == Command.Search
-                        || command == Command.Select
+                        // || command == Command.Select
                         || command == Command.ManualChangeAO
                         ) {
                     return OAInputButton.this.performCommand(obj);
